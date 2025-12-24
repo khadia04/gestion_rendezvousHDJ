@@ -1,0 +1,1312 @@
+html, body {
+    overflow-x: hidden;
+}
+
+html {
+    font-size: 12px; /* valeur pro standard */
+}
+
+body {
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* ====== LAYOUT GLOBAL ====== */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ====== SIDEBAR ====== */
+.sidebar {
+    width: 250px;
+    background: #0e6bb7;
+    color: white;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar-logo {
+    width: 120px;
+    margin-bottom: 8px;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding-left: 0;
+    margin: 10px;
+}
+
+.sidebar-menu li a {
+    display: block;
+    padding: 15px 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+    transition: 0.2s ease;
+}
+
+.sidebar-menu li a i {
+    margin-right: 10px;
+}
+
+.sidebar-menu li a:hover,
+.sidebar-menu li a.active {
+    background: rgba(255,255,255,0.18);
+    border-left: 4px solid #ffffff;
+}
+
+.sidebar-menu .logout {
+    margin-top: auto;
+    background: rgba(255, 0, 0, 0.15);
+}
+
+/* ====== MAIN CONTENT ====== */
+.main-content {
+    flex-grow: 1;
+    background: #f5f7fb;
+    padding: 0;
+    overflow-y: auto;
+}
+
+/* ====== TOPBAR ====== */
+.topbar {
+    height: 70px;
+    background: white;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+}
+
+.topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+/* ====== PAGE CONTENT ====== */
+.content-wrapper {
+    padding: 25px;
+}
+
+
+/* CARTE STATISTIQUE */
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+}
+
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    font-size: 60px;
+    color: #0d6efd;
+    margin-bottom: 10px;
+}
+
+.stat-number {
+    font-size: 30px;
+    font-weight: 700;
+    color: #003c8f;
+}
+
+/* ACTIONS RAPIDES */
+.quick-btn {
+    display: block;
+    padding: 18px;
+    text-align: center;
+    background: #0d6efd;
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.quick-btn i {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.quick-btn:hover {
+    background: #004bb8;
+    color: white;
+}
+
+
+/* ========================
+   SECTION : DASHBOARD OVERVIEW
+======================== */
+
+.dashboard-overview {
+    padding: 20px;
+    margin: -10px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    transition: all 0.25s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.12);
+}
+
+.stat-icon {
+    font-size: 45px;
+    color: #0d6efd; /* Bleu HDJ */
+    margin-bottom: 10px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 8px;
+    color: #333;
+}
+
+/* ========================
+   QUICK ACTIONS
+======================== */
+
+.quick-actions {
+    margin-top: 25px;
+}
+
+.quick-btn {
+    display: block;
+    padding: 18px;
+    text-align: center;
+    border-radius: 14px;
+    background: #e9f2ff;
+    color: #0d6efd;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.25s ease;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.quick-btn i {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.quick-btn:hover {
+    background: #0d6efd;
+    color: white;
+    transform: translateY(-4px);
+}
+
+/* ========================
+   RESPONSIVE DASHBOARD
+======================== */
+
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 15px;
+    }
+}
+
+
+/* ============================
+   DASHBOARD CARDS
+============================ */
+
+.dashboard-overview {
+    padding: 20px;
+}
+
+.stat-card {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+}
+
+/* Icône */
+.stat-card .stat-icon {
+    font-size: 2.4rem;
+    color: #005dbe;
+    margin-bottom: 10px;
+}
+
+/* Valeur */
+.stat-number {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #003f7f;
+}
+
+/* Animation hover */
+.stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================
+   QUICK ACTION BUTTONS
+============================ */
+
+.quick-actions {
+    margin-top: 25px;
+}
+
+.quick-btn {
+    display: block;
+    background: #006aff;
+    color: white;
+    padding: 18px;
+    border-radius: 14px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.05rem;
+    box-shadow: 0 4px 14px rgba(0, 85, 255, 0.25);
+    transition: transform 0.25s ease, background 0.25s ease;
+}
+
+/* Icône */
+.quick-btn i {
+    font-size: 1.6rem;
+    margin-right: 8px;
+}
+
+/* Hover effet */
+.quick-btn:hover {
+    background: #0055d4;
+    transform: translateY(-4px);
+    color: white;
+}
+
+
+/* ============================
+   TITRES
+============================ */
+
+.dashboard-overview h3 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #003f7f;
+}
+
+.dashboard-overview h4 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #003f7f;
+    margin-bottom: 15px;
+}
+
+
+.stat-card, .quick-btn {
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================
+   THEME TOGGLE (Dashboard)
+============================ */
+
+.theme-toggle-dashboard {
+    position: absolute;
+    right: 25px;
+    top: 75px; 
+    position: fixed; 
+    width: 40px;
+    height: 40px;
+    background: rgba(143, 140, 140, 0.55);
+    border: 1px solid white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: 0.3s ease;
+}
+
+.theme-toggle-dashboard i {
+    font-size: 1.6rem;
+    color: #333;
+    transition: 0.3s ease;
+}
+
+.theme-toggle-dashboard:hover {
+    transform: scale(1.08);
+}
+
+/* MODE SOMBRE */
+body.dark-dashboard {
+    background: #0f141c;
+    color: #eee;
+}
+
+.dark-dashboard .main-content {
+    background: #0f141c !important;
+}
+
+.dark-dashboard .stat-card {
+    background: #1b2331;
+    color: white;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dark-dashboard .quick-btn {
+    background: #0050c1;
+}
+
+.dark-dashboard .sidebar {
+    background: #0e1a2b !important;
+}
+
+.dark-dashboard .sidebar .active {
+    background: #0c355c !important;
+}
+
+.dark-dashboard .topbar {
+    background: #131c27;
+    color: white;
+}
+
+
+/* ============================
+   DASHBOARD CHART CARDS
+============================ */
+.chart-card {
+    background: white;
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.dark-dashboard .chart-card {
+    background: #1b2331;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+
+/* =====================================
+   DASHBOARD – CARTES STATISTIQUES
+   Toutes les cartes à la même hauteur
+===================================== */
+
+.dashboard-cards {
+    display: flex;
+    gap: 10px;
+    
+    align-items: stretch;
+}
+.dashboard-cards > [class*="col-"] {
+    display: flex;
+}
+
+@media (max-width: 992px) {
+    .dashboard-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+.stat-card {
+    height: 100%;
+    min-height: 260px;
+
+    width: 100%;
+    flex: 1;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;  /* centre verticalement */
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+/* Icônes */
+.stat-card i {
+    font-size: 40px;
+    color: #0d6efd;
+    margin-bottom: 10px;
+}
+
+/* Titre */
+.stat-card h5 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    transition: 0.3s ease;
+}
+
+
+/* Chiffre */
+.stat-number {
+    font-size: 36px;
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+/* Badge pourcentage */
+.stat-card .badge {
+    margin-top: 10px;
+    align-self: center;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .dashboard-cards {
+        flex-wrap: wrap;
+    }
+
+    .stat-card {
+        width: 100%;
+    }
+}
+
+/* =====================================
+   TITRES DES CARTES
+   ===================================== */
+.card-title,
+.chart-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+
+/* =====================================
+   BADGE POURCENTAGE ANIMÉ
+===================================== */
+
+.stat-badge {
+    margin-top: 12px;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    animation: fadeSlide 0.6s ease forwards;
+}
+
+.stat-badge.up {
+    background: #e6f7ef;
+    color: #0f9d58;
+}
+
+.stat-badge.down {
+    background: #c03a2b;
+    color: #de1608;
+}
+
+/* Animation */
+@keyframes fadeSlide {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pulse léger */
+.stat-badge.up {
+    animation: fadeSlide 0.6s ease, pulseGreen 2s infinite;
+}
+
+.stat-badge.down {
+    animation: fadeSlide 0.6s ease, pulseRed 2s infinite;
+}
+
+@keyframes pulseGreen {
+    0% { box-shadow: 0 0 0 0 rgba(15,157,88,.4); }
+    70% { box-shadow: 0 0 0 8px rgba(15,157,88,0); }
+    100% { box-shadow: 0 0 0 0 rgba(15,157,88,0); }
+}
+
+@keyframes pulseRed {
+    0% { box-shadow: 0 0 0 0 rgba(238, 21, 5, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(217,48,37,0); }
+    100% { box-shadow: 0 0 0 0 rgba(217,48,37,0); }
+}
+
+
+/* =====================================
+   BADGE POURCENTAGE ANIMÉ AMÉLIORÉ */
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 10px;
+    animation: fadeIn 0.6s ease;
+}
+
+.badge-up {
+    background: #e6f9f0;
+    color: #0f9d58;
+}
+
+.badge-down {
+    background: #fdeaea;
+    color: #f02112;
+}
+
+.stat-badge .arrow {
+    animation: bounce 1.2s infinite;
+}
+
+/* Animations */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade + slide doux à l’arrivée */
+.fade-up {
+    animation: fadeUp 0.6s ease-out both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Cartes statistiques */
+.stat-card {
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,.12);
+}
+
+
+/* Boutons */
+.btn {
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+/* Styles pour les selects dans le dashboard */
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13,110,253,.15);
+}
+
+
+/* Animations supplémentaires pour les cartes et boutons */
+.btn {
+    transition: all 0.25s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+
+.quick-btn {
+    transition: all 0.3s ease;
+}
+
+.quick-btn:hover {
+    background-color: #005edc;
+    transform: scale(1.03);
+}
+
+.dashboard-overview h3,
+.dashboard-overview h4 {
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+.stat-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.badge-up {
+    background: rgba(40,167,69,0.15);
+    color: #28a745;
+}
+
+.badge-down {
+    background: rgba(220,53,69,0.15);
+    color: #e41e32;
+}
+
+* {
+    scroll-behavior: smooth;
+}
+
+
+/* =========================
+   STAT CARDS – HOVER PRO
+========================= */
+
+.stat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px;
+    text-align: center;
+    position: relative;
+
+    transition: 
+        transform 0.35s ease,
+        box-shadow 0.35s ease,
+        background 0.35s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.08);
+    background: linear-gradient(
+        135deg,
+        #ffffff,
+        #f7faff
+    );
+}
+
+/* =========================
+   ICÔNE – MICRO INTERACTION
+========================= */
+
+.stat-card .stat-icon {
+    font-size: 32px;
+    color: #006aff;
+    margin-bottom: 10px;
+
+    transition:
+        transform 0.35s ease,
+        color 0.35s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.15) rotate(-3deg);
+    color: #004bb5;
+}
+
+/* =========================
+   NOMBRE – LÉGÈRE EMPHASE
+========================= */
+
+.stat-card .stat-number {
+    font-size: 26px;
+    font-weight: 700;
+    color: #111;
+
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-number {
+    transform: scale(1.05);
+}
+
+.stat-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: radial-gradient(
+        circle at top,
+        rgba(0,106,255,0.08),
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+}
+
+.stat-card:hover::after {
+    opacity: 1;
+}
+
+
+/* =========================
+   MODE SOMBRE – TEXTE 100% BLANC
+========================= */
+
+body.dark,
+body.dark-mode {
+    color: #ffffff !important;
+}
+
+/* Tout le texte */
+body.dark p,
+body.dark span,
+body.dark small,
+body.dark label,
+body.dark li,
+body.dark a,
+body.dark h1,
+body.dark h2,
+body.dark h3,
+body.dark h4,
+body.dark h5,
+body.dark h6 {
+    color: #ffffff !important;
+}
+
+/* Supprime le gris Bootstrap */
+body.dark .text-muted {
+    color: #ffffff !important;
+}
+
+/* Graphiques & titres */
+body.dark .chart-title,
+body.dark .chart-card h4,
+body.dark .chart-card h6,
+body.dark .chart-card p {
+    color: #ffffff !important;
+}
+
+/* Tableaux */
+body.dark table,
+body.dark th,
+body.dark td {
+    color: #ffffff !important;
+}
+
+/* Inputs & selects */
+body.dark select,
+body.dark input,
+body.dark option {
+    color: #ffffff !important;
+}
+
+/* Sidebar */
+body.dark .sidebar,
+body.dark .sidebar a,
+body.dark .sidebar span {
+    color: #ffffff !important;
+}
+
+body.dark * {
+    color: #ffffff !important;
+}
+
+/* =========================
+   DARK DASHBOARD – TEXTE BLANC FORCÉ
+========================= */
+
+body.dark-dashboard,
+body.dark-dashboard * {
+    color: #ffffff !important;
+}
+
+/* Supprimer TOUT gris Bootstrap */
+body.dark-dashboard .text-muted,
+body.dark-dashboard .text-secondary,
+body.dark-dashboard small,
+body.dark-dashboard .card-title,
+body.dark-dashboard .chart-title {
+    color: #ffffff !important;
+}
+
+/* Titres dashboard */
+body.dark-dashboard h1,
+body.dark-dashboard h2,
+body.dark-dashboard h3,
+body.dark-dashboard h4,
+body.dark-dashboard h5,
+body.dark-dashboard h6 {
+    color: #ffffff !important;
+}
+
+/* =========================
+   DARK MODE – CARTES (FIX TOTAL)
+========================= */
+
+body.dark-dashboard .stat-card,
+body.dark-dashboard .chart-card,
+body.dark-dashboard .card,
+body.dark-dashboard .quick-btn {
+    background: #1b2331 !important;
+    color: #ffffff !important;
+}
+
+/* =========================
+   DARK MODE – FILTRES & INPUTS
+========================= */
+
+body.dark-dashboard select,
+body.dark-dashboard .form-select,
+body.dark-dashboard input {
+    background-color: #ffffff !important;
+    color:  #0f172a !important;
+    border: 1px solid #334155 !important;
+}
+
+/* Options du select */
+body.dark-dashboard option {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+}
+
+body.dark-dashboard ::placeholder {
+    color: #cbd5f5 !important;
+}
+
+body.dark-dashboard .btn-primary {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+body.dark-dashboard .btn-primary:hover {
+    background-color: #1d4ed8 !important;
+}
+
+body.dark-dashboard .bg-white {
+    background-color: #1b2331 !important;
+}
+
+
+/* =========================
+   DARK MODE – STAT CARDS HOVER
+========================= */
+
+body.dark-dashboard .stat-card {
+    background: #1b2331 !important;
+    transition: 
+        background 0.35s ease,
+        transform 0.35s ease,
+        box-shadow 0.35s ease;
+}
+
+body.dark-dashboard .stat-card:hover {
+    background: #0e6bb7 !important; /* BLEU CHNDJ */
+    transform: translateY(-6px);
+    box-shadow: 0 18px 35px rgba(14, 107, 183, 0.45);
+}
+
+body.dark-dashboard .stat-card:hover h5,
+body.dark-dashboard .stat-card:hover .stat-number,
+body.dark-dashboard .stat-card:hover .stat-icon,
+body.dark-dashboard .stat-card:hover p,
+body.dark-dashboard .stat-card:hover small {
+    color: #ffffff !important;
+}
+
+body.dark-dashboard .stat-card:hover .stat-icon {
+    transform: scale(1.2) rotate(-4deg);
+    transition: transform 0.35s ease;
+}
+
+body.dark-dashboard .stat-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: radial-gradient(
+        circle at top,
+        rgba(255,255,255,0.15),
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+}
+
+body.dark-dashboard .stat-card:hover::after {
+    opacity: 1;
+}
+
+.dashboard-overview h3 {
+    font-size: 2.5rem; /* avant ~1.6 */
+}
+
+.dashboard-overview h4 {
+    font-size: 2rem;
+}
+.stat-card h5 {
+    font-size: 22px;
+}
+
+.stat-number {
+    font-size: 43px; /* très lisible */
+}
+
+.chart-title {
+    font-size: 22px;
+}
+
+.quick-btn {
+    font-size: 20px;
+}
+
+.quick-btn i {
+    font-size: 1.6rem;
+}
+
+select,
+.form-select {
+    font-size: 20px;
+    padding: 12px 14px;
+}
+
+.btn {
+    font-size: 20px;
+}
+
+table th,
+table td {
+    font-size: 20px;
+}
+
+.text-muted {
+    font-size: 20px;
+}
+
+body.dark {
+    font-size: 22px;
+}
+
+body.dark .stat-card h5,
+body.dark .text-muted {
+    font-size: 22px;
+}
+
+/* ============================
+   MODAL – AGENTS (LISIBILITÉ)
+============================ */
+
+/* Titre du modal */
+.modal-title {
+    font-size: 1.5rem; /* ~22px */
+    font-weight: 600;
+}
+
+/* Labels */
+.modal label,
+.modal .form-label {
+    font-size: 1.1rem; /* ~16px */
+    font-weight: 500;
+}
+
+/* Inputs & select */
+.modal input,
+.modal select {
+    font-size: 1.1rem;
+    padding: 10px 12px;
+}
+
+/* Boutons */
+.modal .btn {
+    font-size: 1rem;
+    padding: 8px 16px;
+}
+
+/* Corps du modal */
+.modal-body {
+    font-size: 1.1rem;
+}
+.modal-content {
+    border-radius: 16px;
+}
+.modal-dialog {
+    max-width: 850px;
+}
+
+
+/* =========================
+   AGENTS – TABLEAU MODE SOMBRE
+========================= */
+
+body.dark-dashboard.agents table {
+    background-color: #1b2331 !important;
+    color: #ffffff !important;
+}
+
+body.dark-dashboard.agents thead {
+    background-color: #0e6bb7 !important;
+    color: #ffffff !important;
+}
+
+body.dark-dashboard.agents th,
+body.dark-dashboard.agents td {
+    background-color: #1b2331 !important;
+    color: #ffffff !important;
+    border-color: #2c3e50 !important;
+}
+
+/* Hover ligne */
+body.dark-dashboard.agents tbody tr:hover {
+    background-color: #243049 !important;
+}
+
+/* Badges */
+body.dark-dashboard.agents .badge {
+    color: #ffffff !important;
+}
+
+
+/* =========================
+   AGENTS – HOVER LIGNE
+========================= */
+
+.agents tbody tr {
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.agents tbody tr:hover {
+    background-color: rgba(14, 107, 183, 0.08);
+    transform: scale(1.002);
+}
+
+/* Mode sombre */
+body.dark-dashboard.agents tbody tr:hover {
+    background-color: rgba(14, 107, 183, 0.25) !important;
+}
+
+
+/* ===== MODE SOMBRE – AGENTS UNIQUEMENT ===== */
+body.dark-mode .table {
+    background-color: #121212;
+    color: #eaeaea;
+}
+
+body.dark-mode .table th {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+body.dark-mode .table td {
+    background-color: #181818;
+    color: #e0e0e0;
+}
+
+/* Inputs & selects */
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: #1f1f1f;
+    color: #ffffff;
+    border-color: #444;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: #aaaaaa;
+}
+
+/* Modals */
+body.dark-mode .modal-content {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-color: #333;
+}
+
+
+/* MODE SOMBRE - TABLE AGENTS */
+body.dark-mode .table {
+    background-color: #111827;
+    color: #e5e7eb;
+}
+
+body.dark-mode .table thead {
+    background-color: #1f2933;
+    color: #ffffff;
+}
+
+body.dark-mode .table tbody tr {
+    background-color: #111827;
+}
+
+body.dark-mode .table td,
+body.dark-mode .table th {
+    border-color: #374151;
+}
+
+body.dark-mode .modal-content {
+    background-color: #111827;
+    color: #ffffff;
+}
+
+body.dark-mode .modal-content input,
+body.dark-mode .modal-content select {
+    background-color: #1f2933;
+    color: #ffffff;
+    border: 1px solid #374151;
+}
+
+/* ============================= */
+/* MODE SOMBRE - AGENTS.PHP ONLY */
+/* ============================= */
+
+body.dark-mode .agents-page .modal-content {
+    background-color: #0f172a;
+    color: #e5e7eb;
+}
+
+body.dark-mode .agents-page .modal-header,
+body.dark-mode .agents-page .modal-footer {
+    border-color: #1e293b;
+}
+
+body.dark-mode .agents-page .form-control,
+body.dark-mode .agents-page .form-select {
+    background-color: #020617;
+    color: #e5e7eb;
+    border: 1px solid #334155;
+}
+
+body.dark-mode .agents-page .form-control::placeholder {
+    color: #94a3b8;
+}
+
+body.dark-mode .agents-page label {
+    color: #cbd5f5;
+}
+
+/* Boutons */
+body.dark-mode .agents-page .btn-secondary {
+    background-color: #334155;
+    border-color: #334155;
+}
+
+body.dark-mode .agents-page .btn-close {
+    filter: invert(1);
+}
+
+
+/* ===== INPUTS MODAL – MODE CLAIR ===== */
+body[data-theme="light"] #addAgentModal .form-control,
+body[data-theme="light"] #addAgentModal .form-select {
+    background-color: #e5e7eb !important;
+    color: #1e293bff !important;
+}
+
+/* ===== INPUTS MODAL – MODE SOMBRE ===== */
+body[data-theme="dark"] #addAgentModal .form-control,
+body[data-theme="dark"] #addAgentModal .form-select {
+    background-color: #1e293bff !important;
+    color: #e5e7eb !important;
+}
+
+
+
+/* =========================
+   SERVICES - THEME
+========================= */
+
+.service-card {
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+
+.service-table th {
+    background: var(--table-header-bg);
+    color: var(--text-color);
+}
+
+.service-table td {
+    background: var(--table-bg);
+    color: var(--text-color);
+}
+
+/* VARIABLES */
+body[data-theme="light"] {
+    --card-bg: #ffffff;
+    --table-bg: #ffffff;
+    --table-header-bg: #f1f5f9;
+    --text-color: #1e293b;
+}
+
+body[data-theme="dark"] {
+    --card-bg: #0f172a;
+    --table-bg: #0f172a;
+    --table-header-bg: #1e293b;
+    --text-color: #e5e7eb;
+}
+
+[data-theme="dark"] .modal-content {
+    background-color: #1e293b;
+    color: #e5e7eb;
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: #334155;
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+    background-color: #0f172a;
+    color: #e5e7eb;
+    border: 1px solid #334155;
+}
+
+

@@ -1,0 +1,48 @@
+body {
+  margin-left:10%;
+  margin-right:10%;
+}
+
+span.fortitle {
+	color:red;
+	font-weight:bold;
+	font-size:115%;
+	font-family:verdana;
+}
+
+table {
+	width:100%;
+	border-collapse: collapse;
+	border:2px solid grey;
+	border-radius:8px;
+}
+
+tr:hover {
+	background-color: #ddd;
+}
+
+th {
+	background-color: lightgray ;
+	height: 60px;
+}
+
+
+th, td {
+  text-align: center;
+  padding: 8px;
+  font:10px grey verdana;
+	text-align: center;
+}
+
+tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+span.forneant{
+	color:blue;
+	font-weight:bold;
+	font-size:115%;
+	font-family:verdana;
+	text-align: center;
+}
+

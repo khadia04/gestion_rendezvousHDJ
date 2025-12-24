@@ -1,0 +1,29 @@
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: pink ;
+    font-size: 180% ;
+    font-style: italic ;
+    margin: 20% ;
+    color : darkred ;
+    text-align: center ;
+}
+
+.horloge {
+    font-size:50px;
+    color:darkred;
+    margin-top:30px; 
+    margin-bottom:50px;
+    margin-left:30%; 
+    width:50%;
+}
+
+h3, span.mys {
+    font-style: italic ;
+    font-weight: bold;
+    font-size: 120% ;
+}
+
+.mys {
+    font-style: italic ;
+}

@@ -1,0 +1,405 @@
+/* RESET TOTAL */
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-size: 25px;
+}
+
+/* ============================= */
+/*      BACKGROUND FULLSCREEN    */
+/* ============================= */
+.login-container {
+    position: fixed;
+    inset: 0;
+    background: url("../img/agents.png") no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.25);
+    z-index: 1;
+}
+
+/* ============================= */
+/*           LOGIN CARD          */
+/* ============================= */
+.login-card {
+    position: relative;
+    z-index: 2;
+    width: 500px;
+    max-width: 380px;
+    padding: 35px;
+    border-radius: 20px;
+
+    /* Glass effect */
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+
+    /* Animation */
+    animation: fadeInUp 0.6s ease-out forwards;
+    transform: translateY(20px);
+    opacity: 0;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============================= */
+/*        TOGGLE DARK MODE       */
+/* ============================= */
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.3s ease;
+    z-index: 20;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.08);
+}
+
+.theme-toggle i {
+    font-size: 1.1rem;
+    color: white;
+    transition: 0.25s ease;
+}
+
+/* ======= Icônes corrigées ======= */
+.light-icon { color: #FFD43B !important; }  /* Soleil jaune */
+.dark-icon  { color: #ffffff !important; }  /* Lune blanche */
+
+/* ============================= */
+/*          DARK MODE            */
+/* ============================= */
+body.dark-mode .login-card {
+    background: rgba(0, 0, 0, 0.40);
+    color: white;
+}
+
+body.dark-mode .input-group,
+body.dark-mode .form-control,
+body.dark-mode .input-group-text {
+    background: #1f2a3b !important;
+    color: white;
+    border-color: #31445a !important;
+}
+
+body.dark-mode .btn-primary {
+    background: linear-gradient(135deg, #00a2ff, #0066cc);
+}
+
+/* Message de changement de thème */
+#theme-message {
+    position: absolute;
+    top: 90px;
+    right: 25px;
+    padding: 10px 18px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 14px;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    z-index: 30;
+    pointer-events: none;
+}
+
+
+/* ============================= */
+/*              LOGO             */
+/* ============================= */
+.logo-hdj {
+    width: 120px;
+    margin-bottom: 8px;
+}
+
+.login-slogan {
+    text-align: center;
+    font-size: 15px;
+    margin-top: -5px;
+    margin-bottom: 15px;
+    color: #0e6bb7;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* ============================
+     INPUTS MODERNES
+============================ */
+
+/* Conteneur pour uniformiser */
+.input-wrapper {
+    margin-bottom: 18px;
+}
+
+/* Style général */
+.form-control {
+    height: 50px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    font-size: 1rem;
+    padding-left: 14px;
+    transition: all 0.25s ease-in-out;
+}
+
+/* Glow bleu en focus */
+.form-control:focus {
+    border-color: #007bff;
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 0 10px rgba(0, 122, 255, 0.5);
+}
+
+/* Animation du placeholder */
+.form-control::placeholder {
+    transition: opacity 0.3s ease;
+}
+.form-control:focus::placeholder {
+    opacity: 0.3;
+}
+
+
+/* ============================
+      INPUT GROUP (mot de passe)
+============================ */
+.input-group {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    background: rgba(255,255,255,0.8);
+    transition: 0.25s ease;
+}
+
+.input-group:focus-within {
+    border-color: #007bff;
+    box-shadow: 0 0 10px rgba(0, 122, 255, 0.5);
+}
+
+/* Champ mot de passe dans le groupe */
+.input-group input {
+    border: none !important;
+    background: transparent !important;
+    padding-left: 14px;
+}
+
+/* Bouton icône œil */
+.input-group-text {
+    cursor: pointer;
+    background: transparent !important;
+    border: none !important;
+    padding-right: 16px;
+    padding-left: 16px;
+}
+
+.input-group-text i {
+    font-size: 1.25rem;
+    color: #555;
+    transition: 0.25s ease;
+}
+
+/* Icône animée en hover */
+.input-group-text:hover i {
+    transform: scale(1.15);
+    color: #007bff;
+}
+
+
+/* ============================
+      MODE SOMBRE PREMIUM
+============================ */
+body.dark-mode .form-control,
+body.dark-mode .input-group {
+    background: rgba(32, 39, 52, 0.65) !important;
+    border-color: rgba(0, 149, 255, 0.4);
+}
+
+body.dark-mode .form-control {
+    color: #ffffff !important; /* Texte blanc */
+}
+
+body.dark-mode .input-group input {
+    color: #ffffff !important;
+}
+
+body.dark-mode .input-group-text i {
+    color: #e6ecff !important;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .input-group:focus-within {
+    box-shadow: 0 0 12px rgba(0, 170, 255, 0.6);
+    border-color: #00aaff;
+}
+
+
+/* ============================= */
+/*       PASSWORD GROUP          */
+/* ============================= */
+.input-group {
+    background: #eaf1ff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #cdd9f0;
+}
+
+.input-group input.form-control {
+    background: #eaf1ff !important;
+    border: none !important;
+    box-shadow: none;
+}
+
+.input-group-text {
+    background: #eaf1ff !important;
+    border: none !important;
+    cursor: pointer;
+    padding: 0 18px;
+}
+
+.input-group-text i {
+    font-size: 1.2rem;
+    color: #444;
+}
+
+/* ============================= */
+/*            BUTTON             */
+/* ============================= */
+.btn-primary {
+    background: linear-gradient(135deg, #0066ff, #004fe6);
+    border: none;
+    border-radius: 12px;
+    height: 50px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    transition: 0.25s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0055d4, #003bb0);
+    transform: translateY(-2px);
+}
+
+.forgot-link {
+    color: #ffffff;
+    font-size: 14px;
+    text-decoration: underline;
+    opacity: 0.9;
+}
+
+.forgot-link:hover {
+    opacity: 1;
+}
+
+
+/* ============================= */
+/*           FOOTER              */
+/* ============================= */
+.login-footer {
+    position: fixed;
+    bottom: 15px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+
+
+
+.login-page label {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.login-page input {
+    font-size: 16px;
+    padding: 12px 14px;
+}
+.login-page button {
+    font-size: 16px;
+    padding: 12px;
+    font-weight: 600;
+}
+
+
+
+/* ===== THEME ===== */
+body[data-theme="dark"] {
+    background: #0f172a;
+    color: #e5e7eb;
+}
+
+body[data-theme="light"] {
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+/* ===== CARD ===== */
+.login-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+}
+
+body[data-theme="dark"] .login-card {
+    background: #1e293b;
+}
+
+body[data-theme="light"] .login-card {
+    background: #ffffff;
+}
+
+/* ===== INPUT ===== */
+body[data-theme="dark"] input {
+    background: #0f172a;
+    color: #e5e7eb;
+    border: 1px solid #334155;
+}
+
+body[data-theme="light"] input {
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+}
+
+.auth-card {
+    max-width: 420px;
+    margin: auto;
+    padding: 2rem;
+    border-radius: 12px;
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 15px 30px rgba(0,0,0,.15);
+}
+
+.dark {
+    --card-bg: #0f172a;
+    background: #020617;
+    color: #e5e7eb;
+}
+
