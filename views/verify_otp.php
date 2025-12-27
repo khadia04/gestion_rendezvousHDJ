@@ -12,6 +12,7 @@ if (!isset($_SESSION['otp_email'])) {
     <meta charset="UTF-8">
     <title>Vérification OTP</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="assets/img/logo.png" rel="icon"     />
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/login.css">

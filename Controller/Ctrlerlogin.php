@@ -1,97 +1,130 @@
 <?php
-session_start(); // Démarrage de la session
+session_start();
+require_once '../modele/database.php';
 
-// ==================================================
-// 1. GESTION DE L’INACTIVITÉ DE LA SESSION
-// ==================================================
-// if (isset($_SESSION['username']) && isset($_SESSION['lastAction']) && isset($_SESSION['timeframe'])) {
+/* =========================
+   VALIDATION FORM
+========================= */
+if (empty($_POST['email']) || empty($_POST['pwd'])) {
+    $_SESSION['error'] = "Veuillez remplir tous les champs";
+    header("Location: ../index.php");
+
+    exit;
+}
+
+$email    = trim($_POST['email']);
+$password = $_POST['pwd'];
+
+$db = getConnection();
+
+/* =========================
+   RÉCUPÉRER UTILISATEUR
+========================= */
+$stmt = $db->prepare("
+    SELECT id, email, password, role, status, failed_attempts
+    FROM agent
+    WHERE email = ?
+");
+$stmt->execute([$email]);
+
+$user = $stmt->fetch();
+
+if (!$user) {
+    $_SESSION['error'] = "Email ou mot de passe incorrect";
+    header("Location: ../index.php");
+
+    exit;
+}
+
+/* =========================
+   COMPTE ACTIF ?
+========================= */
+if ((int)$user['status'] !== 1) {
+    $_SESSION['error'] = "Compte désactivé";
+    header("Location: ../index.php");
+
+    exit;
+}
+
+/* =========================
+   ANTI BRUTE FORCE
+========================= */
+if ($user['failed_attempts'] >= 5) {
+    $_SESSION['error'] = "Compte temporairement bloqué";
+    header("Location: ../index.php");
+
+    exit;
+}
+
+/* =========================
+   VÉRIFICATION MOT DE PASSE
+========================= */
+if (!password_verify($password, $user['password'])) {
+
+    $db->prepare("
+        UPDATE agent 
+        SET failed_attempts = failed_attempts + 1
+        WHERE id = ?
+    ")->execute([$user['id']]);
+
+    $_SESSION['error'] = "Email ou mot de passe incorrect";
+    header("Location: ../index.php");
+
+    exit;
+}
+
+/* =========================
+   LOGIN OK
+========================= */
+$db->prepare("
+    UPDATE agent 
+    SET failed_attempts = 0
+    WHERE id = ?
+")->execute([$user['id']]);
+
+session_regenerate_id(true);
+
+$_SESSION['user_id'] = $user['id'];
+$_SESSION['email']   = $user['email'];
+$_SESSION['role']    = $user['role'];
+$_SESSION['username'] = $user['email']; // ou $user['username'] si tu as ce champ
+
+
+$_SESSION['toast'] = "Connexion réussie";
+$_SESSION['toast_type'] = "success";
+
+/* =========================
+   JETON CSRF
+========================= */
+$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+
+
+/* =========================
+   REDIRECTION PAR RÔLE
+========================= */
+if ($user['role'] === 'admin') {
+    header("Location: /rendezvous/views/admin.php");
+    exit;
+}
+
+if ($user['role'] === 'agent') {
+    header("Location: ../views/agents.php");
+    exit;
+}
+
+/* Sécurité fallback */
+header("Location: ../index.php");
+
+exit;
+
+/* =========================
+   COMPTE VERROUILLÉ ?  
+========================= */
+
+if ($user['locked_until'] && strtotime($user['locked_until']) > time()) {
+    $_SESSION['error'] = "Compte temporairement verrouillé";
+    header("Location: ../index.php");
+    exit;
     
-    // Si le temps d'inactivité dépasse la durée autorisée
-   // if ((time() - $_SESSION['lastAction']) > $_SESSION['timeframe']) {
-    //    header('Location: ../views/logout.php'); // Déconnexion forcée
-    //    exit;
-   // } else {
-        // Mise à jour de la dernière action
-   //     $_SESSION['lastAction'] = time();
-   // }
-// }
-
-// ==================================================
-// 2. INCLUSION DES FICHIERS MODÈLES
-// ==================================================
-require_once '../Modele/database.php';
-require_once '../Modele/databaseAgent.php';
-
-// ==================================================
-// 3. TRAITEMENT DE LA CONNEXION DE L’AGENT / ADMIN
-// ==================================================
-if (isset($_POST['login'])) {
-
-    $username = trim($_POST['username']);
-    $password = $_POST['pwd'] ?? '';
-
-
-    $sql = "SELECT * FROM agent WHERE username = :username LIMIT 1";
-    $stmt = prepare_executeSQL($sql, ['username' => $username]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$user) {
-        $error = "Identifiants incorrects";
-    }
-    elseif ($user['status'] == 0) {
-        $error = "Votre compte est désactivé. Veuillez contacter l'administration.";
-    }
-    elseif (!password_verify($password, $user['password'])) {
-        $error = "Identifiants incorrects";
-    }
-    else {
-        // ✅ CONNEXION OK
-        $_SESSION['logged_in'] = true;
-        $_SESSION['username']  = $user['username'];
-        $_SESSION['role']      = $user['role'];
-
-        // Redirection selon rôle
-        if ($user['role'] === 'admin') {
-            header("Location: ../views/admin.php");
-        } else {
-            header("Location: ../views/agent.php");
-        }
-        exit;
-    }
 }
 
-
-// ==================================================
-// 4. MISE À JOUR DU PROFIL DE L’AGENT
-// ==================================================
-if (isset($_POST['updateagent'])) {
-
-    try {
-        $username        = $_POST['username'];
-        $prenom_agent    = strtoupper($_POST['prenom_agent']);
-        $nom_agent       = strtoupper($_POST['nom_agent']);
-        $telephone_agent = $_POST['telephone_agent'];
-
-        // Hash sécurisé du mot de passe
-        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-
-        $traitement = updateAgent(
-            $username,
-            $prenom_agent,
-            $nom_agent,
-            $password,
-            $telephone_agent
-        );
-
-        if ($traitement) {
-            header("Location: ../views/profile.php?update=success");
-        } else {
-            header("Location: ../views/profile.php?update=failed");
-        }
-        exit;
-
-    } catch (Exception $e) {
-        die("Erreur lors de la mise à jour du profil.");
-    }
-}
-?>

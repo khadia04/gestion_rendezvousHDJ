@@ -7,6 +7,7 @@ session_start();
     <meta charset="UTF-8">
     <title>Récupération de compte Afin de protéger votre compte </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="assets/img/logo.png" rel="icon" />
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -17,11 +18,11 @@ session_start();
 <body>
 
 <div class="login-container" style="opacity: 2;">
-    <div class="login-card" style="background-color: rgba(131, 130, 130, 0.28); height: 800px;">
+    <div class="login-card" style="background-color: rgba(131, 130, 130, 0.28); height: 500px;">
 
         <h2 class="text-center mb-3" style="color: white; font-size: 35px;">Récupération de compte</h2>
 
-        <p class="text-center small text-muted" style="font-size: 15px;">
+        <p class="text-center small " style="font-size: 20px; color: rgba(223, 220, 220, 0.96);">
             Entrez votre email pour recevoir un code de vérification
         </p>
 

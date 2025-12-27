@@ -1,12 +1,33 @@
 <?php
 
 
-if (!isset($_SESSION['logged_in'])) {
-    header("Location: login.php");
-    exit;
-}
+//session_start();
+require_once '../middlewares/auth.php';
+require_once '../middlewares/csrf.php';
 
-require_once '../modele/databaseAgent.php';
+requireAuth('admin');
+verifyCsrfToken();
+
+
+// if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'agent') {
+ //   session_unset();
+  //  session_destroy();
+  //  header("Location: ../index.php");
+   // exit;
+//}
+
+// require 'agent_layout.php';
+
+// require_once '../middlewares/auth.php';
+// requireAuth('agent');
+
+
+//  if (!isset($_SESSION['logged_in'])) {
+//     header("Location: login.php");
+//     exit;
+// }
+
+// require_once '../modele/databaseAgent.php';
 
 
 $limit = 5;
@@ -22,7 +43,8 @@ $agents = getAgentsPaginated($search, $role, $limit, $offset);
 // ACTIVER / DÉSACTIVER UN AGENT
 if (isset($_POST['activate_agent'], $_POST['username'])) {
     toggleAgentStatus($_POST['username'], 1);
-    header("Location: admin.php?page=agents");
+    header("Location: agents.php");
+
     exit;
 }
 
@@ -39,7 +61,8 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
         toggleAgentStatus($_POST['username'], 0);
     }
 
-    header("Location: admin.php?page=agents");
+    header("Location: agents.php");
+
     exit;
 }
 
@@ -220,7 +243,7 @@ if (isset($_POST['edit_agent'])) {
         <?php if ($agent['status'] == 0): ?>
             <!-- ACTIVER (admins inclus) -->
             <form method="POST">
-                <input type="hidden" name="username" value="<?= $agent['username'] ?>">
+              <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <button name="activate_agent" class="btn btn-success btn-sm">
                     <i class="bi bi-person-check"></i> 
                 </button>
@@ -229,7 +252,7 @@ if (isset($_POST['edit_agent'])) {
         <?php elseif ($agent['role'] === 'agent'): ?>
             <!-- DÉSACTIVER (agents SEULEMENT) -->
             <form method="POST">
-                <input type="hidden" name="username" value="<?= $agent['username'] ?>">
+              <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="role" value="<?= $agent['role'] ?>">
                 <button name="deactivate_agent"
                     class="btn btn-sm text-white"
@@ -295,7 +318,8 @@ if (isset($_POST['edit_agent'])) {
 
             <div class="col-md-6">
               <label class="form-label">Username</label>
-              <input type="text" name="username" class="form-control " required style="border: 1px solid black ;" > 
+              <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>" class="form-control " required style="border: 1px solid black ;">
+
             </div>
 
             <div class="col-md-6">
@@ -360,7 +384,7 @@ if (isset($_POST['edit_agent'])) {
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Email</label>
-              <input type="email" name="email" class="form-control" required style="border: 1px solid black ;">
+              <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>" class="form-control" required style="border: 1px solid black ;" >
             </div>
 
             <div class="col-md-6">
@@ -417,7 +441,7 @@ if (isset($_POST['edit_agent'])) {
 
         <div class="modal-body">
           Voulez-vous vraiment activer cet agent ?
-          <input type="hidden" name="username" id="activateUsername">
+          <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>" id="activateUsername" >
         </div>
 
         <div class="modal-footer">

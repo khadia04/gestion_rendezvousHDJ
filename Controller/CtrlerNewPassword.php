@@ -1,24 +1,20 @@
 <?php
 session_start();
-require_once '../modele/database.php';
+require_once '../Modele/database.php';
 
-/* =========================
-   VÉRIFICATIONS SESSION
-========================= */
 if (
-    !isset($_SESSION['otp_verified'], $_SESSION['otp_email']) ||
-    !isset($_POST['password'], $_POST['confirm'])
+    !isset($_POST['password'], $_POST['confirm'], $_SESSION['otp_email'], $_SESSION['otp_verified'])
 ) {
     header("Location: ../views/forgot.php");
     exit;
 }
 
-$password = $_POST['password'];
-$confirm  = $_POST['confirm'];
+$password = trim($_POST['password']);
+$confirm  = trim($_POST['confirm']);
 $email    = $_SESSION['otp_email'];
 
 /* =========================
-   VALIDATION MOT DE PASSE
+   VALIDATION
 ========================= */
 if ($password !== $confirm) {
     $_SESSION['error'] = "Les mots de passe ne correspondent pas";
@@ -26,51 +22,43 @@ if ($password !== $confirm) {
     exit;
 }
 
-/* Politique mot de passe forte */
 if (!preg_match(
     '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/',
     $password
 )) {
-    $_SESSION['error'] = "Mot de passe trop faible :
-    • 8 caractères minimum
-    • 1 majuscule
-    • 1 minuscule
-    • 1 chiffre
-    • 1 caractère spécial";
+    $_SESSION['error'] = "Mot de passe trop faible";
     header("Location: ../views/new_password.php");
     exit;
 }
 
 /* =========================
-   HASH DU MOT DE PASSE
+   HASH + UPDATE
 ========================= */
-$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
+$hash = password_hash($password, PASSWORD_DEFAULT);
 $db = getConnection();
 
 try {
     $db->beginTransaction();
 
-    /* Mise à jour mot de passe */
+    // Mise à jour du mot de passe
     $stmt = $db->prepare("
         UPDATE agent 
         SET password = ?
         WHERE email = ?
     ");
-    $stmt->execute([$hashedPassword, $email]);
+    $stmt->execute([$hash, $email]);
 
-    /* Supprimer OTP */
-    $stmt = $db->prepare("
-        DELETE FROM password_otp 
-        WHERE email = ?
-    ");
+    // Suppression OTP
+    $stmt = $db->prepare("DELETE FROM password_otp WHERE email = ?");
     $stmt->execute([$email]);
 
     $db->commit();
 
-    /* Nettoyage session OTP */
-    unset($_SESSION['otp_verified'], $_SESSION['otp_email']);
+    // Nettoyage session
+    session_unset();
+    session_destroy();
 
+    session_start();
     $_SESSION['toast'] = "Mot de passe modifié avec succès";
     $_SESSION['toast_type'] = "success";
 
@@ -79,8 +67,7 @@ try {
 
 } catch (Exception $e) {
     $db->rollBack();
-
-    $_SESSION['error'] = "Erreur lors de la mise à jour du mot de passe";
+    $_SESSION['error'] = "Erreur lors de la mise à jour";
     header("Location: ../views/new_password.php");
     exit;
 }

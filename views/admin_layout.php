@@ -1,19 +1,21 @@
 <?php
 
-// Sécurité : accès admin uniquement
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../index.php");
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    session_unset();
+    session_destroy();
+    header("Location: ../login.php?session=expired");
     exit;
 }
 
+
 // Gestion de l'inactivité
-if (isset($_SESSION['lastAction'], $_SESSION['timeframe'])) {
-    if ((time() - $_SESSION['lastAction']) > $_SESSION['timeframe']) {
-        session_destroy();
-        header("Location: ../index.php?session=expired");
-        exit;
-    }
-}
+// if (isset($_SESSION['lastAction'], $_SESSION['timeframe'])) {
+//    if ((time() - $_SESSION['lastAction']) > $_SESSION['timeframe']) {
+ //       session_destroy();
+ //       header("Location: ../index.php?session=expired");
+ //       exit;
+//    }
+// }
 
 // Mise à jour de l’activité
 $_SESSION['lastAction'] = time();
@@ -26,7 +28,7 @@ require_once "../modele/databaseRv.php";
 
 
 // Vérifier rôle admin
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../index.php");
     exit;
 }
@@ -75,6 +77,7 @@ switch ($page) {
 
     <!-- CSS Admin -->
     <link rel="stylesheet" href="../assets/css/admin.css">
+    <link href="../assets/img/logo.png" rel="icon" />
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -146,11 +149,17 @@ switch ($page) {
             </li>
 
             <!-- Déconnexion -->
-            <li>
-                <a href="logout.php" class="logout">
-                    <i class="bi bi-box-arrow-right"></i> Déconnexion
-                </a>
+            <li class="sidebar-item logout-item">
+                <form method="POST" action="logout.php">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <button type="submit" class="sidebar-link logout-link">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Déconnexion</span>
+                    </button>
+                </form>
             </li>
+
+
 
         </ul>
     </aside>
@@ -170,7 +179,7 @@ switch ($page) {
 
             <div class="topbar-user">
                 <i class="bi bi-person-circle"></i>
-                <span><?= $_SESSION['username'] ?></span>
+                <span><?= $_SESSION['email'] ?></span>
             </div>
         </header>
 

@@ -1,19 +1,19 @@
 <?php
 session_start();
-require_once '../modele/database.php';
+require_once '../Modele/database.php';
 
 if (!isset($_POST['otp'], $_SESSION['otp_email'])) {
-    $_SESSION['error'] = "Requête invalide";
-    header("Location: ../views/verify_otp.php");
+    header("Location: ../views/forgot.php");
     exit;
 }
 
 $email = $_SESSION['otp_email'];
 $otp   = trim($_POST['otp']);
-$db    = getConnection();
+
+$db = getConnection();
 
 /* =========================
-   RÉCUPÉRATION OTP
+   Récupération OTP
 ========================= */
 $stmt = $db->prepare("
     SELECT otp_hash, expires_at, attempts
@@ -24,35 +24,34 @@ $stmt->execute([$email]);
 $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$data) {
-    $_SESSION['error'] = "Code OTP introuvable. Veuillez recommencer.";
+    $_SESSION['error'] = "Aucun code trouvé. Veuillez recommencer.";
     header("Location: ../views/forgot.php");
     exit;
 }
 
 /* =========================
-   EXPIRATION OTP
+   Expiration
 ========================= */
 if (strtotime($data['expires_at']) < time()) {
-    $_SESSION['error'] = "Code expiré. Veuillez demander un nouveau code.";
-    header("Location: ../views/forgot.php");
+    $_SESSION['error'] = "Code expiré. Demandez un nouveau code.";
+    header("Location: ../views/verify_otp.php");
     exit;
 }
 
 /* =========================
-   BLOCAGE APRÈS 3 ESSAIS
+   Blocage après 3 essais
 ========================= */
 if ($data['attempts'] >= 3) {
-    $_SESSION['error'] = "Trop de tentatives. Un nouveau code est requis.";
+    $_SESSION['error'] = "Trop de tentatives. Demandez un nouveau code.";
     header("Location: ../views/forgot.php");
     exit;
 }
 
 /* =========================
-   VÉRIFICATION OTP
+   Vérification OTP
 ========================= */
 if (!password_verify($otp, $data['otp_hash'])) {
 
-    // Incrémenter les tentatives
     $db->prepare("
         UPDATE password_otp
         SET attempts = attempts + 1,
@@ -68,16 +67,15 @@ if (!password_verify($otp, $data['otp_hash'])) {
 /* =========================
    OTP VALIDE
 ========================= */
+$db->prepare("
+    UPDATE password_otp
+    SET attempts = 0
+    WHERE email = ?
+")->execute([$email]);
 
-// Marquer OTP comme vérifié
 $_SESSION['otp_verified'] = true;
-
-// Nettoyer OTP
-$db->prepare("DELETE FROM password_otp WHERE email = ?")
-   ->execute([$email]);
-
-$_SESSION['success'] = "Code vérifié avec succès. Choisissez un nouveau mot de passe.";
+$_SESSION['toast'] = "Code vérifié avec succès";
+$_SESSION['toast_type'] = "success";
 
 header("Location: ../views/new_password.php");
 exit;
-?>

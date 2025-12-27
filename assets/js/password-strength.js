@@ -1,35 +1,43 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const password = document.getElementById("password");
-    const bar = document.getElementById("strengthBar");
-    const text = document.getElementById("strengthText");
+const passwordInput = document.getElementById("password");
+const strengthBar = document.getElementById("strengthBar");
+const strengthText = document.getElementById("strengthText");
+const strengthWrapper = document.getElementById("strengthWrapper");
+const submitBtn = document.getElementById("submitBtn");
 
-    password.addEventListener("input", () => {
-        const val = password.value;
-        let score = 0;
+passwordInput.addEventListener("input", () => {
+    const value = passwordInput.value;
 
-        if (val.length >= 8) score++;
-        if (/[A-Z]/.test(val)) score++;
-        if (/[0-9]/.test(val)) score++;
-        if (/[^A-Za-z0-9]/.test(val)) score++;
+    if (value.length === 0) {
+        strengthWrapper.style.display = "none";
+        submitBtn.disabled = true;
+        return;
+    }
 
-        bar.className = "progress-bar";
+    strengthWrapper.style.display = "block";
 
-        if (score <= 1) {
-            bar.style.width = "25%";
-            bar.classList.add("bg-danger");
-            text.textContent = "Faible";
-        } else if (score === 2) {
-            bar.style.width = "50%";
-            bar.classList.add("bg-warning");
-            text.textContent = "Moyen";
-        } else if (score === 3) {
-            bar.style.width = "75%";
-            bar.classList.add("bg-info");
-            text.textContent = "Bon";
-        } else {
-            bar.style.width = "100%";
-            bar.classList.add("bg-success");
-            text.textContent = "Fort";
-        }
-    });
+    let strength = 0;
+    if (value.length >= 8) strength++;
+    if (/[A-Z]/.test(value)) strength++;
+    if (/[a-z]/.test(value)) strength++;
+    if (/[0-9]/.test(value)) strength++;
+    if (/[\W_]/.test(value)) strength++;
+
+    if (strength <= 2) {
+        strengthBar.style.width = "33%";
+        strengthBar.className = "progress-bar bg-danger";
+        strengthText.textContent = "Mot de passe faible";
+        submitBtn.disabled = true;
+    } 
+    else if (strength <= 4) {
+        strengthBar.style.width = "66%";
+        strengthBar.className = "progress-bar bg-warning";
+        strengthText.textContent = "Mot de passe moyen";
+        submitBtn.disabled = true;
+    } 
+    else {
+        strengthBar.style.width = "100%";
+        strengthBar.className = "progress-bar bg-success";
+        strengthText.textContent = "Mot de passe fort";
+        submitBtn.disabled = false;
+    }
 });

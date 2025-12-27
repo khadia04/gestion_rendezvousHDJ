@@ -1,6 +1,8 @@
-<?
+<?php
+
 session_regenerate_id(true);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -8,6 +10,7 @@ session_regenerate_id(true);
     <meta charset="UTF-8">
     <title>Connexion | HDJ</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="assets/img/logo.png" rel="icon" >
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -20,7 +23,7 @@ session_regenerate_id(true);
 </head>
 <body>
 
-<div class="login-container">
+<div class="login-container" >
     <?php if (!empty($error)) : ?>
         <div class="alert alert-danger text-center">
             <?= $error ?>
@@ -34,11 +37,11 @@ session_regenerate_id(true);
 
 
     <!-- FORMULAIRE PAR-DESSUS L’IMAGE -->
-    <div class="login-card">
+    <div class="login-card" style="height: 570px;">
         
 
 
-        <div class="logo-container text-center mb-2">
+        <div class="logo-container text-center mb-2" >
             <img src="assets/img/logo.png" class="logo-hdj" alt="Logo HDJ">
             <p class="login-slogan">Votre santé, notre priorité.</p>
         </div>
@@ -70,12 +73,13 @@ session_regenerate_id(true);
 
             <!-- USERNAME -->
             <div class="mb-3">
-                <input type="text" name="username" class="form-control" placeholder="Nom d'utilisateur" required>
+                <input type="email" name="email" class="form-control" required>
+
             </div>
 
             <!-- PASSWORD AVEC ICÔNE ŒIL -->
             <div class="mb-3 input-group">
-                <input type="password" name="pwd" id="password" class="form-control" placeholder="Mot de passe" required>
+                <input type="password" name="pwd" id="password" class="form-control" required>
                 <span class="input-group-text" onclick="togglePassword()">
                     <i class="bi bi-eye" id="eyeIcon"></i>
                 </span>
@@ -103,6 +107,14 @@ session_regenerate_id(true);
 </div>
 
 <script>
+
+// =========================
+//   TOGGLE MOT DE PASSE            
+function togglePassword() {
+const input = document.getElementById("password");
+    input.type = input.type === "password" ? "text" : "password";
+}
+
 // =========================
 //   VARIABLES GLOBALES
 // =========================
