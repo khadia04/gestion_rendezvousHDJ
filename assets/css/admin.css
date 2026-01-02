@@ -104,7 +104,7 @@ body {
 .stat-card {
     background: white;
     border-radius: 15px;
-    padding: 25px;
+    padding: 15px;
     text-align: center;
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     transition: 0.3s ease;
@@ -371,10 +371,7 @@ body {
 }
 
 /* MODE SOMBRE */
-body.dark-dashboard {
-    background: #0f141c;
-    color: #eee;
-}
+
 
 .dark-dashboard .main-content {
     background: #0f141c !important;
@@ -384,6 +381,7 @@ body.dark-dashboard {
     background: #1b2331;
     color: white;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    border: 1mm ridge rgba(14, 107, 183, 0.45) ;
 }
 
 .dark-dashboard .quick-btn {
@@ -415,9 +413,10 @@ body.dark-dashboard {
 }
 
 .dark-dashboard .chart-card {
-    background: #1b2331;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    background: #404f68;
+    box-shadow: 0 8px 20px rgba(28, 28, 28, 0.5);
 }
+
 
 
 /* =====================================
@@ -793,77 +792,13 @@ body.dark-dashboard {
 }
 
 
-/* =========================
-   MODE SOMBRE – TEXTE 100% BLANC
-========================= */
 
-body.dark,
-body.dark-mode {
-    color: #ffffff !important;
-}
-
-/* Tout le texte */
-body.dark p,
-body.dark span,
-body.dark small,
-body.dark label,
-body.dark li,
-body.dark a,
-body.dark h1,
-body.dark h2,
-body.dark h3,
-body.dark h4,
-body.dark h5,
-body.dark h6 {
-    color: #ffffff !important;
-}
-
-/* Supprime le gris Bootstrap */
-body.dark .text-muted {
-    color: #ffffff !important;
-}
-
-/* Graphiques & titres */
-body.dark .chart-title,
-body.dark .chart-card h4,
-body.dark .chart-card h6,
-body.dark .chart-card p {
-    color: #ffffff !important;
-}
-
-/* Tableaux */
-body.dark table,
-body.dark th,
-body.dark td {
-    color: #ffffff !important;
-}
-
-/* Inputs & selects */
-body.dark select,
-body.dark input,
-body.dark option {
-    color: #ffffff !important;
-}
-
-/* Sidebar */
-body.dark .sidebar,
-body.dark .sidebar a,
-body.dark .sidebar span {
-    color: #ffffff !important;
-}
-
-body.dark * {
-    color: #ffffff !important;
-}
 
 /* =========================
    DARK DASHBOARD – TEXTE BLANC FORCÉ
 ========================= */
 
-body.dark-dashboard,
-body.dark-dashboard * {
-    color: #ffffff !important;
-}
+
 
 /* Supprimer TOUT gris Bootstrap */
 body.dark-dashboard .text-muted,
@@ -874,27 +809,8 @@ body.dark-dashboard .chart-title {
     color: #ffffff !important;
 }
 
-/* Titres dashboard */
-body.dark-dashboard h1,
-body.dark-dashboard h2,
-body.dark-dashboard h3,
-body.dark-dashboard h4,
-body.dark-dashboard h5,
-body.dark-dashboard h6 {
-    color: #ffffff !important;
-}
 
-/* =========================
-   DARK MODE – CARTES (FIX TOTAL)
-========================= */
 
-body.dark-dashboard .stat-card,
-body.dark-dashboard .chart-card,
-body.dark-dashboard .card,
-body.dark-dashboard .quick-btn {
-    background: #1b2331 !important;
-    color: #ffffff !important;
-}
 
 /* =========================
    DARK MODE – FILTRES & INPUTS
@@ -1011,8 +927,7 @@ body.dark-dashboard .stat-card:hover::after {
 
 select,
 .form-select {
-    font-size: 20px;
-    padding: 12px 14px;
+    font-size: 12px;
 }
 
 .btn {
@@ -1037,46 +952,7 @@ body.dark .text-muted {
     font-size: 22px;
 }
 
-/* ============================
-   MODAL – AGENTS (LISIBILITÉ)
-============================ */
 
-/* Titre du modal */
-.modal-title {
-    font-size: 1.5rem; /* ~22px */
-    font-weight: 600;
-}
-
-/* Labels */
-.modal label,
-.modal .form-label {
-    font-size: 1.1rem; /* ~16px */
-    font-weight: 500;
-}
-
-/* Inputs & select */
-.modal input,
-.modal select {
-    font-size: 1.1rem;
-    padding: 10px 12px;
-}
-
-/* Boutons */
-.modal .btn {
-    font-size: 1rem;
-    padding: 8px 16px;
-}
-
-/* Corps du modal */
-.modal-body {
-    font-size: 1.1rem;
-}
-.modal-content {
-    border-radius: 16px;
-}
-.modal-dialog {
-    max-width: 850px;
-}
 
 
 /* =========================
@@ -1130,131 +1006,13 @@ body.dark-dashboard.agents tbody tr:hover {
 }
 
 
-/* ===== MODE SOMBRE – AGENTS UNIQUEMENT ===== */
-body.dark-mode .table {
-    background-color: #121212;
-    color: #eaeaea;
-}
 
-body.dark-mode .table th {
-    background-color: #1e1e1e;
-    color: #ffffff;
-}
-
-body.dark-mode .table td {
-    background-color: #181818;
-    color: #e0e0e0;
-}
-
-/* Inputs & selects */
-body.dark-mode .form-control,
-body.dark-mode .form-select {
-    background-color: #1f1f1f;
-    color: #ffffff;
-    border-color: #444;
-}
-
-body.dark-mode .form-control::placeholder {
-    color: #aaaaaa;
-}
-
-/* Modals */
-body.dark-mode .modal-content {
-    background-color: #1a1a1a;
-    color: #ffffff;
-}
-
-body.dark-mode .modal-header,
-body.dark-mode .modal-footer {
-    border-color: #333;
-}
-
-
-/* MODE SOMBRE - TABLE AGENTS */
-body.dark-mode .table {
-    background-color: #111827;
-    color: #e5e7eb;
-}
-
-body.dark-mode .table thead {
-    background-color: #1f2933;
-    color: #ffffff;
-}
-
-body.dark-mode .table tbody tr {
-    background-color: #111827;
-}
-
-body.dark-mode .table td,
-body.dark-mode .table th {
-    border-color: #374151;
-}
-
-body.dark-mode .modal-content {
-    background-color: #111827;
-    color: #ffffff;
-}
-
-body.dark-mode .modal-content input,
-body.dark-mode .modal-content select {
-    background-color: #1f2933;
-    color: #ffffff;
-    border: 1px solid #374151;
-}
 
 /* ============================= */
 /* MODE SOMBRE - AGENTS.PHP ONLY */
 /* ============================= */
 
-body.dark-mode .agents-page .modal-content {
-    background-color: #0f172a;
-    color: #e5e7eb;
-}
 
-body.dark-mode .agents-page .modal-header,
-body.dark-mode .agents-page .modal-footer {
-    border-color: #1e293b;
-}
-
-body.dark-mode .agents-page .form-control,
-body.dark-mode .agents-page .form-select {
-    background-color: #020617;
-    color: #e5e7eb;
-    border: 1px solid #334155;
-}
-
-body.dark-mode .agents-page .form-control::placeholder {
-    color: #94a3b8;
-}
-
-body.dark-mode .agents-page label {
-    color: #cbd5f5;
-}
-
-/* Boutons */
-body.dark-mode .agents-page .btn-secondary {
-    background-color: #334155;
-    border-color: #334155;
-}
-
-body.dark-mode .agents-page .btn-close {
-    filter: invert(1);
-}
-
-
-/* ===== INPUTS MODAL – MODE CLAIR ===== */
-body[data-theme="light"] #addAgentModal .form-control,
-body[data-theme="light"] #addAgentModal .form-select {
-    background-color: #e5e7eb !important;
-    color: #1e293bff !important;
-}
-
-/* ===== INPUTS MODAL – MODE SOMBRE ===== */
-body[data-theme="dark"] #addAgentModal .form-control,
-body[data-theme="dark"] #addAgentModal .form-select {
-    background-color: #1e293bff !important;
-    color: #e5e7eb !important;
-}
 
 
 
@@ -1277,6 +1035,211 @@ body[data-theme="dark"] #addAgentModal .form-select {
     color: var(--text-color);
 }
 
+/* =========================
+   MODAL SERVICE
+========================= */
+.service-modal {
+  border-radius: 14px;
+}
+
+.service-modal .modal-header {
+  background: linear-gradient(135deg, #0d6efd, #0a58ca);
+  color: #fff;
+}
+
+.service-modal .modal-title {
+  font-weight: 600;
+}
+
+.service-modal .form-label {
+  margin-bottom: 6px;
+}
+
+.service-days .form-check {
+  min-width: 120px;
+}
+
+
+
+/* ===============================
+   SERVICES – TABLE MODE SOMBRE
+================================ */
+
+body.services.dark-dashboard .table {
+    background-color: #0f172a;
+    color: #e5e7eb;
+    border-color: #1e293b;
+}
+
+body.services.dark-dashboard .table thead {
+    background-color: #111827;
+}
+
+body.services.dark-dashboard .table thead th {
+    color: #e5e7eb;
+    border-color: #1e293b;
+    font-weight: 600;
+}
+
+body.services.dark-dashboard .table tbody tr {
+    background-color: #0f172a;
+}
+
+body.services.dark-dashboard .table tbody tr:hover {
+    background-color: #1e293b;
+}
+
+body.services.dark-dashboard .table td {
+    color: #e5e7eb;
+    border-color: #1e293b;
+}
+
+/* Texte "Non configuré" */
+body.services.dark-dashboard .text-muted {
+    color: #9ca3af !important;
+}
+
+/* =========================
+   MODAL SERVICES – DARK MODE
+========================= */
+
+body.dark-dashboard .service-modal {
+    background-color: #0f172a;
+    color: #e5e7eb;
+    border-radius: 16px;
+}
+
+body.dark-dashboard .service-modal .modal-header {
+    background: linear-gradient(135deg, #0e6bb7, #0a58ca);
+    color: #ffffff;
+    border-bottom: 1px solid #1e293b;
+}
+
+body.dark-dashboard .service-modal .modal-body,
+body.dark-dashboard .service-modal .modal-footer {
+    background-color: #0f172a;
+}
+
+body.dark-dashboard .service-modal label {
+    color: #e5e7eb;
+}
+
+/* Inputs */
+body.dark-dashboard .service-modal input,
+body.dark-dashboard .service-modal select {
+    background-color: #020617;
+    color: #e5e7eb;
+    border: 1px solid #334155;
+}
+
+body.dark-dashboard .service-modal input::placeholder {
+    color: #94a3b8;
+}
+
+body.dark-dashboard .service-modal input:focus,
+body.dark-dashboard .service-modal select:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 .2rem rgba(56,189,248,.25);
+}
+
+/* Boutons */
+body.dark-dashboard .service-modal .btn-primary {
+    background-color: #2563eb;
+    border: none;
+}
+
+body.dark-dashboard .service-modal .btn-outline-secondary {
+    color: #e5e7eb;
+    border-color: #475569;
+}
+
+body.dark-dashboard .service-modal .btn-close {
+    filter: invert(1);
+}
+
+/* =====================================
+   SERVICES – TABLEAU MODE SOMBRE (FIX)
+===================================== */
+
+body.services.dark-dashboard table {
+    background-color: #0f172a !important;
+    color: #e5e7eb !important;
+    border-color: #1e293b !important;
+}
+
+body.services.dark-dashboard thead {
+    background-color: #0e1a2b !important;
+}
+
+body.services.dark-dashboard thead th {
+    color: #ffffff !important;
+    font-weight: 600;
+    border-color: #1e293b !important;
+}
+
+body.services.dark-dashboard tbody tr {
+    background-color: #0f172a !important;
+}
+
+body.services.dark-dashboard tbody tr:hover {
+    background-color: #1e293b !important;
+}
+
+body.services.dark-dashboard td {
+    color: #e5e7eb !important;
+    border-color: #1e293b !important;
+}
+
+/* Texte "Non configuré" */
+body.services.dark-dashboard .text-muted {
+    color: #94a3b8 !important;
+}
+
+/* =====================================
+   SERVICES – MODAL SUPPRESSION DARK
+===================================== */
+
+body.services.dark-dashboard #deleteServiceModal .modal-content {
+    background-color: #0f172a !important;
+    color: #e5e7eb !important;
+    border-radius: 14px;
+}
+
+body.services.dark-dashboard #deleteServiceModal .modal-header,
+body.services.dark-dashboard #deleteServiceModal .modal-footer {
+    background-color: #020617 !important;
+    border-color: #1e293b !important;
+}
+
+body.services.dark-dashboard #deleteServiceModal .modal-title {
+    color: #ffffff !important;
+}
+
+body.services.dark-dashboard #deleteServiceModal .modal-body {
+    color: #cbd5e1 !important;
+    font-size: 15px;
+}
+
+body.services.dark-dashboard #deleteServiceModal .btn-danger {
+    background-color: #dc2626;
+    border: none;
+}
+
+body.services.dark-dashboard #deleteServiceModal .btn-secondary {
+    background-color: #334155;
+    border: none;
+    color: #ffffff;
+}
+
+body.services.dark-dashboard #deleteServiceModal .btn-secondary:hover {
+    background-color: #475569;
+}
+
+body.services.dark-dashboard #deleteServiceModal .btn-close {
+    filter: invert(1);
+}
+
+
 /* VARIABLES */
 body[data-theme="light"] {
     --card-bg: #ffffff;
@@ -1284,31 +1247,6 @@ body[data-theme="light"] {
     --table-header-bg: #f1f5f9;
     --text-color: #1e293b;
 }
-
-body[data-theme="dark"] {
-    --card-bg: #0f172a;
-    --table-bg: #0f172a;
-    --table-header-bg: #1e293b;
-    --text-color: #e5e7eb;
-}
-
-[data-theme="dark"] .modal-content {
-    background-color: #1e293b;
-    color: #e5e7eb;
-}
-
-[data-theme="dark"] .modal-header,
-[data-theme="dark"] .modal-footer {
-    border-color: #334155;
-}
-
-[data-theme="dark"] .form-control,
-[data-theme="dark"] .form-select {
-    background-color: #0f172a;
-    color: #e5e7eb;
-    border: 1px solid #334155;
-}
-
 
 /* === LOGOUT BUTTON STYLE === */
 .sidebar-item form {
@@ -1344,4 +1282,692 @@ body[data-theme="dark"] {
     color: white;
     border-left: 4px solid #ffffff;
 }
+
+
+
+
+/* =========================
+   MODE SOMBRE
+========================= */
+
+.dark-dashboard {
+    background-color: #0f172a !important;
+    color: #e5e7eb;
+}
+
+.dark-dashboard .sidebar {
+    background-color: #020617 !important;
+}
+
+.dark-dashboard .topbar,
+.dark-dashboard .card,
+.dark-dashboard .content-wrapper {
+    background-color: #020617 !important;
+    color: #e5e7eb !important;
+}
+
+
+
+
+/* ===== ACTIONS TABLE (AGENTS) ===== */
+.actions-cell {
+    display: flex;
+    justify-content:flex-start;
+    align-items:center;
+    white-space: nowrap;
+    gap: 8px;
+}
+
+.actions-cell form {
+    margin: 0;
+}
+
+.actions-cell .btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.actions-cell i {
+    font-size: 16px;
+}
+
+.actions-cell {
+  width: 120px;
+  text-align: center;
+  background-color: #ffffff;
+}
+
+.actions-cell .btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* =========================
+   SERVICES – TABLEAU MODE SOMBRE (FIX 2)
+========================= */
+body.services.dark-dashboard table,
+body.services.dark-dashboard th,
+body.services.dark-dashboard td {
+    background-color: #0f172a !important;
+    color: #e5e7eb !important;
+    border-color: #1e293b !important;
+}
+
+body.services.dark-dashboard thead th {
+    background-color: #020617 !important;
+}
+
+body.services.dark-dashboard tbody tr:hover {
+    background-color: #1e293b !important;
+}
+
+/* =====================================
+   SERVICES – MODAL SUPPRESSION DARK
+===================================== */
+
+body.services.dark-dashboard .service-delete-modal .modal-content {
+    background-color: #0f172a !important;
+    color: #e5e7eb !important;
+    border-radius: 14px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+}
+
+body.services.dark-dashboard .service-delete-modal .modal-header,
+body.services.dark-dashboard .service-delete-modal .modal-footer {
+    background-color: #020617 !important;
+    border-color: #1e293b !important;
+}
+
+body.services.dark-dashboard .service-delete-modal .modal-title {
+    color: #f87171 !important; /* rouge danger lisible */
+}
+
+body.services.dark-dashboard .service-delete-modal .modal-body {
+    color: #cbd5e1 !important;
+    font-size: 15px;
+}
+
+body.services.dark-dashboard .service-delete-modal .btn-danger {
+    background-color: #dc2626;
+    border: none;
+}
+
+body.services.dark-dashboard .service-delete-modal .btn-secondary {
+    background-color: #334155;
+    border: none;
+    color: #ffffff;
+}
+
+body.services.dark-dashboard .service-delete-modal .btn-secondary:hover {
+    background-color: #475569;
+}
+
+body.services.dark-dashboard .service-delete-modal .btn-close {
+    filter: invert(1);
+}
+
+
+/* =====================================
+   SERVICES – TABLE DARK (FINAL PRO)
+===================================== */
+
+body.services.dark-dashboard table {
+    background-color: #0f172a !important;
+    color: #e5e7eb !important;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* HEADER */
+body.services.dark-dashboard thead {
+    background: linear-gradient(135deg, #0e1a2b, #020617);
+}
+
+body.services.dark-dashboard thead th {
+    color: #ffffff !important;
+    font-weight: 600;
+    border-bottom: 1px solid #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* LIGNES */
+body.services.dark-dashboard tbody tr {
+    background-color: #0f172a !important;
+    transition: background-color 0.25s ease, transform 0.2s ease;
+}
+
+body.services.dark-dashboard tbody td {
+    border-color: #1e293b !important;
+    vertical-align: middle;
+}
+
+/* TEXTE "NON CONFIGURÉ" */
+body.services.dark-dashboard .text-muted {
+    color: #94a3b8 !important;
+}
+
+body.services.dark-dashboard tbody tr:hover {
+    background-color: #1e293b !important;
+    transform: scale(1.005);
+}
+
+body.services.dark-dashboard tbody tr {
+    animation: fadeRow 0.4s ease both;
+}
+
+body.services.dark-dashboard tbody tr:nth-child(1) { animation-delay: 0.05s; }
+body.services.dark-dashboard tbody tr:nth-child(2) { animation-delay: 0.1s; }
+body.services.dark-dashboard tbody tr:nth-child(3) { animation-delay: 0.15s; }
+body.services.dark-dashboard tbody tr:nth-child(4) { animation-delay: 0.2s; }
+
+@keyframes fadeRow {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body.services.dark-dashboard .actions-cell .btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.services.dark-dashboard .actions-cell .btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 14px rgba(14,107,183,0.45);
+}
+
+/* ============================
+   THEME TOGGLE – ANIMATION
+============================ */
+
+.theme-toggle-dashboard {
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.theme-toggle-dashboard:hover {
+    box-shadow: 0 0 18px rgba(14,107,183,0.6);
+}
+
+/* Rotation icône */
+#dashboardThemeIcon {
+    transition: transform 0.5s ease, color 0.3s ease;
+}
+
+/* Classe ajoutée en JS */
+#dashboardThemeIcon.rotate {
+    transform: rotate(360deg) scale(1.2);
+}
+
+/* Glow selon thème */
+body.dark-dashboard #dashboardThemeIcon {
+    color: #facc15; /* lune jaune doux */
+    text-shadow: 0 0 12px rgba(250,204,21,0.6);
+}
+
+body:not(.dark-dashboard) #dashboardThemeIcon {
+    color: #0d6efd; /* soleil bleu */
+    text-shadow: 0 0 12px rgba(13,110,253,0.5);
+}
+
+/* =========================
+   TABLES – MICRO INTERACTIONS
+========================= */
+
+.table tbody tr {
+    transition: 
+        background-color 0.25s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(13,110,253,0.05);
+    transform: scale(1.002);
+}
+
+.table tbody tr {
+    animation: fadeTableRow 0.35s ease both;
+}
+
+@keyframes fadeTableRow {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================
+   BUTTONS – MICRO FEEDBACK
+========================= */
+
+.btn {
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background-color 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: scale(0.96);
+    box-shadow: none;
+}
+
+body.dark-dashboard .btn:hover {
+    box-shadow: 0 6px 16px rgba(14,107,183,0.45);
+}
+
+/* =========================
+   BADGES – SOFT GLOW
+========================= */
+
+.badge {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.badge:hover {
+    transform: scale(1.08);
+}
+
+body.dark-dashboard .badge {
+    box-shadow: 0 0 10px rgba(14,107,183,0.35);
+}
+
+/* =========================
+   INPUTS – FOCUS EFFECT
+========================= */
+
+.form-control:focus,
+.form-select:focus {
+    transform: scale(1.01);
+    transition: transform 0.15s ease;
+}
+
+/* ===============================
+   TABLE – HOVER LIGNE PRO (FIX)
+================================ */
+
+/* transition douce */
+.table tbody tr td {
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* MODE CLAIR */
+.table tbody tr:hover td {
+    background-color: rgba(13, 110, 253, 0.06);
+}
+
+/* MODE SOMBRE */
+body.dark-dashboard .table tbody tr:hover td {
+    background-color: rgba(14, 107, 183, 0.28);
+}
+
+/* ===============================
+   BARRE GAUCHE (SUR LE 1ER TD)
+================================ */
+
+.table tbody tr td:first-child {
+    position: relative;
+}
+
+/* barre */
+.table tbody tr td:first-child::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10%;
+    height: 80%;
+    width: 4px;
+    background: transparent;
+    border-radius: 4px;
+    transition: background 0.25s ease;
+}
+
+/* clair */
+.table tbody tr:hover td:first-child::before {
+    background: #0d6efd;
+}
+
+/* sombre */
+body.dark-dashboard .table tbody tr:hover td:first-child::before {
+    background: #38bdf8;
+}
+.table tbody tr:hover td {
+    box-shadow: inset 0 0 0 9999px rgba(0,0,0,0.02);
+}
+
+body.dark-dashboard .table tbody tr:hover td {
+    box-shadow: inset 0 0 0 9999px rgba(255,255,255,0.04);
+}
+
+/* ===============================
+   TABLE – CLICK ANIMATION
+================================ */
+
+.table tbody tr {
+    cursor: pointer;
+}
+
+/* effet clic */
+.table tbody tr:active td {
+    transform: scale(0.985);
+    transition: transform 0.08s ease;
+}
+
+/* reset */
+.table tbody tr td {
+    transition:
+        background-color 0.25s ease,
+        transform 0.08s ease;
+}
+
+/* animation flash */
+@keyframes rowClickFlash {
+    0% { background-color: rgba(13,110,253,0.25); }
+    100% { background-color: transparent; }
+}
+
+.table tbody tr.clicked td {
+    animation: rowClickFlash 0.35s ease;
+}
+
+/* sombre */
+body.dark-dashboard .table tbody tr.clicked td {
+    animation: rowClickFlashDark 0.35s ease;
+}
+
+@keyframes rowClickFlashDark {
+    0% { background-color: rgba(56,189,248,0.35); }
+    100% { background-color: transparent; }
+}
+
+.table tbody tr.selected td {
+    background-color: rgba(13,110,253,0.15);
+}
+
+body.dark-dashboard .table tbody tr.selected td {
+    background-color: rgba(56,189,248,0.25);
+}
+
+/* =====================================
+   TABLE – CLICK + FEEDBACK PRO
+===================================== */
+
+.table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+}
+
+.table tbody tr td {
+    transition:
+        background-color 0.25s ease,
+        transform 0.08s ease;
+}
+
+/* effet press */
+.table tbody tr:active td {
+    transform: scale(0.985);
+}
+
+/* flash au clic */
+@keyframes rowClickFlash {
+    from { background-color: rgba(13,110,253,0.25); }
+    to   { background-color: transparent; }
+}
+
+@keyframes rowClickFlashDark {
+    from { background-color: rgba(56,189,248,0.35); }
+    to   { background-color: transparent; }
+}
+
+.table tbody tr.clicked td {
+    animation: rowClickFlash 0.35s ease;
+}
+
+body.dark-dashboard .table tbody tr.clicked td {
+    animation: rowClickFlashDark 0.35s ease;
+}
+
+/* =====================================
+   MODAL – ANIMATION OPEN
+===================================== */
+
+.modal.fade .modal-dialog {
+    transform: translateY(30px) scale(0.95);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.modal.show .modal-dialog {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+/* =====================================
+   TABLE – SELECTED ROW
+===================================== */
+
+.table tbody tr.selected td {
+    background-color: rgba(13,110,253,0.15);
+}
+
+body.dark-dashboard .table tbody tr.selected td {
+    background-color: rgba(56,189,248,0.25);
+}
+
+.table tbody tr:hover td {
+    background-color: rgba(13,110,253,0.06);
+}
+
+body.dark-dashboard .table tbody tr:hover td {
+    background-color: rgba(14,107,183,0.25);
+}
+
+/* =========================
+   AGENTS – MODALS (UNIFIED)
+========================= */
+
+.agent-modal {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* Header */
+.agent-modal .modal-header {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: #ffffff;
+    border-bottom: none;
+}
+
+.agent-modal .modal-title {
+    font-weight: 600;
+}
+
+/* Body */
+.agent-modal .modal-body {
+    padding: 24px;
+}
+
+/* Labels */
+.agent-modal label {
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+/* Inputs & selects */
+.agent-modal input,
+.agent-modal select {
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+}
+
+.agent-modal input:focus,
+.agent-modal select:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 .2rem rgba(56,189,248,.25);
+}
+
+/* Footer */
+.agent-modal .modal-footer {
+    background-color: #f8fafc;
+    border-top: none;
+}
+
+/* Close button */
+.agent-modal .btn-close {
+    filter: invert(1);
+}
+
+/* =========================
+   AGENTS – MODALS DARK MODE
+========================= */
+
+body.dark-dashboard .agent-modal {
+    background-color: #0f172a;
+    color: #e5e7eb;
+}
+
+/* Header */
+body.dark-dashboard .agent-modal .modal-header {
+    background: linear-gradient(135deg, #0e6bb7, #0a58ca);
+    color: #ffffff;
+}
+
+/* Body & footer */
+body.dark-dashboard .agent-modal .modal-body,
+body.dark-dashboard .agent-modal .modal-footer {
+    background-color: #0f172a;
+}
+
+/* Inputs */
+body.dark-dashboard .agent-modal input,
+body.dark-dashboard .agent-modal select {
+    background-color: #020617;
+    color: #e5e7eb;
+    border: 1px solid #334155;
+}
+
+body.dark-dashboard .agent-modal input::placeholder {
+    color: #94a3b8;
+}
+
+/* Buttons */
+body.dark-dashboard .agent-modal .btn-secondary {
+    background-color: #334155;
+    border: none;
+    color: #ffffff;
+}
+
+body.dark-dashboard .agent-modal .btn-secondary:hover {
+    background-color: #475569;
+}
+
+body.dark-dashboard .agent-modal .btn-close {
+    filter: invert(1);
+}
+
+/* =====================================
+   AGENTS – TABLE STYLE (SAME AS SERVICES)
+===================================== */
+
+/* Mode clair */
+body.agents .agents-table {
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+body.agents .agents-table thead {
+    background-color: #0d6efd;
+    color: #ffffff;
+}
+
+body.agents .agents-table thead th {
+    font-weight: 600;
+    border-color: #dee2e6;
+}
+
+body.agents .agents-table tbody tr {
+    transition: background-color 0.25s ease;
+}
+
+body.agents .agents-table tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.06);
+}
+
+body.agents .agents-table td {
+    vertical-align: middle;
+}
+
+/* =====================================
+   AGENTS – TABLE DARK MODE
+===================================== */
+
+body.agents.dark-dashboard .agents-table {
+    background-color: #0f172a;
+    color: #e5e7eb;
+    border-color: #1e293b;
+}
+
+body.agents.dark-dashboard .agents-table thead {
+    background-color: #0e1a2b;
+}
+
+body.agents.dark-dashboard .agents-table thead th {
+    color: #ffffff;
+    border-color: #1e293b;
+}
+
+body.agents.dark-dashboard .agents-table tbody tr {
+    background-color: #0f172a;
+}
+
+body.agents.dark-dashboard .agents-table tbody tr:hover {
+    background-color: #1e293b;
+}
+
+body.agents.dark-dashboard .agents-table td {
+    color: #e5e7eb;
+    border-color: #1e293b;
+}
+
+/* Texte "Aucun agent trouvé" */
+body.agents.dark-dashboard .text-muted {
+    color: #94a3b8 !important;
+}
+
+
+/* Actions cell – unifié */
+.actions-cell {
+    background-color: transparent !important;
+    text-align: center;
+}
+
+/* Dark mode */
+body.dark-dashboard .actions-cell {
+    background-color: transparent !important;
+}
+
+
 

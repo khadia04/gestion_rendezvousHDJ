@@ -1,9 +1,3 @@
-<?php
-
-session_regenerate_id(true);
-?>
-
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -24,11 +18,12 @@ session_regenerate_id(true);
 <body>
 
 <div class="login-container" >
-    <?php if (!empty($error)) : ?>
+    <?php if (!empty($_SESSION['error'])) : ?>
         <div class="alert alert-danger text-center">
-            <?= $error ?>
+            <?= $_SESSION['error']; unset($_SESSION['error']); ?>
         </div>
     <?php endif; ?>
+
 
     <div class="theme-toggle" onclick="toggleTheme()">
         <i id="themeIcon" class="bi bi-moon"></i>
@@ -37,39 +32,39 @@ session_regenerate_id(true);
 
 
     <!-- FORMULAIRE PAR-DESSUS L’IMAGE -->
-    <div class="login-card" style="height: 570px;">
+    <div class="login-card">
         
 
 
         <div class="logo-container text-center mb-2" >
-            <img src="assets/img/logo.png" class="logo-hdj" alt="Logo HDJ">
+            <img src="assets/img/logo.png" class="logo-hdj" alt="Logo HDJ"> 
             <p class="login-slogan">Votre santé, notre priorité.</p>
         </div>
 
-        <p class="text-center">Connexion à votre espace</p>
+        <p class="text-center" style="font-size: 17px; color: rgba(50, 48, 48, 1);">Connexion à votre espace</p>
 
         <!-- Messages d’erreur -->
         <?php 
         if (isset($_GET['status']) && $_GET['status'] == 'blocked') {
-            echo '<div class="alert alert-danger" style="font-size: 15px;">Votre compte a été bloqué.</div>';
+            echo '<div class="alert alert-danger"  py-1 style="font-size: 11px;"  >Votre compte a été bloqué.</div>';
         }
         else if (isset($_GET['exist']) && $_GET['exist'] == 'false') {
-            echo '<div class="alert alert-danger" style="font-size: 15px;" >Nom d’utilisateur ou mot de passe incorrect.</div>';
+            echo '<div class="alert alert-danger" py-1 style="font-size: 11px;"  >Nom d’utilisateur ou mot de passe incorrect.</div>';
         }
         else if (isset($_GET['pass']) && $_GET['pass'] == 'false') {
-            echo '<div class="alert alert-warning" style="font-size: 15px;">Mot de passe incorrect. Tentatives restantes : '.$_GET['rest'].'</div>';
+            echo '<div class="alert alert-warning" py-1 style="font-size: 11px;"  >Mot de passe incorrect. Tentatives restantes : '.$_GET['rest'].'</div>';
         }
         else if (isset($_GET['reset']) && $_GET['reset'] == 'success') {
-            echo '<div class="alert alert-success" style="font-size: 15px;">Mot de passe réinitialisé avec succès.</div>';
+            echo '<div class="alert alert-success" py-1 style="font-size: 11px;"  >Mot de passe réinitialisé avec succès.</div>';
         }
         if (isset($_GET['session']) && $_GET['session'] == 'expired') {
-            echo '<div class="alert alert-warning" style="font-size: 15px;">Votre session a expiré. Veuillez vous reconnecter.</div>';
+            echo '<div class="alert alert-warning" py-1 style="font-size: 11px;"  >Votre session a expiré. Veuillez vous reconnecter.</div>';
         }
 
 
         ?>
 
-        <form action="Controller/Ctrlerlogin.php" method="post">
+        <form action="/rendezvous/Controller/Ctrlerlogin.php" method="post">
 
             <!-- USERNAME -->
             <div class="mb-3">
@@ -90,7 +85,7 @@ session_regenerate_id(true);
             <button type="submit" name="login" class="btn btn-primary w-100">
                 Se connecter
             </button>
-            <p class="text-center mt-3">
+            <p class="text-center mt-3" style="margin-top: -30px;">
                 <a href="views/forgot.php" class="forgot-link">Mot de passe oublié ?</a>
             </p>
 
@@ -98,7 +93,7 @@ session_regenerate_id(true);
         </form>
 
     </div>
-    <div class="login-footer">
+    <div class="login-footer"  >
         © Khardiata Thiam - 2025
     </div>
 
@@ -106,117 +101,9 @@ session_regenerate_id(true);
 
 </div>
 
-<script>
-
-// =========================
-//   TOGGLE MOT DE PASSE            
-function togglePassword() {
-const input = document.getElementById("password");
-    input.type = input.type === "password" ? "text" : "password";
-}
-
-// =========================
-//   VARIABLES GLOBALES
-// =========================
-const body = document.body;
-const themeIcon = document.getElementById("themeIcon");
+<script src="assets/js/login-theme.js"></script>
 
 
-// =========================
-//   SCRIPT MOT DE PASSE
-// =========================
-function togglePassword() {
-    const passwordInput = document.getElementById("password");
-    const eyeIcon = document.getElementById("eyeIcon");
-
-    if (passwordInput.type === "password") {
-        passwordInput.type = "text";
-        eyeIcon.classList.remove("bi-eye");
-        eyeIcon.classList.add("bi-eye-slash");
-    } else {
-        passwordInput.type = "password";
-        eyeIcon.classList.remove("bi-eye-slash");
-        eyeIcon.classList.add("bi-eye");
-    }
-}
-
-
-// =========================
-//   MESSAGE ANIMÉ (thème)
-// =========================
-function showThemeMessage(msg) {
-    const messageBox = document.getElementById("theme-message");
-    messageBox.textContent = msg;
-
-    // Apparition
-    messageBox.style.opacity = "1";
-    messageBox.style.transform = "translateY(0)";
-
-    // Disparition
-    setTimeout(() => {
-        messageBox.style.opacity = "0";
-        messageBox.style.transform = "translateY(-10px)";
-    }, 1500);
-}
-
-
-// =========================
-//   CHARGER LE THÈME
-// =========================
-function loadTheme() {
-    const savedTheme = localStorage.getItem("theme");
-
-    if (savedTheme === "dark") {
-        body.classList.add("dark-mode");
-        themeIcon.classList.remove("bi-moon");
-        themeIcon.classList.add("bi-sun-fill", "light-icon");
-    } else {
-        body.classList.remove("dark-mode");
-        themeIcon.classList.remove("bi-sun-fill", "light-icon");
-        themeIcon.classList.add("bi-moon", "dark-icon");
-    }
-}
-
-loadTheme();
-
-
-// =========================
-//   TOGGLE DU THÈME
-// =========================
-function toggleTheme() {
-
-    // Animation icône
-    themeIcon.style.transform = "rotate(180deg)";
-    themeIcon.style.opacity = "0";
-
-    setTimeout(() => {
-
-        body.classList.toggle("dark-mode");
-
-        if (body.classList.contains("dark-mode")) {
-
-            // Mode sombre
-            themeIcon.classList.remove("bi-moon", "dark-icon");
-            themeIcon.classList.add("bi-sun-fill", "light-icon");
-            localStorage.setItem("theme", "dark");
-            showThemeMessage("Mode sombre activé");
-
-        } else {
-
-            // Mode clair
-            themeIcon.classList.remove("bi-sun-fill", "light-icon");
-            themeIcon.classList.add("bi-moon", "dark-icon");
-            localStorage.setItem("theme", "light");
-            showThemeMessage("Mode clair activé");
-        }
-
-        // Retour normal
-        themeIcon.style.transform = "rotate(0deg)";
-        themeIcon.style.opacity = "1";
-
-    }, 200);
-}
-</script>
 
 
 

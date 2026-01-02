@@ -1,26 +1,28 @@
 <?php
 session_start();
 
-/**
- * Vérification CSRF
- */
+/* =========================
+   PROTECTION CSRF
+========================= */
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    exit('Méthode non autorisée');
+}
+
 if (
-    !isset($_POST['csrf_token']) ||
-    !isset($_SESSION['csrf_token']) ||
+    empty($_POST['csrf_token']) ||
+    empty($_SESSION['csrf_token']) ||
     !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
 ) {
     http_response_code(403);
-    exit('Action non autorisée');
+    exit('CSRF token invalide');
 }
 
-/**
- * Nettoyage de la session
- */
+/* =========================
+   DESTRUCTION PROPRE
+========================= */
 $_SESSION = [];
 
-/**
- * Suppression du cookie de session
- */
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(
@@ -34,13 +36,10 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-/**
- * Destruction finale
- */
 session_destroy();
 
-/**
- * Redirection propre
- */
-header("Location: ../index.php?logout=success");
+/* =========================
+   REDIRECTION
+========================= */
+header("Location: ../index.php");
 exit;

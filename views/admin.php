@@ -1,5 +1,10 @@
 <?php
 require_once __DIR__ . '/../security_headers.php';
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 session_start();
 
 require_once '../middlewares/auth.php';

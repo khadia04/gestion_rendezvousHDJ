@@ -2,6 +2,7 @@
 session_start();
 require_once '../modele/database.php';
 
+
 /* =========================
    VALIDATION FORM
 ========================= */
@@ -49,7 +50,7 @@ if ((int)$user['status'] !== 1) {
 /* =========================
    ANTI BRUTE FORCE
 ========================= */
-if ($user['failed_attempts'] >= 5) {
+if ($user['failed_attempts'] >= 30) {
     $_SESSION['error'] = "Compte temporairement bloqué";
     header("Location: ../index.php");
 
@@ -96,8 +97,9 @@ $_SESSION['toast_type'] = "success";
 /* =========================
    JETON CSRF
 ========================= */
-$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 /* =========================
    REDIRECTION PAR RÔLE
@@ -108,14 +110,13 @@ if ($user['role'] === 'admin') {
 }
 
 if ($user['role'] === 'agent') {
-    header("Location: ../views/agents.php");
+    header("Location: /rendezvous/views/agents.php");
     exit;
 }
 
 /* Sécurité fallback */
 header("Location: ../index.php");
 
-exit;
 
 /* =========================
    COMPTE VERROUILLÉ ?  
@@ -127,4 +128,8 @@ if ($user['locked_until'] && strtotime($user['locked_until']) > time()) {
     exit;
     
 }
+
+
+exit;
+
 

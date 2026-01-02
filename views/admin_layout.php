@@ -84,7 +84,7 @@ switch ($page) {
 
 </head>
 
-<body class="<?= $page ?>"  data-theme="light" >
+<body class="<?= $page ?>"  >
 
 <div class="dashboard-container">
 
@@ -161,6 +161,7 @@ switch ($page) {
 
 
 
+
         </ul>
     </aside>
 
@@ -201,42 +202,9 @@ switch ($page) {
 </div>
 
 
-<script>
-function toggleDashboardTheme() {
-    const body = document.body;
-    const icon = document.getElementById("dashboardThemeIcon");
+<script src="../assets/js/dashboard-theme.js"></script>
 
-    if (!icon) return;
-
-    const isDark = body.classList.contains("dark-dashboard");
-
-    if (isDark) {
-        body.classList.remove("dark-dashboard");
-        icon.classList.replace("bi-moon-fill", "bi-sun-fill");
-        localStorage.setItem("dashboardTheme", "light");
-    } else {
-        body.classList.add("dark-dashboard");
-        icon.classList.replace("bi-sun-fill", "bi-moon-fill");
-        localStorage.setItem("dashboardTheme", "dark");
-    }
-}
-
-// attendre que le DOM soit prêt
-document.addEventListener("DOMContentLoaded", () => {
-    const icon = document.getElementById("dashboardThemeIcon");
-    if (!icon) return;
-
-    if (localStorage.getItem("dashboardTheme") === "dark") {
-        document.body.classList.add("dark-dashboard");
-        icon.classList.replace("bi-sun-fill", "bi-moon-fill");
-    }
-});
-</script>
-
-<!-- Synchroniser le thème avec le cookie -->
-<script>
-document.cookie = "dashboardTheme=" + localStorage.getItem("dashboardTheme") + "; path=/";
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
 

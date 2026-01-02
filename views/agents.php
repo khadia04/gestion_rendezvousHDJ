@@ -1,35 +1,16 @@
 <?php
-
-
-//session_start();
 require_once '../middlewares/auth.php';
 require_once '../middlewares/csrf.php';
+require_once '../modele/databaseAgent.php';
 
 requireAuth('admin');
-verifyCsrfToken();
 
+/* CSRF UNIQUEMENT EN POST */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrfToken();
+}
 
-// if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'agent') {
- //   session_unset();
-  //  session_destroy();
-  //  header("Location: ../index.php");
-   // exit;
-//}
-
-// require 'agent_layout.php';
-
-// require_once '../middlewares/auth.php';
-// requireAuth('agent');
-
-
-//  if (!isset($_SESSION['logged_in'])) {
-//     header("Location: login.php");
-//     exit;
-// }
-
-// require_once '../modele/databaseAgent.php';
-
-
+/* PAGINATION & FILTRES */
 $limit = 5;
 $pageNum = isset($_GET['p']) ? (int)$_GET['p'] : 1;
 $offset = ($pageNum - 1) * $limit;
@@ -37,67 +18,32 @@ $offset = ($pageNum - 1) * $limit;
 $search = $_GET['search'] ?? '';
 $role   = $_GET['role'] ?? '';
 
-
 $agents = getAgentsPaginated($search, $role, $limit, $offset);
 
-// ACTIVER / DÉSACTIVER UN AGENT
+/* ACTIVER */
 if (isset($_POST['activate_agent'], $_POST['username'])) {
     toggleAgentStatus($_POST['username'], 1);
-    header("Location: agents.php");
-
+    $_SESSION['success'] = "Agent activé avec succès";
+    header("Location: admin.php?page=agents");
     exit;
 }
 
+/* DESACTIVER */
 if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
-    // Interdictions
     if ($_POST['username'] === $_SESSION['username']) {
         $_SESSION['error'] = "Vous ne pouvez pas vous désactiver.";
-    }
-    elseif ($_POST['role'] === 'admin') {
+    } elseif ($_POST['role'] === 'admin') {
         $_SESSION['error'] = "Impossible de désactiver un administrateur.";
-    }
-    else {
+    } else {
         toggleAgentStatus($_POST['username'], 0);
+        $_SESSION['success'] = "Agent désactivé avec succès";
     }
 
-    header("Location: agents.php");
-
+    header("Location: admin.php?page=agents");
     exit;
-}
 
-
-if (isset($_POST['add_agent'])) {
-
-    addAgent(
-        $_POST['username'],
-        $_POST['email'],
-        $_POST['prenom_agent'],
-        $_POST['nom_agent'],
-        $_POST['telephone_agent'],
-        $_POST['role']
-    );
-
-    echo "<script>
-        alert('Agent ajouté avec succès');
-        window.location.href='admin.php?page=agents';
-    </script>";
-}
-
-
-
-
-if (isset($_POST['edit_agent'])) {
-
-    updateAgent(
-        $_POST['username'],
-        $_POST['prenom_agent'],
-        $_POST['nom_agent'],
-        null,
-        $_POST['telephone_agent']
-    );
-
-    // Mise à jour rôle
+     // Mise à jour rôle
     prepare_executeSQL(
         "UPDATE agent SET email = :email, role = :role WHERE username = :username",
         [
@@ -111,8 +57,8 @@ if (isset($_POST['edit_agent'])) {
         alert('Agent modifié avec succès');
         window.location.href='admin.php?page=agents';
     </script>";
-}
 
+}
 ?>
 
 
@@ -135,9 +81,6 @@ if (isset($_POST['edit_agent'])) {
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 <?php endif; ?>
-
-    
-
     <div class="d-flex justify-content-end mb-3">
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAgentModal">
             <i class="bi bi-person-plus"></i> Ajouter un agent
@@ -180,18 +123,16 @@ if (isset($_POST['edit_agent'])) {
 
     </div>
 </form>
-
-
-    <table class="table table-bordered table-hover align-middle" style="border-collapse: collapse;  ">
+    <table class="table table-bordered table-hover agents-table">
         <thead class="table-primary">
             <tr>
                 <th>Username</th>
-                <th>Nom complet</th>
+                <th>Nom</th>
                 <th>Email</th>
                 <th>Téléphone</th>
                 <th>Rôle</th>
                 <th>Statut</th>
-                <th>Date création</th>
+                <th>Création</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -203,8 +144,6 @@ if (isset($_POST['edit_agent'])) {
         </td>
     </tr>
 <?php else: ?>
-
-
         <tbody>
 <?php foreach ($agents as $agent): ?>
 <tr>
@@ -225,10 +164,10 @@ if (isset($_POST['edit_agent'])) {
 
     <td><?= date('d/m/Y', strtotime($agent['created_at'])) ?></td>
 
-    <td class="d-flex flex-column gap-2" style="display:inline-block;">
-
+    <td class="actions-cell"
+      <div class="d-flex gap-2 justify-content-center align-items-center">
         <!-- MODIFIER -->
-        <button class="btn btn-primary btn-sm " style="width: 35px;"
+        <button class="btn btn-primary btn-sm "  
             data-bs-toggle="modal"
             data-bs-target="#editAgentModal"
             data-username="<?= $agent['username'] ?>"
@@ -236,35 +175,41 @@ if (isset($_POST['edit_agent'])) {
             data-prenom="<?= $agent['prenom_agent'] ?>"
             data-nom="<?= $agent['nom_agent'] ?>"
             data-telephone="<?= $agent['telephone_agent'] ?>"
-            data-role="<?= $agent['role'] ?>">
+            data-role="<?= $agent['role'] ?>"
+            title="Modifier l’agent/ l'admin">
+          
             <i class="bi bi-pencil"></i>
         </button>
 
-        <?php if ($agent['status'] == 0): ?>
-            <!-- ACTIVER (admins inclus) -->
-            <form method="POST">
-              <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                <button name="activate_agent" class="btn btn-success btn-sm">
-                    <i class="bi bi-person-check"></i> 
-                </button>
-            </form>
+<?php if ($agent['status'] == 0): ?>
+<button
+  type="button"
+  class="btn btn-success btn-sm"
+  data-bs-toggle="modal"
+  data-bs-target="#confirmActivateModal"
+  data-username="<?= $agent['username'] ?>"
+  title="Activer l'agent/ l'admin">
+  <i class="bi bi-person-check"></i>
+</button>
 
-        <?php elseif ($agent['role'] === 'agent'): ?>
-            <!-- DÉSACTIVER (agents SEULEMENT) -->
-            <form method="POST">
-              <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                <input type="hidden" name="role" value="<?= $agent['role'] ?>">
-                <button name="deactivate_agent"
-                    class="btn btn-sm text-white"
-                    style="background:rgb(255,0,0)">
-                    <i class="bi bi-person-x"></i> 
-                </button>
-            </form>
+<?php elseif ($agent['role'] === 'agent'): ?>
+<button
+  type="button"
+  class="btn btn-danger btn-sm"
+  data-bs-toggle="modal"
+  data-bs-target="#confirmDeactivateModal"
+  data-username="<?= $agent['username'] ?>"
+  data-role="<?= $agent['role'] ?>"
+  title="Désactiver l'agent/ l'admin"
+  style="background:rgb(255,0,0)">
+  <i class="bi bi-person-x"></i>
+</button>
+<?php endif; ?>
 
-        <?php else: ?>
-            <span class="text-muted fst-italic">Actions indisponibles</span>
-        <?php endif; ?>
 
+
+
+      </div>
     </td>
 </tr>
 <?php endforeach; ?>
@@ -292,19 +237,11 @@ if (isset($_POST['edit_agent'])) {
         </li>
     </ul>
 </nav>
-
-
-
     <!-- MODAL AJOUT AGENT -->
 <div class="modal fade" id="addAgentModal" tabindex="-1" >
   <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content" 
-          <?php if (isset($_COOKIE['dashboardTheme']) && $_COOKIE['dashboardTheme'] === 'dark'): ?>
-            style="background-color:#1e293bff; color:#e5e7eb;"
-          <?php elseif (!isset($_COOKIE['dashboardTheme']) || $_COOKIE['dashboardTheme'] === 'light'): ?>
-            style="background-color: #e5e7eb; color:#1e293bff ;"
-          <?php endif; ?>
-    >
+    <div class="modal-content agent-modal">
+
       
 
       <form method="POST">
@@ -316,11 +253,13 @@ if (isset($_POST['edit_agent'])) {
         <div class="modal-body">
           <div class="row g-3">
 
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+
             <div class="col-md-6">
               <label class="form-label">Username</label>
-              <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>" class="form-control " required style="border: 1px solid black ;">
-
+              <input type="text" name="username" class="form-control" required style="border: 1px solid black ;">
             </div>
+
 
             <div class="col-md-6">
               <label class="form-label">Email</label>
@@ -343,7 +282,7 @@ if (isset($_POST['edit_agent'])) {
             </div>
 
             <div class="col-md-6">
-              <label class="form-label ">Rôle</label>
+              <label class="form-label " >Rôle</label>
               <select name="role" class="form-select " style="border: 1px solid black ;" >
                 <option value="agent">Agent</option>
                 <option value="admin">Admin</option>
@@ -370,7 +309,7 @@ if (isset($_POST['edit_agent'])) {
 <!-- MODAL MODIFIER AGENT -->
 <div class="modal fade" id="editAgentModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content agent-modal">
 
       <form method="POST">
         <div class="modal-header">
@@ -382,10 +321,13 @@ if (isset($_POST['edit_agent'])) {
           <input type="hidden" name="username">
 
           <div class="row g-3">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+
             <div class="col-md-6">
               <label class="form-label">Email</label>
-              <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>" class="form-control" required style="border: 1px solid black ;" >
+              <input type="email" name="email" class="form-control" required>
             </div>
+
 
             <div class="col-md-6">
               <label class="form-label">Téléphone</label>
@@ -424,14 +366,15 @@ if (isset($_POST['edit_agent'])) {
   </div>
   
 </div>
-
-
-<!-- MODAL CONFIRMER DÉSACTIVATION -->
+<!-- MODAL CONFIRMER ACTIVATION -->
 <div class="modal fade" id="confirmActivateModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content agent-modal">
 
       <form method="POST">
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+        <input type="hidden" name="username" id="activateUsername">
+
         <div class="modal-header">
           <h5 class="modal-title text-success">
             <i class="bi bi-person-check"></i> Activer l’agent
@@ -441,7 +384,6 @@ if (isset($_POST['edit_agent'])) {
 
         <div class="modal-body">
           Voulez-vous vraiment activer cet agent ?
-          <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>" id="activateUsername" >
         </div>
 
         <div class="modal-footer">
@@ -458,22 +400,26 @@ if (isset($_POST['edit_agent'])) {
   </div>
 </div>
 
+
 <!-- MODAL CONFIRMER DÉSACTIVATION -->
 <div class="modal fade" id="confirmDeactivateModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content agent-modal">
 
       <form method="POST">
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+        <input type="hidden" name="username" id="deactivateUsername">
+        <input type="hidden" name="role" id="deactivateRole">
+
         <div class="modal-header">
           <h5 class="modal-title text-danger">
-            <i class="bi bi-person-x"></i> Désactiver l’utilisateur
+            <i class="bi bi-person-x"></i> Désactiver l’agent
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
         <div class="modal-body">
           Voulez-vous vraiment désactiver cet utilisateur ?
-          <input type="hidden" name="username" id="deactivateUsername">
         </div>
 
         <div class="modal-footer">
@@ -488,36 +434,32 @@ if (isset($_POST['edit_agent'])) {
 
     </div>
   </div>
-  
 </div>
 
-
-
-<!-- MODAL CONFIRMER ACTIVATION -->
+<!-- script MODAL CONFIRMER ACTIVATION -->
 
 <script>
-const activateModal = document.getElementById('confirmActivateModal');
+const activateModal   = document.getElementById('confirmActivateModal');
 const deactivateModal = document.getElementById('confirmDeactivateModal');
 
 if (activateModal) {
-    activateModal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget;
-        document.getElementById('activateUsername').value =
-            button.getAttribute('data-username');
-    });
+  activateModal.addEventListener('show.bs.modal', e => {
+    document.getElementById('activateUsername').value =
+      e.relatedTarget.dataset.username;
+  });
 }
 
 if (deactivateModal) {
-    deactivateModal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget;
-        document.getElementById('deactivateUsername').value =
-            button.getAttribute('data-username');
-    });
+  deactivateModal.addEventListener('show.bs.modal', e => {
+    document.getElementById('deactivateUsername').value =
+      e.relatedTarget.dataset.username;
+    document.getElementById('deactivateRole').value =
+      e.relatedTarget.dataset.role;
+  });
 }
 </script>
 
-
-
+<!-- script MODAL MODIFIER AGENT -->
 <script>
 const editModal = document.getElementById('editAgentModal');
 
@@ -533,7 +475,13 @@ editModal.addEventListener('show.bs.modal', function (event) {
 });
 </script>
 
-
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+});
+</script>
 </div>
 </div>

@@ -106,7 +106,7 @@ if ($rdvYearPrev > 0) {
     <h3 class="mb-4">Tableau de Bord</h3>
 
     <!-- STAT CARDS -->
-    <div class="dashboard-cards">
+    <div class="dashboard-cards" style="margin-right: 10px;">
 
 
         <div class="col-md-3 col-sm-6">
@@ -118,9 +118,9 @@ if ($rdvYearPrev > 0) {
         </div>
 
         <div class="col-md-3 col-sm-6">
-            <div class="stat-card fade-up h-100">
-                <i class="bi bi-calendar-date stat-icon"></i>
-                <h5>RDV Aujourd’hui</h5>
+            <div class="stat-card fade-up h-100" >
+                <i class="bi bi-calendar-date stat-icon" ></i>
+                <h5 >RDV Aujourd’hui</h5>
                 <p class="stat-number"><?= getTodayRdv(); ?></p>
             </div>
         </div>
@@ -133,27 +133,7 @@ if ($rdvYearPrev > 0) {
 
             <!-- TOTAL -->
             <p class="stat-number" id="totalRdv"><?= $totalRdv ?></p>
-
-
-            <!-- VARIATION MENSUELLE -->
-            <?php
-                $isUpMonth = $percent >= 0;
-            ?>
-            <div class="stat-badge <?= $isUpMonth ? 'badge-up' : 'badge-down' ?>">
-                <?= $isUpMonth ? '▲' : '▼' ?>
-                <?= round(abs($percent), 1) ?> %
-            </div>
-            <small class="text-muted d-block mb-2">vs mois précédent</small>
-
-            <!-- ✅ VARIATION ANNUELLE (ICI ET NULLE PART AILLEURS) -->
-            <?php
-                $isUpYear = $yearVariation >= 0;
-            ?>
-            <div class="text-muted" style="font-size:13px">
-                <?= $isUpYear ? '▲' : '▼' ?>
-                <?= round(abs($yearVariation), 1) ?> %
-                vs <?= $annee - 1 ?>
-            </div>
+            
         </div>
     </div>
 
@@ -273,9 +253,9 @@ if ($rdvYearPrev > 0) {
     <div class="row g-4 mt-2">
         <div class="col-md-6">
             <div class="chart-card">
-                <h6 class="mb-3 text-muted">Rendez-vous par mois</h6>
-                <canvas id="rdvPerMonth"></canvas>
-                <h4 class="chart-title">
+                <h6 class="mb-3 ">Rendez-vous par mois</h6>
+                <canvas id="rdvPerMonth" ></canvas>
+                <h4 class="chart-title" >
                     Évolution mensuelle des rendez-vous
                 </h4>
             
@@ -284,7 +264,7 @@ if ($rdvYearPrev > 0) {
         </div>
 
         <div class="col-md-6">
-            <div class="chart-card">
+            <div class="chart-card" >
                 <canvas id="rdvPerService"></canvas>
                  <h4 class="chart-title">
                     Répartition des rendez-vous par service
@@ -443,19 +423,45 @@ new Chart(document.getElementById("rdvPerMonth"), {
         }]
     },
     options: {
-        responsive: true,
+    responsive: true,
+    maintainAspectRatio: false,
 
-        animation: {
-            duration: 900,
-            easing: 'easeOutQuart'
+    plugins: {
+        legend: {
+            labels: {
+                color: isDark ? "#e5e7eb" : "#1f2937",
+                font: { size: 12 }
+            }
         },
+        tooltip: {
+            backgroundColor: isDark ? "#020617" : "#ffffff",
+            titleColor: isDark ? "#ffffff" : "#000000",
+            bodyColor: isDark ? "#e5e7eb" : "#1f2937",
+            borderColor: isDark ? "#334155" : "#e5e7eb",
+            borderWidth: 1
+        }
+    },
 
-        plugins: {
-            legend: {
-                display: true
+    scales: {
+        x: {
+            ticks: {
+                color: isDark ? "#cbd5f5" : "#374151"
+            },
+            grid: {
+                color: isDark ? "rgba(255,255,255,0.05)" : "#e5e7eb"
+            }
+        },
+        y: {
+            ticks: {
+                color: isDark ? "#cbd5f5" : "#374151"
+            },
+            grid: {
+                color: isDark ? "rgba(255,255,255,0.05)" : "#e5e7eb"
             }
         }
     }
+}
+
 });
 
 
@@ -489,6 +495,8 @@ function animateValue(id, start, end, duration = 800) {
 // lancer animation
 animateValue("totalRdv", 0, <?= $totalRdv ?>);
 </script>
+
+
 
 
 
