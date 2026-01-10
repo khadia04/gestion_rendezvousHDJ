@@ -2,10 +2,7 @@
 session_start();
 require_once '../Modele/database.php';
 
-if (!isset($_POST['otp'], $_SESSION['otp_email'])) {
-    header("Location: ../views/forgot.php");
-    exit;
-}
+
 
 $email = $_SESSION['otp_email'];
 $otp   = trim($_POST['otp']);
@@ -47,6 +44,9 @@ if ($data['attempts'] >= 3) {
     exit;
 }
 
+
+$_SESSION['otp_error'] = true;
+
 /* =========================
    Vérification OTP
 ========================= */
@@ -60,9 +60,11 @@ if (!password_verify($otp, $data['otp_hash'])) {
     ")->execute([$email]);
 
     $_SESSION['error'] = "Code OTP incorrect";
+    $_SESSION['otp_error'] = true;   // ⭐ IMPORTANT
     header("Location: ../views/verify_otp.php");
     exit;
 }
+
 
 /* =========================
    OTP VALIDE

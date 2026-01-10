@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['otp_email'])) {
-    header("Location: ../views/forgot.php");
+    header("Location: forgot.php");
     exit;
 }
 ?>
@@ -10,79 +10,84 @@ if (!isset($_SESSION['otp_email'])) {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Vérification OTP</title>
+    <title>Vérification OTP | HDJ</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="assets/img/logo.png" rel="icon"     />
+
+    <link rel="icon" href="../assets/img/logo.png">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
     <link rel="stylesheet" href="../assets/css/login.css">
 </head>
-<body>
+<body class="login-page">
+
 
 <div class="login-container">
-    <div class="login-card" style="background-color: rgba(131, 130, 130, 0.28);">
 
-        <h2 class="text-center mb-3"  style="color: white; font-size: 35px;">Vérification OTP</h2>
+    <!-- Toggle thème -->
+    <div class="theme-toggle-dashboard" onclick="toggleLoginTheme()">
+        <i id="loginThemeIcon" class="bi bi-sun-fill"></i>
+    </div>
 
-        <p class="text-center small text-muted" style="font-size: 15px; ">
-            Saisissez le code reçu par email
-        </p>
+    <!-- LOGIN CARD -->
+    <div class="login-card <?php echo isset($_SESSION['otp_error']) ? 'otp-shake' : ''; ?>">
 
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger">
-                <?= $_SESSION['error']; unset($_SESSION['error']); ?>
-            </div>
-        <?php endif; ?>
+        <!-- Logo -->
+        <div class="logo-container text-center mb-2">
+            <img src="../assets/img/logo.png" class="logo-hdj">
+            <p class="login-slogan">Votre santé, notre priorité.</p>
+        </div>
 
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert alert-success">
-                <?= $_SESSION['success']; unset($_SESSION['success']); ?>
-            </div>
-        <?php endif; ?>
+        <p class="text-center" style="font-size: 16px; color:#D3D3D3;">Vérification du code OTP</p>
+        <p class="text-center" style="font-size: 12px; color:#D3D3D3;" >Entrez le code reçu par email</p>
 
-        <form method="POST" action="../Controller/CtrlerVerifyOtp.php" style="font-size: 15px; ">
+        <!-- ZONE MESSAGE FIXE -->
+        <div class="login-alert-zone">
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="alert alert-danger text-center">
+                    <?= $_SESSION['error']; ?>
+                </div>
+            <?php endif; ?>
+        </div>
 
-            <div class="form-group mb-3" >
-                <input
-                    type="text"
-                    name="otp"
-                    inputmode="numeric"
-                    pattern="[0-9]{6}"
-                    maxlength="6"
-                    class="form-control text-center"
-                    placeholder="000000"
-                    required
-                >
-            </div>
 
-            <button class="btn btn-primary w-100" style="font-size: 13px; text-align: center;  justify-content: center; align-items: center; margin-top: -10px;">
-                Vérifier le code
-            </button>
+        <!-- FORM -->
+        <form method="POST" action="../Controller/CtrlerVerifyOtp.php">
+            <input
+                type="text"
+                name="otp"
+                maxlength="6"
+                class="form-control text-center mb-3"
+                placeholder="000000"
+                required
+                autofocus
+            >
+            <button class="btn btn-primary w-100">Vérifier le code</button>
         </form>
 
-        <div class="text-center mt-3">
-            <button id="resendBtn" class="btn btn-link small" disabled style="font-size: 15px; text-decoration: none; margin-top: -20px; color: white;">
+        <div class="text-center ">
+            <button id="resendBtn" class="btn btn-link" disabled>
                 Renvoyer le code (<span id="timer">60</span>s)
             </button>
         </div>
 
+        <div class="text-center ">
+            <a href="forgot.php" class="forgot-link">← Modifier l’adresse email</a>
+        </div>
+
+    </div>
+    <div class="login-footer">
+        © Khardiata Thiam - 2025
     </div>
 </div>
 
-<div class="toast-container position-fixed top-0 end-0 p-3">
-    <?php if (isset($_SESSION['toast'])): ?>
-        <div class="toast show bg-<?= $_SESSION['toast_type'] ?>">
-            <div class="toast-body text-white">
-                <?= $_SESSION['toast']; ?>
-            </div>
-        </div>
-    <?php 
-        unset($_SESSION['toast'], $_SESSION['toast_type']);
-    endif; ?>
-</div>
+<?php
+// IMPORTANT : on nettoie APRES affichage
+unset($_SESSION['error'], $_SESSION['otp_error']);
+?>
 
-
-<script src="../assets/js/main.js"></script>
+<script src="../assets/js/login-theme.js"></script>
 
 <script>
 let time = 60;
@@ -97,9 +102,7 @@ const interval = setInterval(() => {
         clearInterval(interval);
         btn.disabled = false;
         btn.textContent = "Renvoyer le code";
-        btn.onclick = () => {
-            window.location.href = "../Controller/CtrlerResendOtp.php";
-        };
+        btn.onclick = () => location.href = "../Controller/CtrlerResendOtp.php";
     }
 }, 1000);
 </script>

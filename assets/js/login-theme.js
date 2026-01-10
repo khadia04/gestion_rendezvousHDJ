@@ -1,27 +1,44 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    const themeIcon = document.getElementById("themeIcon");
+    const icon = document.getElementById("loginThemeIcon");
 
-    if (!themeIcon) return;
+    // 🔥 AJOUT ICI
+    const passwordInput = document.getElementById("password");
+    const eyeIcon = document.getElementById("eyeIcon");
 
-    // Charger le thème sauvegardé
-    const savedTheme = localStorage.getItem("loginTheme");
+    if (!icon) return;
 
-    if (savedTheme === "dark") {
+    /* ===============================
+       THEME LOGIN (CLONE DASHBOARD)
+    =============================== */
+    if (localStorage.getItem("loginTheme") === "dark") {
         body.classList.add("dark-mode");
-        themeIcon.classList.replace("bi-moon", "bi-sun-fill");
+        icon.classList.replace("bi-sun-fill", "bi-moon-fill");
     }
 
-    // Toggle thème
-    window.toggleTheme = function () {
-        body.classList.toggle("dark-mode");
+    window.toggleLoginTheme = function () {
+        const isDark = body.classList.toggle("dark-mode");
+        localStorage.setItem("loginTheme", isDark ? "dark" : "light");
 
-        if (body.classList.contains("dark-mode")) {
-            localStorage.setItem("loginTheme", "dark");
-            themeIcon.classList.replace("bi-moon", "bi-sun-fill");
+        if (isDark) {
+            icon.classList.replace("bi-sun-fill", "bi-moon-fill");
         } else {
-            localStorage.setItem("loginTheme", "light");
-            themeIcon.classList.replace("bi-sun-fill", "bi-moon");
+            icon.classList.replace("bi-moon-fill", "bi-sun-fill");
+        }
+    };
+
+    /* ===============================
+       TOGGLE MOT DE PASSE (ŒIL)
+    =============================== */
+    window.togglePassword = function () {
+        if (!passwordInput || !eyeIcon) return;
+
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            eyeIcon.classList.replace("bi-eye", "bi-eye-slash");
+        } else {
+            passwordInput.type = "password";
+            eyeIcon.classList.replace("bi-eye-slash", "bi-eye");
         }
     };
 });

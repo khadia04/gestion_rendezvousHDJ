@@ -10,117 +10,115 @@ if (!isset($_SESSION['otp_verified'], $_SESSION['otp_email'])) {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Nouveau mot de passe</title>
+    <title>Nouveau mot de passe | HDJ</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="assets/img/logo.png" rel="icon" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" href="../assets/img/logo.png">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- CSS partagé -->
     <link rel="stylesheet" href="../assets/css/login.css">
 </head>
-<body>
+
+<body class="login-page">
 
 <div class="login-container">
-    <div class="login-card" style="background-color: rgba(163, 161, 161, 0.53);">
 
-        <h2 class="text-center mb-3" style="color: white; font-size: 35px;">
-            Modifier le mot de passe
-        </h2>
+    <!-- Toggle Dark / Light -->
+    <div class="theme-toggle-dashboard" onclick="toggleLoginTheme()">
+        <i id="loginThemeIcon" class="bi bi-sun-fill"></i>
+    </div>
 
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger">
-                <?= $_SESSION['error']; unset($_SESSION['error']); ?>
-            </div>
-        <?php endif; ?>
+    <!-- CARD -->
+    <div class="login-card">
 
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert alert-success">
-                <?= $_SESSION['success']; unset($_SESSION['success']); ?>
-            </div>
-        <?php endif; ?>
+        <!-- Logo -->
+        <div class="logo-container text-center mb-2">
+            <img src="../assets/img/logo.png" class="logo-hdj" alt="Logo HDJ">
+            <p class="login-slogan">Votre santé, notre priorité.</p>
+        </div>
 
+        <p class="text-center" style="font-size: 18px; color: #D3D3D3;">Modifier le mot de passe</p>
+
+        <!-- ZONE MESSAGE FIXE -->
+        <div class="login-alert-zone">
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="alert alert-danger text-center">
+                    <?= $_SESSION['error']; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- FORM -->
         <form method="POST" action="../Controller/CtrlerNewPassword.php">
 
-            <div class="form-group mb-3">
-                <label style="font-size: 15px;">Nouveau mot de passe</label>
-
+            <!-- Nouveau mot de passe -->
+            <div class="mb-3">
+                <label class="form-label" style="color: #D3D3D3;">Nouveau mot de passe</label>
                 <div class="input-group">
-                    <input 
-                        type="password" 
-                        name="password" 
-                        id="password"
-                        class="form-control"
-                        required
-                    >
+                    <input type="password" name="password" id="password"
+                           class="form-control" required>
                     <span class="input-group-text toggle-password" data-target="password">
                         <i class="bi bi-eye"></i>
                     </span>
                 </div>
 
-                <!-- BARRE DE FORCE (cachée par défaut) -->
+                <!-- Force mot de passe -->
                 <div id="strengthWrapper" style="display:none;">
                     <div class="progress mt-2" style="height: 6px;">
                         <div id="strengthBar" class="progress-bar"></div>
                     </div>
-                    <small id="strengthText" class="text-light"></small>
+                    <small id="strengthText"></small>
                 </div>
             </div>
 
-            <div class="form-group mb-3" style="margin-top: -20px;">
-                <label style="font-size: 15px;">Confirmer le mot de passe</label>
-
+            <!-- Confirmation -->
+            <div class="mb-3">
+                <label class="form-label"  style="color: #D3D3D3;">Confirmer le mot de passe</label>
                 <div class="input-group">
-                    <input 
-                        type="password" 
-                        name="confirm" 
-                        id="confirm"
-                        class="form-control"
-                        required
-                    >
-                <span class="input-group-text toggle-password" data-target="confirm">
+                    <input type="password" name="confirm" id="confirm"
+                           class="form-control" required>
+                    <span class="input-group-text toggle-password" data-target="confirm">
                         <i class="bi bi-eye"></i>
                     </span>
                 </div>
             </div>
 
-            <ul class="small " style="font-size: 13px; color: white;">
+            <!-- Règles -->
+            <ul class="password-rules"  style="color: #D3D3D3;">
                 <li>Minimum 8 caractères</li>
                 <li>1 majuscule et 1 minuscule</li>
                 <li>1 chiffre et 1 caractère spécial</li>
             </ul>
 
-            <button disabled class="btn btn-success w-100"
-                style="font-size: 15px; margin-top: -10px;"
-                id="submitBtn">
+            <button id="submitBtn" class="btn btn-primary w-100" disabled>
                 Enregistrer
             </button>
         </form>
 
     </div>
+    <div class="login-footer">
+        © Khardiata Thiam - 2025
+    </div>
 </div>
 
-<!-- Toast -->
-<div class="toast-container position-fixed top-0 end-0 p-3">
-    <?php if (isset($_SESSION['toast'])): ?>
-        <div class="toast show bg-<?= $_SESSION['toast_type'] ?>">
-            <div class="toast-body text-white">
-                <?= $_SESSION['toast']; ?>
-            </div>
-        </div>
-    <?php 
-        unset($_SESSION['toast'], $_SESSION['toast_type']);
-    endif; ?>
-</div>
+<?php unset($_SESSION['error']); ?>
 
+<!-- JS -->
+<script src="../assets/js/login-theme.js"></script>
 <script src="../assets/js/password-strength.js"></script>
-<script src="../assets/js/main.js"></script>
-
 
 <script>
 document.querySelectorAll('.toggle-password').forEach(btn => {
     btn.addEventListener('click', () => {
         const input = document.getElementById(btn.dataset.target);
         const icon = btn.querySelector('i');
-
         if (input.type === 'password') {
             input.type = 'text';
             icon.classList.replace('bi-eye', 'bi-eye-slash');
@@ -131,7 +129,6 @@ document.querySelectorAll('.toggle-password').forEach(btn => {
     });
 });
 </script>
-
 
 </body>
 </html>

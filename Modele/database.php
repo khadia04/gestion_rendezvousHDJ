@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('Africa/Dakar');
+
 // ==============================
 // FONCTION DE CONNEXION À LA BASE DE DONNÉES
 // ==============================
