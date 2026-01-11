@@ -216,7 +216,6 @@ if (!is_array($rendezvous)) {
             Patient avec index
         </button>
 
-        <!-- prêt pour plus tard -->
         <button
             type="button"
             class="btn btn-outline-secondary patient-type-btn"
@@ -232,21 +231,135 @@ if (!is_array($rendezvous)) {
 
 <div class="row g-3">
 
-    <!-- Numéro de dossier -->
-    <div class="col-md-6">
-        <label class="form-label">Numéro de dossier</label>
-        <input
-            type="number"
-            name="numeroDossierPatient"
-            id="patientIndexInput"
-            class="form-control"
-            required
-        >
-        <div id="patientFeedback" class="mt-2"></div>
+    <div id="indexFields">
+    <!-- numéro de dossier + feedback -->
+        <!-- Numéro de dossier -->
+        <div class="col-md-6">
+            <label class="form-label">Numéro de dossier</label>
+            <input
+                type="number"
+                name="numeroDossierPatient"
+                id="patientIndexInput"
+                class="form-control"
+                required
+            >
+            <div id="patientFeedback" class="mt-2"></div>
+        </div>
     </div>
 
+     <!-- champs pour patient sans index -->
+    <!-- PATIENT SANS INDEX -->
+    <!-- PATIENT SANS INDEX -->
+    <div id="noIndexFields" class="d-none">
+
+        <h5 class="text-muted mb-2">Informations du patient</h5>
+
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Prénom complet</label>
+                <input type="text" name="prenomComplet" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Nom</label>
+                <input type="text" name="nom" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Sexe</label>
+                <select name="sexe" class="form-select">
+                    <option value="">--</option>
+                    <option value="F">Féminin</option>
+                    <option value="M">Masculin</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Date de naissance</label>
+                        <input type="date" id="dateNaissance" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Âge</label>
+                        <input type="number" name="age" id="ageInput" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Nationalité</label>
+                <input type="text" name="nationalite" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="emailPatient" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Groupe sanguin</label>
+                <select name="groupeSanguin" class="form-select">
+                    <option value="">--</option>
+                    <option>O+</option><option>O-</option>
+                    <option>A+</option><option>A-</option>
+                    <option>B+</option><option>B-</option>
+                    <option>AB+</option><option>AB-</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Numéro CNI / Passeport</label>
+                <input type="text" name="identiteOfficielle" class="form-control">
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="text-muted mb-2">Coordonnées</h5>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Téléphone</label>
+                        <input type="text" name="telephonePatient" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Adresse</label>
+                        <input type="text" name="adresse" class="form-control">
+                    </div>
+                </div>
+            </div>
+        
+            <div class="col-md-6">
+                <h5 class="text-muted mb-2">Contact d’urgence</h5>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nom du contact</label>
+                        <input type="text" name="urgenceNom" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Téléphone du contact</label>
+                        <input type="text" name="urgenceTelephone" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+         </div>
+        
+
+        <hr>
+
+    </div>
+    <!-- FIN PATIENT SANS INDEX -->
+
+
     <!-- Service -->
-    <div class="col-md-6 position-relative">
+    <div class="col-md-5 position-relative">
         <label class="form-label">Service</label>
 
         <input
@@ -273,6 +386,11 @@ if (!is_array($rendezvous)) {
         </div>
     </div>
 
+</div>
+
+
+<div class="progress mb-3 d-none" id="rdvProgress">
+  <div class="progress-bar" id="rdvProgressBar" style="width: 0%"></div>
 </div>
 
 <hr class="my-3">
@@ -445,6 +563,8 @@ const btnOk       = document.getElementById('modalOk');
 const filterService = document.getElementById('filterService');
 const filterPeriod  = document.getElementById('filterPeriod');
 const filterDate    = document.getElementById('filterDate');
+const patientTypeInput  = document.getElementById('patientType');
+
 
 
 let currentDate = new Date();
@@ -653,16 +773,16 @@ saveBtn.addEventListener('click', () => {
     isSubmitting = true;
     saveBtn.disabled = true;
 
-    const dossier   = patientInput.value;
-    const service   = serviceSearch.value;
-    const date      = selectedDateInput.value;
-    const patient   = patientFeedback.querySelector('strong')?.innerText || '';
-    const telephone = patientFeedback.innerText.match(/Téléphone\s*:\s*(\d+)/)?.[1] || '';
+    const patientType = patientTypeInput.value;
+    const date        = selectedDateInput.value;
 
-    if (!hiddenService.value || !dossier || !date) {
+    /* =========================
+       VALIDATION COMMUNE
+    ========================= */
+    if (!hiddenService.value || !date) {
         showMessageModal(
             'Informations manquantes',
-            'Veuillez renseigner le patient, le service et la date.',
+            'Veuillez renseigner le service et la date.',
             'warning'
         );
         isSubmitting = false;
@@ -670,18 +790,84 @@ saveBtn.addEventListener('click', () => {
         return;
     }
 
+    let patientName = '';
+    let dossier     = '';
+    let telephone   = '';
+
+    /* =========================
+       PATIENT AVEC INDEX
+    ========================= */
+    if (patientType === 'index') {
+
+        dossier = patientInput.value.trim();
+
+        if (!dossier) {
+            showMessageModal(
+                'Informations manquantes',
+                'Veuillez renseigner le numéro de dossier.',
+                'warning'
+            );
+            isSubmitting = false;
+            saveBtn.disabled = false;
+            return;
+        }
+
+        patientName = patientFeedback.querySelector('strong')?.innerText || '';
+        telephone   = patientFeedback.innerText.match(/Téléphone\s*:\s*(\d+)/)?.[1] || '';
+
+        if (!patientName) {
+            showMessageModal(
+                'Patient invalide',
+                'Veuillez vérifier le numéro de dossier.',
+                'danger'
+            );
+            isSubmitting = false;
+            saveBtn.disabled = false;
+            return;
+        }
+    }
+
+    /* =========================
+       PATIENT SANS INDEX
+    ========================= */
+    if (patientType === 'noindex') {
+
+        const prenom = document.querySelector('[name="prenomComplet"]').value.trim();
+        const nom    = document.querySelector('[name="nom"]').value.trim();
+        const tel    = document.querySelector('[name="telephonePatient"]').value.trim();
+
+        if (!prenom || !nom || !tel) {
+            showMessageModal(
+                'Informations manquantes',
+                'Prénom, nom et téléphone sont obligatoires.',
+                'warning'
+            );
+            isSubmitting = false;
+            saveBtn.disabled = false;
+            return;
+        }
+
+        patientName = prenom + ' ' + nom;
+        telephone   = tel;
+        dossier     = 'Sans index';
+    }
+
+    /* =========================
+       CONFIRMATION
+    ========================= */
     showConfirmModal(
         'Confirmer le rendez-vous',
         `
         <ul class="list-group">
-            <li class="list-group-item"><strong>Patient :</strong> ${patient}</li>
+            <li class="list-group-item"><strong>Patient :</strong> ${patientName}</li>
             <li class="list-group-item"><strong>Dossier :</strong> ${dossier}</li>
             <li class="list-group-item"><strong>Téléphone :</strong> ${telephone}</li>
-            <li class="list-group-item"><strong>Service :</strong> ${service}</li>
+            <li class="list-group-item"><strong>Service :</strong> ${serviceSearch.value}</li>
             <li class="list-group-item"><strong>Date :</strong> ${new Date(date).toLocaleDateString('fr-FR')}</li>
         </ul>
         `,
         () => {
+
             const form = document.querySelector('#addRdvModal form');
             const formData = new FormData(form);
 
@@ -691,26 +877,18 @@ saveBtn.addEventListener('click', () => {
             })
             .then(res => res.json())
             .then(res => {
+
                 if (res.status === 'success') {
 
-                    // 🔥 AJOUT ICI
                     addRdvToTable(res.data);
-
-                    //coherent avec les filtres  
                     loadRendezVous();
-
-                    // Modal succès
+                    loadCalendar();
                     showSuccessModal(res.data);
-                    
-                } else {
-                    showMessageModal(
-                        'Impossible d’enregistrer',
-                        res.message,
-                        'danger'
-                    );
-                }
-    })
 
+                } else {
+                    showMessageModal('Erreur', res.message, 'danger');
+                }
+            })
             .catch(() => {
                 showMessageModal(
                     'Erreur serveur',
@@ -725,12 +903,6 @@ saveBtn.addEventListener('click', () => {
         }
     );
 });
-
-
-
-
-
-
 
 
 function showMessageModal(title, message, type = 'info') {
@@ -844,7 +1016,83 @@ filterPeriod.addEventListener('change', loadRendezVous);
 filterDate.addEventListener('change', loadRendezVous);
 
 
+/* =========================
+   TYPE DE PATIENT sans index
+========================= */
 
+const btnPatientIndex   = document.getElementById('btnPatientIndex');
+const indexFields       = document.getElementById('indexFields');
+const noIndexFields     = document.getElementById('noIndexFields');
+
+document.querySelectorAll('.patient-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+
+        // style boutons
+        document.querySelectorAll('.patient-type-btn').forEach(b => {
+            b.classList.remove('btn-primary');
+            b.classList.add('btn-outline-secondary');
+        });
+
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-primary');
+
+        const type = btn.dataset.value;
+        patientTypeInput.value = type;
+
+        if (type === 'index') {
+            indexFields.classList.remove('d-none');
+            noIndexFields.classList.add('d-none');
+        } else {
+            indexFields.classList.add('d-none');
+            noIndexFields.classList.remove('d-none');
+
+            // reset index
+            patientInput.value = '';
+            patientFeedback.innerHTML = '';
+        }
+
+        // reset calendrier
+        calendarWrapper.classList.add('d-none');
+        selectedDateInput.value = '';
+        updateSaveButton();
+    });
+});
+
+/* =========================
+   CALCUL ÂGE
+========================= */
+const dateNaissance = document.getElementById('dateNaissance');
+const ageInput = document.getElementById('ageInput');
+
+dateNaissance.addEventListener('change', () => {
+    const birth = new Date(dateNaissance.value);
+    const today = new Date();
+
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+
+    ageInput.value = age > 0 ? age : '';
+});
+
+/* =========================
+   BARRE DE PROGRESSION
+========================= */
+const progress = document.getElementById('rdvProgress');
+const progressBar = document.getElementById('rdvProgressBar');
+
+// Quand le service est choisi
+function onServiceSelected() {
+    progress.classList.remove('d-none');
+    progressBar.style.width = '50%';
+}
+
+// Quand une date est sélectionnée
+function onDateSelected() {
+    progressBar.style.width = '100%';
+}
 
 </script>
 

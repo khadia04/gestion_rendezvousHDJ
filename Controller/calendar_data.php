@@ -45,14 +45,21 @@ $joursEN = array_map(fn($j)=>$map[strtolower($j)] ?? '', $joursFR);
    RDV PAR JOUR
 ========================= */
 $rdvStmt = $db->prepare("
-    SELECT dateRvServ, COUNT(*) total
-    FROM rendezvs
-    WHERE codeService = ?
-      AND YEAR(dateRvServ)=?
-      AND MONTH(dateRvServ)=?
-    GROUP BY dateRvServ
+    SELECT date, SUM(total) total FROM (
+        SELECT dateRvServ AS date, COUNT(*) total
+        FROM rendezvs
+        WHERE codeService=? AND YEAR(dateRvServ)=? AND MONTH(dateRvServ)=?
+        GROUP BY dateRvServ
+
+        UNION ALL
+
+        SELECT dateDisponible AS date, COUNT(*) total
+        FROM patientnoindex
+        WHERE codeService=? AND YEAR(dateDisponible)=? AND MONTH(dateDisponible)=?
+        GROUP BY dateDisponible
+    ) t GROUP BY date
 ");
-$rdvStmt->execute([$service,$year,$month]);
+$rdvStmt->execute([$service,$year,$month,$service,$year,$month]);
 $rdvs = $rdvStmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
 /* =========================

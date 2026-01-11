@@ -1,96 +1,143 @@
-    <?php
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
+<?php
+require_once '../Modele/database.php';
+header('Content-Type: application/json');
 
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+$db = getConnection();
+
+$service = $_GET['service'] ?? '';
+$year    = (int)($_GET['year'] ?? date('Y'));
+$month   = (int)($_GET['month'] ?? date('m'));
+
+if (!$service) {
+    echo json_encode([]);
+    exit;
+}
+
+/* =========================
+   CONFIG SERVICE
+========================= */
+$configStmt = $db->prepare("
+    SELECT max_rdv_jour
+    FROM service_config
+    WHERE codeService = ? AND is_active = 1
+");
+$configStmt->execute([$service]);
+$config = $configStmt->fetch(PDO::FETCH_ASSOC);
+$MAX = $config ? (int)$config['max_rdv_jour'] : 0;
+
+/* =========================
+   JOURS AUTORISÉS
+========================= */
+$joursStmt = $db->prepare("
+    SELECT jour FROM service_jour WHERE codeService = ?
+");
+$joursStmt->execute([$service]);
+$joursFR = $joursStmt->fetchAll(PDO::FETCH_COLUMN);
+
+$map = [
+    'lundi'=>'monday','mardi'=>'tuesday','mercredi'=>'wednesday',
+    'jeudi'=>'thursday','vendredi'=>'friday','samedi'=>'saturday','dimanche'=>'sunday'
+];
+
+$joursEN = array_map(fn($j)=>$map[strtolower($j)] ?? '', $joursFR);
+
+/* =========================
+   RDV PAR JOUR
+========================= */
+$rdvStmt = $db->prepare("
+    SELECT dateRvServ, COUNT(*) total
+    FROM rendezvs
+    WHERE codeService = ?
+      AND YEAR(dateRvServ)=?
+      AND MONTH(dateRvServ)=?
+    GROUP BY dateRvServ
+");
+$rdvStmt->execute([$service,$year,$month]);
+$rdvs = $rdvStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+/* =========================
+   JOURS FÉRIÉS
+========================= */
+$ferieStmt = $db->prepare("
+    SELECT date_ferie, libelle
+    FROM jours_feries
+    WHERE YEAR(date_ferie)=? AND MONTH(date_ferie)=?
+");
+$ferieStmt->execute([$year,$month]);
+$feries = $ferieStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+/* =========================
+   CALENDRIER
+========================= */
+$daysInMonth = cal_days_in_month(CAL_GREGORIAN,$month,$year);
+$today = date('Y-m-d');
+$data = [];
+
+for ($d=1; $d<=$daysInMonth; $d++) {
+
+    $date = sprintf('%04d-%02d-%02d',$year,$month,$d);
+    $jourEN = strtolower(date('l', strtotime($date)));
+
+    if ($date < $today) {
+        $data[$date] = ['status'=>'disabled','label'=>'Date passée'];
+        continue;
     }
 
-    header('Content-Type: application/json');
-    require_once '../Modele/database.php';
-
-    try {
-        $db = getConnection();
-
-        /* ===== CSRF ===== */
-        if (
-            empty($_POST['csrf_token']) ||
-            $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')
-        ) {
-            throw new Exception('CSRF invalide');
-        }
-
-        /* ===== DONNÉES ===== */
-        $numeroPatient = trim($_POST['numeroDossierPatient'] ?? '');
-        $codeService   = trim($_POST['codeService'] ?? '');
-        $dateRv        = trim($_POST['dateRvServ'] ?? '');
-
-        if ($numeroPatient === '' || $codeService === '' || $dateRv === '') {
-            throw new Exception('Champs manquants');
-        }
-
-        /* ===== PATIENT ===== */
-        $p = $db->prepare("
-            SELECT prenomPatient, nomPatient, telephonePatient
-            FROM patient
-            WHERE numeroDossierPatient = ?
-        ");
-        $p->execute([$numeroPatient]);
-        $patient = $p->fetch(PDO::FETCH_ASSOC);
-
-        if (!$patient) {
-            throw new Exception('Patient introuvable');
-        }
-
-        /* ===== INSERT ===== */
-        $stmt = $db->prepare("
-            INSERT INTO rendezvs
-            (numeroDossierPatient, codeService, dateDemande, dateRvServ)
-            VALUES (?, ?, CURDATE(), ?)
-        ");
-        $stmt->execute([$numeroPatient, $codeService, $dateRv]);
-
-        /* ===== SERVICE ===== */
-        $s = $db->prepare("SELECT designService FROM service WHERE codeService = ?");
-        $s->execute([$codeService]);
-        $service = $s->fetch(PDO::FETCH_ASSOC);
-
-        echo json_encode([
-            'status' => 'success',
-            'data' => [
-                'patient'   => $patient['prenomPatient'].' '.$patient['nomPatient'],
-                'dossier'   => $numeroPatient,
-                'telephone' => $patient['telephonePatient'],
-                'service'   => $service['designService'] ?? '',
-                'date_rdv'  => date('d/m/Y', strtotime($dateRv))
-            ]
-        ]);
-        exit;
-
-    } catch (PDOException $e) {
-
-        // Doublon SQL
-        if ($e->getCode() === '23000') {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Ce patient a déjà un rendez-vous pour ce service à cette date'
-            ]);
-            exit;
-        }
-
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Erreur base de données',
-            'debug'   => $e->getMessage()
-        ]);
-        exit;
-
-    } catch (Exception $e) {
-
-        echo json_encode([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ]);
-        exit;
+    if (!in_array($jourEN,$joursEN)) {
+        $data[$date] = ['status'=>'disabled','label'=>'Service indisponible'];
+        continue;
     }
+
+    if (isset($feries[$date])) {
+        $data[$date] = ['status'=>'ferie','label'=>$feries[$date]];
+        continue;
+    }
+
+    $count = $rdvs[$date] ?? 0;
+
+    if ($MAX && $count >= $MAX) {
+        $status = 'plein';
+    } elseif ($MAX && $count >= ceil($MAX/2)) {
+        $status = 'moyen';
+    } else {
+        $status = 'disponible';
+    }
+
+    $data[$date] = ['status'=>$status,'count'=>$count];
+}
+
+echo json_encode($data);
+
+
+// quota défini dans service_config ou service_jour
+$quota = (int)$quotaJour; // ex: 20
+
+// 1️⃣ RDV patients avec index
+$stmt1 = $db->prepare("
+    SELECT COUNT(*) 
+    FROM rendezvs 
+    WHERE codeService = ?
+    AND dateRvServ = ?
+");
+$stmt1->execute([$codeService, $date]);
+$countIndex = (int)$stmt1->fetchColumn();
+
+// 2️⃣ RDV patients sans index
+$stmt2 = $db->prepare("
+    SELECT COUNT(*) 
+    FROM patientnoindex 
+    WHERE codeService = ?
+    AND dateDisponible = ?
+");
+$stmt2->execute([$codeService, $date]);
+$countNoIndex = (int)$stmt2->fetchColumn();
+
+// 3️⃣ TOTAL
+$totalRdv = $countIndex + $countNoIndex;
+if ($totalRdv >= $quota) {
+    $status = 'plein';
+} elseif ($totalRdv >= ($quota * 0.6)) {
+    $status = 'moyen';
+} else {
+    $status = 'disponible';
+}
