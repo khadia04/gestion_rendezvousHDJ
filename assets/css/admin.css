@@ -2335,3 +2335,10 @@ body.dark-dashboard .actions-cell {
         opacity: 0;
     }
 }
+
+/* Par défaut : pas de scroll */
+#addRdvModal .modal-body {
+    overflow-y: hidden;
+    max-height: calc(95vh - 120px);
+}
+

@@ -1,0 +1,40 @@
+Array
+(
+    [csrf_token] => 548794887227b0138883e60ce1cc5a2bf944bbec733ea960638a66015b01dc5a
+    [patient_type] => noindex
+    [prenomComplet] => hfytr
+    [nom] => hfytr
+    [sexe] => M
+    [dateNaissance] => 2008-08-09
+    [age] => 17
+    [nationalite] => SDBZCKSK
+    [emailPatient] => gdt@gmail.com
+    [groupeSanguin] => B-
+    [identiteOfficielle] => 9876546835
+    [telephonePatient] => 
+    [adresse] => gdterjk
+    [urgenceNom] => dgteyu
+    [urgenceTelephone] => 
+    [codeService] => ana
+    [dateRvServ] => 2026-01-15
+)
+Array
+(
+    [csrf_token] => 32cf19e6d8f6bac665eee40cc105602e6dbf67bcd1419f0ef1609b46131b319b
+    [patient_type] => noindex
+    [prenomComplet] => hfyet
+    [nom] => dget
+    [sexe] => F
+    [dateNaissance] => 1999-09-09
+    [age] => 26
+    [nationalite] => deftrh
+    [emailPatient] => hfyte@gmail.com
+    [groupeSanguin] => A+
+    [identiteOfficielle] => 111122118111
+    [telephonePatient] => +221789870453
+    [adresse] => gdterf
+    [urgenceNom] => gdterf
+    [urgenceTelephone] => +221774352189
+    [codeService] => ana
+    [dateRvServ] => 2026-01-15
+)

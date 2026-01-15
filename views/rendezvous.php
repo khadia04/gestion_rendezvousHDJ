@@ -9,18 +9,16 @@ if (empty($_SESSION['csrf_token'])) {
 
 require_once '../Modele/database.php';
 $db = getConnection();
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-
-/* SERVICES */
+/* =========================
+   SERVICES
+========================= */
 $services = $db->query("
     SELECT codeService, designService
     FROM service
     ORDER BY designService
 ")->fetchAll(PDO::FETCH_ASSOC);
-
-if (!is_array($services)) {
-    $services = [];
-}
 
 /* =========================
    FILTRES
@@ -30,55 +28,61 @@ $periode = $_GET['periode'] ?? 'jour';
 $date    = $_GET['date'] ?? date('Y-m-d');
 
 /* =========================
-   REQUÊTE RDV
+   LISTE RDV (INDEX + NOINDEX)
 ========================= */
 $sql = "
-SELECT
-    r.numeroDossierPatient,
-    p.prenomPatient,
-    p.nomPatient,
-    p.telephonePatient,
-    s.designService,
-    r.dateDemande,
-    r.dateRvServ
-FROM rendezvs r
-JOIN patient p ON p.numeroDossierPatient = r.numeroDossierPatient
-JOIN service s ON s.codeService = r.codeService
+SELECT *
+FROM (
+    SELECT
+        r.numeroDossierPatient AS dossier,
+        CONCAT(p.prenomPatient, ' ', p.nomPatient) AS patient,
+        p.telephonePatient AS telephone,
+        s.designService AS service,
+        r.dateDemande,
+        r.dateRvServ
+    FROM rendezvs r
+    JOIN patient p ON p.numeroDossierPatient = r.numeroDossierPatient
+    JOIN service s ON s.codeService = r.codeService
+
+    UNION ALL
+
+    SELECT
+        'Sans index',
+        CONCAT(n.prenomPatient, ' ', n.nomPatient),
+        n.telephonePatient,
+        s.designService,
+        n.dateDemande,
+        n.dateDisponible
+    FROM patientnoindex n
+    JOIN service s ON s.codeService = n.codeService
+) t
 WHERE 1=1
 ";
 
 $params = [];
 
 if ($service) {
-    $sql .= " AND r.codeService = ?";
+    $sql .= " AND t.service = ?";
     $params[] = $service;
 }
 
 if ($periode === 'jour') {
-    $sql .= " AND r.dateRvServ = ?";
+    $sql .= " AND t.dateRvServ = ?";
     $params[] = $date;
 } elseif ($periode === 'mois') {
-    $sql .= " AND MONTH(r.dateRvServ)=MONTH(?) AND YEAR(r.dateRvServ)=YEAR(?)";
+    $sql .= " AND MONTH(t.dateRvServ)=MONTH(?) AND YEAR(t.dateRvServ)=YEAR(?)";
     $params[] = $date;
     $params[] = $date;
 } elseif ($periode === 'annee') {
-    $sql .= " AND YEAR(r.dateRvServ)=YEAR(?)";
+    $sql .= " AND YEAR(t.dateRvServ)=YEAR(?)";
     $params[] = $date;
 }
 
-$sql .= " ORDER BY r.dateRvServ DESC";
+$sql .= " ORDER BY t.dateRvServ DESC";
 
-/* =========================
-   EXÉCUTION
-========================= */
 $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $rendezvous = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-if (!is_array($rendezvous)) {
-    $rendezvous = [];
-}
-
 
 ?>
 
@@ -165,12 +169,13 @@ if (!is_array($rendezvous)) {
                 </tr>
             <?php else: foreach ($rendezvous as $rv): ?>
                 <tr>
-                    <td><?= $rv['numeroDossierPatient'] ?></td>
-                    <td><?= htmlspecialchars($rv['prenomPatient'].' '.$rv['nomPatient']) ?></td>
-                    <td><?= htmlspecialchars($rv['telephonePatient']) ?></td>
-                    <td><span class="badge bg-info"><?= htmlspecialchars($rv['designService']) ?></span></td>
+                    <td><?= htmlspecialchars($rv['dossier']) ?></td>
+                    <td><?= htmlspecialchars($rv['patient']) ?></td>
+                    <td><?= htmlspecialchars($rv['telephone']) ?></td>
+                    <td><span class="badge bg-info"><?= htmlspecialchars($rv['service']) ?></span></td>
                     <td><?= date('d/m/Y', strtotime($rv['dateDemande'])) ?></td>
                     <td><?= date('d/m/Y', strtotime($rv['dateRvServ'])) ?></td>
+
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>
@@ -241,14 +246,13 @@ if (!is_array($rendezvous)) {
                 name="numeroDossierPatient"
                 id="patientIndexInput"
                 class="form-control"
-                required
+                placeholder="Entrez le numéro de dossier du patient"
             >
             <div id="patientFeedback" class="mt-2"></div>
         </div>
     </div>
 
      <!-- champs pour patient sans index -->
-    <!-- PATIENT SANS INDEX -->
     <!-- PATIENT SANS INDEX -->
     <div id="noIndexFields" class="d-none">
 
@@ -257,12 +261,12 @@ if (!is_array($rendezvous)) {
         <div class="row g-3">
             <div class="col-md-3">
                 <label class="form-label">Prénom complet</label>
-                <input type="text" name="prenomComplet" class="form-control">
+                <input type="text" name="prenomComplet" class="form-control" placeholder="Entrer le prénom complet ">
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Nom</label>
-                <input type="text" name="nom" class="form-control">
+                <input type="text" name="nom" class="form-control" placeholder="Entrer le nom du patient">
             </div>
 
             <div class="col-md-3">
@@ -278,7 +282,7 @@ if (!is_array($rendezvous)) {
                 <div class="row">
                     <div class="col-md-6">
                         <label class="form-label">Date de naissance</label>
-                        <input type="date" id="dateNaissance" class="form-control">
+                        <input type="date" name="dateNaissance" id="dateNaissance" class="form-control" >
                     </div>
 
                     <div class="col-md-6">
@@ -290,12 +294,12 @@ if (!is_array($rendezvous)) {
 
             <div class="col-md-3">
                 <label class="form-label">Nationalité</label>
-                <input type="text" name="nationalite" class="form-control">
+                <input type="text" name="nationalite" class="form-control" placeholder="Entrer la nationalité du patient">
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Email</label>
-                <input type="email" name="emailPatient" class="form-control">
+                <input type="email" name="emailPatient" class="form-control" placeholder="Entrer l'email du patient">
             </div>
 
             <div class="col-md-3">
@@ -310,7 +314,7 @@ if (!is_array($rendezvous)) {
             </div>
             <div class="col-md-3">
                 <label class="form-label">Numéro CNI / Passeport</label>
-                <input type="text" name="identiteOfficielle" class="form-control">
+                <input type="text" name="identiteOfficielle" class="form-control" placeholder="Entrer le numéro CNI ou Passeport">
             </div>
         </div>
 
@@ -323,12 +327,19 @@ if (!is_array($rendezvous)) {
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Téléphone</label>
-                        <input type="text" name="telephonePatient" class="form-control">
+                        <input
+                            type="tel"
+                            id="telephonePatient"
+                            class="form-control"
+                            placeholder="ex: 77 123 45 67"
+                            >
+                        <input type="hidden" name="telephonePatient" id="telephonePatientFull">
+
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Adresse</label>
-                        <input type="text" name="adresse" class="form-control">
+                        <input type="text" name="adresse" class="form-control" placeholder="Entrer l'adresse du patient">
                     </div>
                 </div>
             </div>
@@ -339,12 +350,24 @@ if (!is_array($rendezvous)) {
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nom du contact</label>
-                        <input type="text" name="urgenceNom" class="form-control">
+                        <input type="text" name="urgenceNom" class="form-control" placeholder="Entrer le nom du contact d'urgence">
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Téléphone du contact</label>
-                        <input type="text" name="urgenceTelephone" class="form-control">
+                        <!-- Téléphone du contact d'urgence -->
+                        <input
+                            type="tel"
+                            id="urgenceTelephoneInput"
+                            class="form-control"
+                            placeholder="ex: 77 123 45 67"
+                        >
+                        <input
+                            type="hidden"
+                            name="urgenceTelephone"
+                            id="urgenceTelephoneFull"
+                        >
+
                     </div>
                 </div>
             </div>
@@ -532,13 +555,19 @@ if (!is_array($rendezvous)) {
   </div>
 </div>
 
+<!-- =========================
+     INTL-TEL-INPUT
+========================= -->
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"></script>
 
 
 <!-- =========================
      JS
 ========================= -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 
 <script>
 /* =========================
@@ -554,24 +583,63 @@ const calendar          = document.getElementById('calendar');
 const calendarTitle     = document.getElementById('calendarTitle');
 const selectedDateInput = document.getElementById('selectedDate');
 const saveBtn           = document.getElementById('btnSave');
-const actionModal = new bootstrap.Modal(document.getElementById('actionModal'));
-const modalTitle  = document.getElementById('actionModalTitle');
-const modalBody   = document.getElementById('actionModalBody');
-const btnConfirm  = document.getElementById('modalConfirm');
-const btnCancel   = document.getElementById('modalCancel');
-const btnOk       = document.getElementById('modalOk');
-const filterService = document.getElementById('filterService');
-const filterPeriod  = document.getElementById('filterPeriod');
-const filterDate    = document.getElementById('filterDate');
+
 const patientTypeInput  = document.getElementById('patientType');
+const indexFields       = document.getElementById('indexFields');
+const noIndexFields     = document.getElementById('noIndexFields');
 
-
+const actionModalEl = document.getElementById('actionModal');
+const actionModal   = new bootstrap.Modal(actionModalEl);
+const modalTitle    = document.getElementById('actionModalTitle');
+const modalBody     = document.getElementById('actionModalBody');
+const btnConfirm    = document.getElementById('modalConfirm');
+const btnCancel     = document.getElementById('modalCancel');
+const btnOk         = document.getElementById('modalOk');
 
 let currentDate = new Date();
-let direction   = 'right';
+let isSubmitting = false;
 
 /* =========================
-   PATIENT – CHECK INDEX
+   INTL TEL INPUT
+========================= */
+const phoneInput  = document.querySelector("#telephonePatient");
+const phoneHidden = document.querySelector("#telephonePatientFull");
+
+const iti = window.intlTelInput(phoneInput, {
+    initialCountry: "sn",
+    separateDialCode: true,
+    preferredCountries: ["sn","ml","ci","gm","fr"],
+    utilsScript:
+      "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+});
+
+const urgencePhoneInput  = document.querySelector("#urgenceTelephoneInput");
+const urgencePhoneHidden = document.querySelector("#urgenceTelephoneFull");
+
+const itiUrgence = window.intlTelInput(urgencePhoneInput, {
+    initialCountry: "sn",
+    separateDialCode: true,
+    preferredCountries: ["sn","fr","ml","gm","ci"],
+    utilsScript:
+      "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+});
+
+/* =========================
+   UTILITAIRES
+========================= */
+function updateSaveButton() {
+    saveBtn.disabled = !selectedDateInput.value;
+}
+
+function enableModalScroll() {
+    document.querySelector('#addRdvModal .modal-body').style.overflowY = 'auto';
+}
+function disableModalScroll() {
+    document.querySelector('#addRdvModal .modal-body').style.overflowY = 'hidden';
+}
+
+/* =========================
+   CHECK PATIENT INDEX
 ========================= */
 patientInput.addEventListener('blur', () => {
     const numero = patientInput.value.trim();
@@ -581,41 +649,42 @@ patientInput.addEventListener('blur', () => {
     }
 
     fetch('../Controller/check_patient.php?numero=' + numero)
-        .then(res => res.json())
-        .then(data => {
-            patientFeedback.innerHTML = data.status === 'ok'
+        .then(r => r.json())
+        .then(d => {
+            patientFeedback.innerHTML =
+                d.status === 'ok'
                 ? `<div class="alert alert-success py-2">
-                        <strong>${data.nom}</strong><br>
-                        Téléphone : ${data.tel}
+                     <strong>${d.nom}</strong><br>
+                     Téléphone : ${d.tel}
                    </div>`
                 : `<div class="alert alert-danger py-2">
-                        Numéro de dossier invalide
+                     Numéro de dossier invalide
                    </div>`;
         });
 });
 
 /* =========================
-   SERVICE – RECHERCHE
+   SERVICE SEARCH
 ========================= */
 serviceSearch.addEventListener('focus', () => {
     serviceDropdown.classList.remove('d-none');
 });
 
 serviceSearch.addEventListener('input', () => {
-    const value = serviceSearch.value.toLowerCase();
-    let visible = 0;
+    const v = serviceSearch.value.toLowerCase();
+    let found = 0;
 
     serviceDropdown.querySelectorAll('.service-item').forEach(item => {
-        const match = item.innerText.toLowerCase().includes(value);
-        item.style.display = match ? 'block' : 'none';
-        if (match) visible++;
+        const ok = item.innerText.toLowerCase().includes(v);
+        item.style.display = ok ? 'block' : 'none';
+        if (ok) found++;
     });
 
-    serviceDropdown.classList.toggle('d-none', visible === 0);
+    serviceDropdown.classList.toggle('d-none', found === 0);
 });
 
 serviceDropdown.querySelectorAll('.service-item').forEach(item => {
-    item.addEventListener('click', () => {
+    item.onclick = () => {
         serviceSearch.value = item.querySelector('strong').innerText;
         hiddenService.value = item.dataset.code;
 
@@ -625,7 +694,8 @@ serviceDropdown.querySelectorAll('.service-item').forEach(item => {
         selectedDateInput.value = '';
         updateSaveButton();
         loadCalendar();
-    });
+        enableModalScroll();
+    };
 });
 
 document.addEventListener('click', e => {
@@ -643,18 +713,19 @@ function loadCalendar() {
     const year  = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
 
-    fetch(`../controller/calendar_data.php?service=${hiddenService.value}&year=${year}&month=${month}`)
-        .then(res => res.json())
+    fetch(`../Controller/calendar_data.php?service=${hiddenService.value}&year=${year}&month=${month}`)
+        .then(r => r.json())
         .then(data => {
-            calendar.innerHTML = '';
 
+            calendar.innerHTML = '';
             calendarTitle.innerText = currentDate.toLocaleDateString('fr-FR', {
                 month: 'long',
                 year: 'numeric'
             });
 
-            const firstDay = new Date(year, month - 1, 1).getDay();
-            const offset   = firstDay === 0 ? 6 : firstDay - 1;
+            // Décalage du premier jour (lundi = 0)
+            const firstDay = new Date(year, month - 1, 1);
+            const offset = (firstDay.getDay() + 6) % 7;
 
             for (let i = 0; i < offset; i++) {
                 calendar.appendChild(document.createElement('div'));
@@ -665,18 +736,20 @@ function loadCalendar() {
                 day.className = `calendar-day ${info.status}`;
                 day.textContent = date.split('-')[2];
 
-                let tooltip = '';
-                if (info.status === 'disponible') tooltip = `Disponible (${info.count ?? 0} RDV)`;
-                if (info.status === 'moyen') tooltip = `Disponibilité moyenne (${info.count ?? 0} RDV)`;
-                if (info.status === 'plein') tooltip = 'Complet – plus de rendez-vous disponibles';
-                if (info.status === 'disabled') tooltip = 'Service indisponible';
-                if (info.status === 'ferie') tooltip = `Jour férié${info.label ? ' : ' + info.label : ''}`;
+                // ✅ Tooltip : nombre de RDV pris
+                if (typeof info.count !== 'undefined') {
+                    day.setAttribute(
+                        'title',
+                        `${info.count} rendez-vous déjà pris`
+                    );
+                    day.setAttribute('data-bs-toggle', 'tooltip');
+                }
 
-                day.title = tooltip;
-
+                // ✅ Sélection possible uniquement si dispo
                 if (info.status === 'disponible' || info.status === 'moyen') {
                     day.addEventListener('click', () => {
-                        document.querySelectorAll('.calendar-day.selected')
+                        document
+                            .querySelectorAll('.calendar-day.selected')
                             .forEach(d => d.classList.remove('selected'));
 
                         day.classList.add('selected');
@@ -687,347 +760,36 @@ function loadCalendar() {
 
                 calendar.appendChild(day);
             });
+
+            // 🔥 Activer les tooltips Bootstrap
+            document
+                .querySelectorAll('[data-bs-toggle="tooltip"]')
+                .forEach(el => new bootstrap.Tooltip(el));
         })
-        .catch(() => alert('Erreur chargement calendrier'));
-}
-
-/* =========================
-   NAVIGATION MOIS
-========================= */
-function animateCalendar() {
-    calendar.classList.add(direction === 'right' ? 'slide-left' : 'slide-right');
-
-    setTimeout(() => {
-        loadCalendar();
-        calendar.classList.remove('slide-left', 'slide-right');
-    }, 200);
-}
-
-document.getElementById('prevMonth').onclick = () => {
-    direction = 'left';
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    animateCalendar();
-};
-
-document.getElementById('nextMonth').onclick = () => {
-    direction = 'right';
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    animateCalendar();
-};
-
-/* =========================
-   BOUTON ENREGISTRER
-========================= */
-function updateSaveButton() {
-    saveBtn.disabled = !selectedDateInput.value;
-}
-updateSaveButton();
-
-/* =========================
-   RAFRAÎCHIR LE TABLEAU SANS RELOAD
-========================= */
-function addRdvToTable(data) {
-    const tbody = document.querySelector('table tbody');
-    if (!tbody) return;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${data.dossier}</td>
-        <td>${data.patient}</td>
-        <td>${data.telephone}</td>
-        <td><span class="badge bg-info">${data.service}</span></td>
-        <td>${new Date().toLocaleDateString('fr-FR')}</td>
-        <td>${data.date_rdv}</td>
-    `;
-
-    tbody.prepend(tr); // ajoute le RDV en haut du tableau
-}
-
-
-/* =========================
-   AFFICHER RÉCAPITULATIF   
-========================= */
-function showRecap(data) {
-    const recap = document.getElementById('rdvRecap');
-    const list  = document.getElementById('recapContent');
-
-    list.innerHTML = `
-        <li class="list-group-item"><strong>Patient :</strong> ${data.patient}</li>
-        <li class="list-group-item"><strong>Dossier :</strong> ${data.dossier}</li>
-        <li class="list-group-item"><strong>Téléphone :</strong> ${data.telephone}</li>
-        <li class="list-group-item"><strong>Service :</strong> ${data.service}</li>
-        <li class="list-group-item"><strong>Date :</strong> ${data.date_rdv}</li>
-    `;
-
-    recap.classList.remove('d-none');
-}
-
-/* =========================
-   CONFIRMATION + ENVOI RDV
-========================= */
-let isSubmitting = false;
-
-saveBtn.addEventListener('click', () => {
-
-    if (isSubmitting) return;
-    isSubmitting = true;
-    saveBtn.disabled = true;
-
-    const patientType = patientTypeInput.value;
-    const date        = selectedDateInput.value;
-
-    /* =========================
-       VALIDATION COMMUNE
-    ========================= */
-    if (!hiddenService.value || !date) {
-        showMessageModal(
-            'Informations manquantes',
-            'Veuillez renseigner le service et la date.',
-            'warning'
-        );
-        isSubmitting = false;
-        saveBtn.disabled = false;
-        return;
-    }
-
-    let patientName = '';
-    let dossier     = '';
-    let telephone   = '';
-
-    /* =========================
-       PATIENT AVEC INDEX
-    ========================= */
-    if (patientType === 'index') {
-
-        dossier = patientInput.value.trim();
-
-        if (!dossier) {
-            showMessageModal(
-                'Informations manquantes',
-                'Veuillez renseigner le numéro de dossier.',
-                'warning'
-            );
-            isSubmitting = false;
-            saveBtn.disabled = false;
-            return;
-        }
-
-        patientName = patientFeedback.querySelector('strong')?.innerText || '';
-        telephone   = patientFeedback.innerText.match(/Téléphone\s*:\s*(\d+)/)?.[1] || '';
-
-        if (!patientName) {
-            showMessageModal(
-                'Patient invalide',
-                'Veuillez vérifier le numéro de dossier.',
-                'danger'
-            );
-            isSubmitting = false;
-            saveBtn.disabled = false;
-            return;
-        }
-    }
-
-    /* =========================
-       PATIENT SANS INDEX
-    ========================= */
-    if (patientType === 'noindex') {
-
-        const prenom = document.querySelector('[name="prenomComplet"]').value.trim();
-        const nom    = document.querySelector('[name="nom"]').value.trim();
-        const tel    = document.querySelector('[name="telephonePatient"]').value.trim();
-
-        if (!prenom || !nom || !tel) {
-            showMessageModal(
-                'Informations manquantes',
-                'Prénom, nom et téléphone sont obligatoires.',
-                'warning'
-            );
-            isSubmitting = false;
-            saveBtn.disabled = false;
-            return;
-        }
-
-        patientName = prenom + ' ' + nom;
-        telephone   = tel;
-        dossier     = 'Sans index';
-    }
-
-    /* =========================
-       CONFIRMATION
-    ========================= */
-    showConfirmModal(
-        'Confirmer le rendez-vous',
-        `
-        <ul class="list-group">
-            <li class="list-group-item"><strong>Patient :</strong> ${patientName}</li>
-            <li class="list-group-item"><strong>Dossier :</strong> ${dossier}</li>
-            <li class="list-group-item"><strong>Téléphone :</strong> ${telephone}</li>
-            <li class="list-group-item"><strong>Service :</strong> ${serviceSearch.value}</li>
-            <li class="list-group-item"><strong>Date :</strong> ${new Date(date).toLocaleDateString('fr-FR')}</li>
-        </ul>
-        `,
-        () => {
-
-            const form = document.querySelector('#addRdvModal form');
-            const formData = new FormData(form);
-
-            fetch('../Controller/add_rdv.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(res => {
-
-                if (res.status === 'success') {
-
-                    addRdvToTable(res.data);
-                    loadRendezVous();
-                    loadCalendar();
-                    showSuccessModal(res.data);
-
-                } else {
-                    showMessageModal('Erreur', res.message, 'danger');
-                }
-            })
-            .catch(() => {
-                showMessageModal(
-                    'Erreur serveur',
-                    'Une erreur est survenue côté serveur.',
-                    'danger'
-                );
-            })
-            .finally(() => {
-                isSubmitting = false;
-                saveBtn.disabled = false;
-            });
-        }
-    );
-});
-
-
-function showMessageModal(title, message, type = 'info') {
-    modalTitle.innerText = title;
-    modalBody.innerHTML = `<div class="alert alert-${type} mb-0">${message}</div>`;
-
-    btnConfirm.classList.add('d-none');
-    btnCancel.classList.add('d-none');
-    btnOk.classList.remove('d-none');
-
-    actionModal.show();
-}
-
-function showConfirmModal(title, message, onConfirm) {
-    modalTitle.innerText = title;
-    modalBody.innerHTML = message;
-
-    btnOk.classList.add('d-none');
-    btnConfirm.classList.remove('d-none');
-    btnCancel.classList.remove('d-none');
-
-    btnConfirm.onclick = () => {
-        actionModal.hide();
-        onConfirm();
-    };
-
-    actionModal.show();
-}
-
-
-const successModal = new bootstrap.Modal(
-    document.getElementById('successModal')
-);
-
-const successRecap = document.getElementById('successRecap');
-const btnNewRdv    = document.getElementById('btnNewRdv');
-
-function showSuccessModal(data) {
-    successRecap.innerHTML = `
-        <li class="list-group-item"><strong>Patient :</strong> ${data.patient}</li>
-        <li class="list-group-item"><strong>Dossier :</strong> ${data.dossier}</li>
-        <li class="list-group-item"><strong>Téléphone :</strong> ${data.telephone}</li>
-        <li class="list-group-item"><strong>Service :</strong> ${data.service}</li>
-        <li class="list-group-item"><strong>Date :</strong> ${data.date_rdv}</li>
-    `;
-
-    successModal.show();
-}
-
-
-btnNewRdv.addEventListener('click', () => {
-    successModal.hide();
-
-    // Reset formulaire
-    const form = document.querySelector('#addRdvModal form');
-    form.reset();
-
-    patientFeedback.innerHTML = '';
-    calendarWrapper.classList.add('d-none');
-    selectedDateInput.value = '';
-    updateSaveButton();
-
-    // Réouvrir le modal d'ajout
-    const addModal = new bootstrap.Modal(
-        document.getElementById('addRdvModal')
-    );
-    addModal.show();
-});
-
-function loadRendezVous() {
-
-    const params = new URLSearchParams({
-        service: filterService.value,
-        periode: filterPeriod.value,
-        date: filterDate.value
-    });
-
-    fetch('../Controller/filter_rendezvous.php?' + params.toString())
-        .then(res => res.json())
-        .then(data => {
-            const tbody = document.querySelector('table tbody');
-            tbody.innerHTML = '';
-
-            if (data.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
-                            Aucun rendez-vous trouvé
-                        </td>
-                    </tr>`;
-                return;
-            }
-
-            data.forEach(rv => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${rv.numeroDossierPatient}</td>
-                    <td>${rv.patient}</td>
-                    <td>${rv.telephonePatient}</td>
-                    <td><span class="badge bg-info">${rv.designService}</span></td>
-                    <td>${new Date(rv.dateDemande).toLocaleDateString('fr-FR')}</td>
-                    <td>${new Date(rv.dateRvServ).toLocaleDateString('fr-FR')}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+        .catch(err => {
+            console.error('Erreur chargement calendrier:', err);
         });
 }
 
-filterService.addEventListener('change', loadRendezVous);
-filterPeriod.addEventListener('change', loadRendezVous);
-filterDate.addEventListener('change', loadRendezVous);
 
+
+
+document.getElementById('prevMonth').onclick = () => {
+    currentDate.setMonth(currentDate.getMonth()-1);
+    loadCalendar();
+};
+document.getElementById('nextMonth').onclick = () => {
+    currentDate.setMonth(currentDate.getMonth()+1);
+    loadCalendar();
+};
 
 /* =========================
-   TYPE DE PATIENT sans index
+   SWITCH PATIENT TYPE
 ========================= */
-
-const btnPatientIndex   = document.getElementById('btnPatientIndex');
-const indexFields       = document.getElementById('indexFields');
-const noIndexFields     = document.getElementById('noIndexFields');
-
 document.querySelectorAll('.patient-type-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.onclick = () => {
 
-        // style boutons
+        // reset boutons
         document.querySelectorAll('.patient-type-btn').forEach(b => {
             b.classList.remove('btn-primary');
             b.classList.add('btn-outline-secondary');
@@ -1037,67 +799,196 @@ document.querySelectorAll('.patient-type-btn').forEach(btn => {
         btn.classList.add('btn-primary');
 
         const type = btn.dataset.value;
-        patientTypeInput.value = type;
+        patientTypeInput.value = type; // 🔴 CRUCIAL
 
         if (type === 'index') {
             indexFields.classList.remove('d-none');
             noIndexFields.classList.add('d-none');
+            patientInput.disabled = false;
         } else {
             indexFields.classList.add('d-none');
             noIndexFields.classList.remove('d-none');
 
-            // reset index
+            // 🔴 neutraliser totalement le champ index
             patientInput.value = '';
-            patientFeedback.innerHTML = '';
+            patientInput.disabled = true;
         }
 
-        // reset calendrier
-        calendarWrapper.classList.add('d-none');
+        patientFeedback.innerHTML = '';
         selectedDateInput.value = '';
+        calendarWrapper.classList.add('d-none');
         updateSaveButton();
-    });
+        disableModalScroll();
+    };
 });
+
+
+/* =========================
+   MESSAGE / CONFIRMATION
+========================= */
+function showMessage(title,msg,type='info'){
+    modalTitle.innerText = title;
+    modalBody.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+    btnOk.classList.remove('d-none');
+    btnConfirm.classList.add('d-none');
+    btnCancel.classList.add('d-none');
+    actionModal.show();
+}
+
+function showConfirm(title,html,cb){
+    modalTitle.innerText = title;
+    modalBody.innerHTML = html;
+    btnOk.classList.add('d-none');
+    btnCancel.classList.remove('d-none');
+    btnConfirm.classList.remove('d-none');
+
+    const clone = btnConfirm.cloneNode(true);
+    btnConfirm.replaceWith(clone);
+
+    clone.onclick = () => {
+        actionModal.hide();
+        actionModalEl.addEventListener('hidden.bs.modal',function h(){
+            actionModalEl.removeEventListener('hidden.bs.modal',h);
+            cb();
+        });
+    };
+    actionModal.show();
+}
+
+/* =========================
+   ENREGISTRER RDV
+========================= */
+saveBtn.onclick = () => {
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    let patientType = patientTypeInput.value;// 🔥 valeur réelle
+    const form = document.querySelector('#addRdvModal form');
+
+    if (!hiddenService.value || !selectedDateInput.value) {
+        showMessage("Erreur","Service et date requis","warning");
+        isSubmitting=false;
+        return;
+    }
+
+    // 🔒 BLOQUER ABSOLUMENT LES CAS FAUX
+    if (patientType === 'index') {
+        const dossier = patientInput.value.trim();
+        if (!dossier || dossier === '0') {
+            showMessage("Erreur","Numéro de dossier obligatoire","danger");
+            isSubmitting=false;
+            return;
+        }
+    }
+
+    if (patientType === 'noindex') {
+        // 🔥 IMPORTANT : supprimer toute trace de dossier
+        patientInput.value = '';
+    }
+
+    if (patientType === 'noindex') {
+        // téléphone patient
+        if (!iti.isValidNumber()) {
+            showMessage("Erreur", "Numéro de téléphone du patient invalide", "danger");
+            isSubmitting = false;
+            return;
+        }
+        phoneHidden.value = iti.getNumber();
+
+        // téléphone urgence (facultatif)
+        if (urgencePhoneInput.value.trim() !== '') {
+            if (!itiUrgence.isValidNumber()) {
+                showMessage("Erreur", "Numéro du contact d’urgence invalide", "danger");
+                isSubmitting = false;
+                return;
+            }
+            urgencePhoneHidden.value = itiUrgence.getNumber();
+        } else {
+            urgencePhoneHidden.value = '';
+        }
+    }
+    
+    let recapHtml = '<ul class="list-group list-group-flush">';
+
+    const type = patientTypeInput.value;
+    const serviceLabel = serviceSearch.value;
+    const dateLabel = new Date(selectedDateInput.value)
+        .toLocaleDateString('fr-FR');
+
+    if (type === 'index') {
+        recapHtml += `
+            <li class="list-group-item"><strong>Patient :</strong> ${patientFeedback.innerText || '—'}</li>
+            <li class="list-group-item"><strong>Dossier :</strong> ${patientInput.value}</li>
+        `;
+    } else {
+        recapHtml += `
+            <li class="list-group-item"><strong>Patient :</strong>
+                ${document.querySelector('[name="prenomComplet"]').value}
+                ${document.querySelector('[name="nom"]').value}
+            </li>
+            <li class="list-group-item"><strong>Dossier :</strong> Sans index</li>
+        `;
+    }
+
+    recapHtml += `
+        <li class="list-group-item"><strong>Téléphone :</strong>
+            ${document.querySelector('[name="telephonePatient"]').value || '—'}
+        </li>
+        <li class="list-group-item"><strong>Service :</strong> ${serviceLabel}</li>
+        <li class="list-group-item"><strong>Date :</strong> ${dateLabel}</li>
+    </ul>`;
+
+
+    showConfirm(
+        "Confirmer le rendez-vous",
+        recapHtml,
+        () => {
+            const formData = new FormData(form);
+
+            fetch('../Controller/add_rdv.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(r => {
+                if (r.status === 'success') {
+                    location.reload();
+                } else {
+                    showMessage("Erreur", r.message, "danger");
+                }
+            })
+            .finally(() => isSubmitting = false);
+        }
+    );
+
+};
+
 
 /* =========================
    CALCUL ÂGE
 ========================= */
 const dateNaissance = document.getElementById('dateNaissance');
-const ageInput = document.getElementById('ageInput');
+const ageInput      = document.getElementById('ageInput');
 
-dateNaissance.addEventListener('change', () => {
-    const birth = new Date(dateNaissance.value);
-    const today = new Date();
+if (dateNaissance && ageInput) {
+    dateNaissance.addEventListener('change', () => {
+        const birth = new Date(dateNaissance.value);
+        if (isNaN(birth)) {
+            ageInput.value = '';
+            return;
+        }
 
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-        age--;
-    }
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
 
-    ageInput.value = age > 0 ? age : '';
-});
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
 
-/* =========================
-   BARRE DE PROGRESSION
-========================= */
-const progress = document.getElementById('rdvProgress');
-const progressBar = document.getElementById('rdvProgressBar');
-
-// Quand le service est choisi
-function onServiceSelected() {
-    progress.classList.remove('d-none');
-    progressBar.style.width = '50%';
+        ageInput.value = age >= 0 ? age : '';
+    });
 }
 
-// Quand une date est sélectionnée
-function onDateSelected() {
-    progressBar.style.width = '100%';
-}
 
 </script>
-
-
-
-
-
-
