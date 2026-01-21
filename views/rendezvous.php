@@ -14,11 +14,28 @@ $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 /* =========================
    SERVICES
 ========================= */
-$services = $db->query("
-    SELECT codeService, designService
-    FROM service
-    ORDER BY designService
-")->fetchAll(PDO::FETCH_ASSOC);
+if ($_SESSION['role'] === 'admin') {
+
+    $services = $db->query("
+        SELECT codeService, designService
+        FROM service
+        ORDER BY designService
+    ")->fetchAll(PDO::FETCH_ASSOC);
+
+} else {
+    // AGENT → seulement ses services
+    $stmt = $db->prepare("
+        SELECT s.codeService, s.designService
+        FROM service s
+        INNER JOIN agent_service ags
+            ON s.codeService = ags.codeService
+        WHERE ags.agent_username = ?
+        ORDER BY s.designService
+    ");
+    $stmt->execute([$_SESSION['username']]);
+    $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
 /* =========================
    FILTRES
@@ -85,6 +102,21 @@ $stmt->execute($params);
 $rendezvous = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
+
+<?php
+// fin de ton traitement PHP
+$services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
+<?php if ($_SESSION['role'] === 'agent' && empty($services)): ?>
+  <div class="alert alert-warning">
+    Aucun service ne vous est attribué.<br>
+    Veuillez contacter un administrateur.
+  </div>
+  <?php return; ?>
+<?php endif; ?>
+
+
 
 <!-- =========================
      PAGE RENDEZ-VOUS

@@ -6,6 +6,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once '../Modele/database.php';
+require_once '../Modele/databaseAgent.php';
+
 
 try {
     /* =========================
@@ -33,6 +35,53 @@ try {
     if (!$patientType || !$codeService || !$dateRvServ) {
         throw new Exception("Données obligatoires manquantes.");
     }
+
+    /* =========================
+   SÉCURITÉ : SERVICE AUTORISÉ
+========================= */
+$role     = $_SESSION['role'] ?? '';
+$username = $_SESSION['username'] ?? '';
+
+if ($role === 'agent') {
+
+    if (empty($codeService)) {
+        throw new Exception("Service manquant.");
+    }
+
+    // Vérifier que le service appartient bien à l’agent
+    $checkService = $db->prepare("
+        SELECT 1
+        FROM agent_service
+        WHERE agent_username = ?
+          AND codeService = ?
+        LIMIT 1
+    ");
+    $checkService->execute([$username, $codeService]);
+
+    if (!$checkService->fetch()) {
+        throw new Exception("⛔ Service non autorisé pour cet agent.");
+    }
+}
+if ($_SESSION['role'] === 'agent') {
+
+    $check = $db->prepare("
+        SELECT 1
+        FROM agent_service
+        WHERE agent_username = ?
+          AND codeService = ?
+    ");
+    $check->execute([
+        $_SESSION['username'],
+        $codeService
+    ]);
+
+    if (!$check->fetch()) {
+        throw new Exception(
+            "Vous n’êtes pas autorisé à créer un rendez-vous pour ce service."
+        );
+    }
+}
+
 
     /* =====================================================
        PATIENT AVEC INDEX
@@ -151,9 +200,21 @@ try {
             $telephone
         ]);
     }
+        /* =========================
+        COMMIT & LOGS   
+    ========================= */
+    $log = $db->prepare("
+        INSERT INTO agent_logs (agent_username, action, details)
+        VALUES (?, ?, ?)
+    ");
+    $log->execute([
+        $_SESSION['username'],
+        'CREATION_RDV',
+        "Service: $codeService | Date: $dateRvServ"
+    ]);
 
     $db->commit();
-
+    
     echo json_encode([
         'status' => 'success',
         'message' => 'Rendez-vous enregistré avec succès'

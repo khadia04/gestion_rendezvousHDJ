@@ -317,10 +317,8 @@ function getRdvPerMonth($annee) {
     return executesql($sql)->fetchAll();
 }
 
-
-
-function getRdvPerService($mois = null, $annee = null) {
-
+function getRdvPerServiceByAgent($username, $mois = null, $annee = null)
+{
     $sql = "
         SELECT 
             r.codeService,
@@ -328,19 +326,22 @@ function getRdvPerService($mois = null, $annee = null) {
             COUNT(*) AS total
         FROM rendezvs r
         INNER JOIN service s ON s.codeService = r.codeService
-        WHERE 1=1
+        INNER JOIN agent_service ags ON ags.codeService = r.codeService
+        WHERE ags.agent_username = :username
     ";
 
-    $params = [];
+    $params = [
+        'username' => $username
+    ];
 
     if (!empty($annee)) {
         $sql .= " AND YEAR(r.dateDemande) = :annee";
-        $params['annee'] = (int) $annee;
+        $params['annee'] = (int)$annee;
     }
 
     if (!empty($mois)) {
         $sql .= " AND MONTH(r.dateDemande) = :mois";
-        $params['mois'] = (int) $mois;
+        $params['mois'] = (int)$mois;
     }
 
     $sql .= "
@@ -350,6 +351,61 @@ function getRdvPerService($mois = null, $annee = null) {
 
     return prepare_executeSQL($sql, $params)->fetchAll();
 }
+
+
+
+function getRdvPerService($mois = null, $annee = null) {
+    $db = getConnection();
+
+    $sql = "
+        SELECT s.codeService, s.designService, COUNT(*) as total
+        FROM rendezvs r
+        JOIN service s ON s.codeService = r.codeService
+        WHERE 1=1
+    ";
+
+    $params = [];
+
+    if ($mois) {
+        $sql .= " AND MONTH(r.dateRvServ) = ?";
+        $params[] = $mois;
+    }
+
+    if ($annee) {
+        $sql .= " AND YEAR(r.dateRvServ) = ?";
+        $params[] = $annee;
+    }
+
+    $sql .= " GROUP BY s.codeService, s.designService";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/* =========================
+   TOTAL RDV (AGENT)
+========================= */
+function getTotalRdvByAgent($username, $mois, $annee) {
+    $db = getConnection();
+
+    $sql = "
+        SELECT COUNT(r.id)
+        FROM rendezvs r
+        JOIN agent_service ags ON ags.codeService = r.codeService
+        WHERE ags.agent_username = ?
+          AND YEAR(r.dateRvServ) = ?
+          AND (? IS NULL OR MONTH(r.dateRvServ) = ?)
+    ";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute([$username, $annee, $mois, $mois]);
+
+    return (int)$stmt->fetchColumn();
+}
+
+
 
 
 

@@ -27,6 +27,7 @@ require_once "../modele/databaseTools.php";
 require_once "../modele/databaseRv.php";
 
 
+
 // Vérifier rôle admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../index.php");

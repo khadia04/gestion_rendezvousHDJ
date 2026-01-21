@@ -6,14 +6,22 @@
     ? (int)$_GET['month']
     : null;
 
-
 $annee = isset($_GET['year']) 
     ? (int) $_GET['year'] 
     : date('Y');
 
-
 $rdvPerMonth   = getRdvPerMonth($mois, $annee);
-$rdvPerService = getRdvPerService($mois, $annee);
+
+$isAdmin  = ($_SESSION['role'] === 'admin');
+$username = $_SESSION['username'];
+
+if ($isAdmin) {
+    // ADMIN → stats globales
+    $rdvPerService = getRdvPerService($mois, $annee);
+} else {
+    // AGENT → uniquement SES services
+    $rdvPerService = getRdvPerServiceByAgent($username, $mois, $annee);
+}
 
 
 /* =========================
@@ -494,6 +502,8 @@ function animateValue(id, start, end, duration = 800) {
 
 // lancer animation
 animateValue("totalRdv", 0, <?= $totalRdv ?>);
+
+
 </script>
 
 

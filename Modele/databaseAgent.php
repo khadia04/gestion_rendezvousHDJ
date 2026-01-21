@@ -211,6 +211,42 @@ function getAgentsPaginated($search, $role, $limit, $offset)
     return $stmt->fetchAll();
 }
 
+function getAgentServices($username) {
+    $stmt = prepare_executeSQL(
+        "SELECT codeService FROM agent_service WHERE agent_username = :username",
+        ['username' => $username]
+    );
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
+}
+
+function getAgentServiceCount($username) {
+    $stmt = executeSQL(
+        "SELECT COUNT(*) AS total 
+         FROM agent_service 
+         WHERE agent_username = :username",
+        ['username' => $username]
+    );
+    return $stmt->fetch()['total'] ?? 0;
+}
+
+function agentHasService(string $username, string $codeService): bool
+{
+    $stmt = prepare_executeSQL(
+        "SELECT 1
+         FROM agent_service
+         WHERE agent_username = :username
+           AND codeService = :service
+         LIMIT 1",
+        [
+            'username' => $username,
+            'service'  => $codeService
+        ]
+    );
+
+    return $stmt->rowCount() > 0;
+}
+
+
 
 
 ?>

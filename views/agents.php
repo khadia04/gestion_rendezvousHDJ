@@ -2,6 +2,8 @@
 require_once '../middlewares/auth.php';
 require_once '../middlewares/csrf.php';
 require_once '../modele/databaseAgent.php';
+require_once __DIR__ . '/../modele/database.php';
+
 
 requireAuth('admin');
 
@@ -20,6 +22,155 @@ $role   = $_GET['role'] ?? '';
 
 $agents = getAgentsPaginated($search, $role, $limit, $offset);
 
+/* Récupérer les services pour l'ajout d'agent */
+$services = executeSQL(
+  "SELECT codeService, designService FROM service"
+)->fetchAll();
+
+/* Récupérer les services par agent pour l'édition */
+$agentServicesMap = [];
+
+foreach ($agents as $a) {
+    if ($a['role'] === 'agent') {
+        $agentServicesMap[$a['username']] = getAgentServices($a['username']);
+    }
+}
+/* Compter les services par agent */
+$agentServiceCount = [];
+
+foreach ($agents as $a) {
+    if ($a['role'] === 'agent') {
+        $agentServiceCount[$a['username']] =
+            count($agentServicesMap[$a['username']] ?? []);
+    } else {
+        $agentServiceCount[$a['username']] = 0;
+    }
+}
+
+
+
+
+/* AJOUTER AGENT */
+if (isset($_POST['add_agent'])) {
+
+    // 1. Sécurité
+    verifyCsrfToken();
+
+    $prenom    = $_POST['prenom_agent'];
+    $nom       = $_POST['nom_agent'];
+    $telephone = $_POST['telephone_agent'];
+    $username  = $_POST['username'];
+    $email     = $_POST['email'];
+    $role      = $_POST['role'];
+
+    // 2. Mot de passe temporaire (exemple)
+    $password = password_hash('123456', PASSWORD_DEFAULT);
+
+    // 🔒 Vérification : un agent doit avoir au moins un service
+    if ($role === 'agent' && empty($_POST['services'])) {
+        $_SESSION['error'] = "Un agent doit avoir au moins un service.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+
+    // 3. Insertion agent
+    prepare_executeSQL(
+        "INSERT INTO agent (prenom_agent, nom_agent, telephone_agent, username, email, role, password, status)
+         VALUES (:prenom, :nom, :tel, :username, :email, :role, :password, 1)",
+        [
+            'prenom'   => $prenom,
+            'nom'      => $nom,
+            'tel'      => $telephone,
+            'username' => $username,
+            'email'    => $email,
+            'role'     => $role,
+            'password' => $password
+        ]
+    );
+
+    // 4. Attribution des services UNIQUEMENT si agent
+    if ($role === 'agent' && !empty($_POST['services'])) {
+
+        foreach ($_POST['services'] as $codeService) {
+            prepare_executeSQL(
+                "INSERT INTO agent_service (agent_username, codeService)
+                 VALUES (:username, :codeService)",
+                [
+                    'username'    => $username,
+                    'codeService' => $codeService
+                ]
+            );
+        }
+    }
+
+    $_SESSION['success'] = "Agent ajouté avec succès";
+    header("Location: admin.php?page=agents");
+    exit;
+}
+
+if (isset($_POST['edit_agent'])) {
+
+  $username = $_POST['username'];
+  $role     = $_POST['role'];
+  $prenom    = $_POST['prenom_agent'];
+  $nom       = $_POST['nom_agent'];
+  $telephone = $_POST['telephone_agent'];
+
+
+  // 🔒 Si on passe admin → agent, il faut des services
+  if ($role === 'agent' && empty($_POST['edit_services'])) {
+      $_SESSION['error'] = "Un agent doit avoir au moins un service.";
+      header("Location: admin.php?page=agents");
+      exit;
+  }
+
+  // 1. Mettre à jour le rôle
+  prepare_executeSQL(
+    "UPDATE agent 
+     SET prenom_agent = :prenom,
+         nom_agent = :nom,
+         telephone_agent = :telephone,
+         role = :role
+     WHERE username = :username",
+    [
+        'prenom'   => $prenom,
+        'nom'      => $nom,
+        'telephone'=> $telephone,
+        'role'     => $role,
+        'username' => $username
+    ]
+);
+
+
+  // 2. Nettoyer TOUJOURS les anciens services
+  prepare_executeSQL(
+      "DELETE FROM agent_service WHERE agent_username = :username",
+      ['username' => $username]
+  );
+
+  // 3. Réinsérer uniquement si agent
+  if ($role === 'agent') {
+      foreach ($_POST['edit_services'] as $codeService) {
+          prepare_executeSQL(
+              "INSERT INTO agent_service (agent_username, codeService)
+              VALUES (:username, :codeService)",
+              [
+                  'username' => $username,
+                  'codeService' => $codeService
+              ]
+          );
+      }
+  }
+
+  $_SESSION['success'] = "Agent modifié avec succès";
+  header("Location: admin.php?page=agents");
+  exit;
+
+}
+
+
+
 /* ACTIVER */
 if (isset($_POST['activate_agent'], $_POST['username'])) {
     toggleAgentStatus($_POST['username'], 1);
@@ -27,6 +178,7 @@ if (isset($_POST['activate_agent'], $_POST['username'])) {
     header("Location: admin.php?page=agents");
     exit;
 }
+
 
 /* DESACTIVER */
 if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
@@ -132,6 +284,7 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
                 <th>Téléphone</th>
                 <th>Rôle</th>
                 <th>Statut</th>
+                <th>Services</th>
                 <th>Création</th>
                 <th>Actions</th>
             </tr>
@@ -143,107 +296,108 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
             Aucun agent trouvé
         </td>
     </tr>
-<?php else: ?>
-        <tbody>
-<?php foreach ($agents as $agent): ?>
-<tr>
-    <td><?= htmlspecialchars($agent['username']) ?></td>
-    <td><?= htmlspecialchars($agent['prenom_agent'].' '.$agent['nom_agent']) ?></td>
-    <td><?= htmlspecialchars($agent['email']) ?></td>
-    <td><?= htmlspecialchars($agent['telephone_agent']) ?></td>
+    <?php else: ?>
+            <tbody>
+    <?php foreach ($agents as $agent): ?>
+    <tr>
+      <td><?= htmlspecialchars($agent['username']) ?></td>
+      <td><?= htmlspecialchars($agent['prenom_agent'].' '.$agent['nom_agent']) ?></td>
+      <td><?= htmlspecialchars($agent['email']) ?></td>
+      <td><?= htmlspecialchars($agent['telephone_agent']) ?></td>
 
-    <td>
-        <span class="badge bg-info"><?= $agent['role'] ?></span>
-    </td>
+      <td>
+          <span class="badge bg-info"><?= $agent['role'] ?></span>
+      </td>
 
-    <td>
-        <?= $agent['status'] 
-            ? '<span class="badge bg-success">Actif</span>' 
-            : '<span class="badge bg-secondary">Désactivé</span>' ?>
-    </td>
+      <td>
+          <?= $agent['status'] 
+              ? '<span class="badge bg-success">Actif</span>' 
+              : '<span class="badge bg-secondary">Désactivé</span>' ?>
+      </td>
 
-    <td><?= date('d/m/Y', strtotime($agent['created_at'])) ?></td>
-
-    <td class="actions-cell"
-      <div class="d-flex gap-2 justify-content-center align-items-center">
-        <!-- MODIFIER -->
-        <button class="btn btn-primary btn-sm "  
-            data-bs-toggle="modal"
-            data-bs-target="#editAgentModal"
-            data-username="<?= $agent['username'] ?>"
-            data-email="<?= $agent['email'] ?>"
-            data-prenom="<?= $agent['prenom_agent'] ?>"
-            data-nom="<?= $agent['nom_agent'] ?>"
-            data-telephone="<?= $agent['telephone_agent'] ?>"
-            data-role="<?= $agent['role'] ?>"
-            title="Modifier l’agent/ l'admin">
-          
-            <i class="bi bi-pencil"></i>
-        </button>
-
-<?php if ($agent['status'] == 0): ?>
-<button
-  type="button"
-  class="btn btn-success btn-sm"
-  data-bs-toggle="modal"
-  data-bs-target="#confirmActivateModal"
-  data-username="<?= $agent['username'] ?>"
-  title="Activer l'agent/ l'admin">
-  <i class="bi bi-person-check"></i>
-</button>
-
-<?php elseif ($agent['role'] === 'agent'): ?>
-<button
-  type="button"
-  class="btn btn-danger btn-sm"
-  data-bs-toggle="modal"
-  data-bs-target="#confirmDeactivateModal"
-  data-username="<?= $agent['username'] ?>"
-  data-role="<?= $agent['role'] ?>"
-  title="Désactiver l'agent/ l'admin"
-  style="background:rgb(255,0,0)">
-  <i class="bi bi-person-x"></i>
-</button>
-<?php endif; ?>
-
-
-
-
-      </div>
-    </td>
-</tr>
-<?php endforeach; ?>
-
-</tbody>
-<?php endif; ?>
-
-
-    </table>
-
-    <nav class="mt-3">
-    <ul class="pagination justify-content-center">
-        <?php if ($pageNum > 1): ?>
-            <li class="page-item">
-                <a class="page-link" href="?page=agents&p=<?= $pageNum-1 ?>">Précédent</a>
-            </li>
+      <td class="text-center">
+        <?php if ($agentServiceCount[$agent['username']] === 0): ?>
+          <span class="badge bg-secondary" title="⚠ Aucun service attribué">0</span>
+        <?php else: ?>
+          <span class="badge bg-primary">
+            <?= $agentServiceCount[$agent['username']] ?>
+          </span>
         <?php endif; ?>
+      </td>
 
-        <li class="page-item active">
-            <span class="page-link"><?= $pageNum ?></span>
-        </li>
 
-        <li class="page-item">
-            <a class="page-link" href="?page=agents&p=<?= $pageNum+1 ?>">Suivant</a>
-        </li>
-    </ul>
+      <td><?= date('d/m/Y', strtotime($agent['created_at'])) ?></td>
+
+      <td class="actions-cell" >
+        <div class="d-flex gap-2 ">
+          <!-- MODIFIER -->
+          <button class="btn btn-primary btn-sm "  
+              data-bs-toggle="modal"
+              data-bs-target="#editAgentModal"
+              data-username="<?= $agent['username'] ?>"
+              data-email="<?= $agent['email'] ?>"
+              data-prenom="<?= $agent['prenom_agent'] ?>"
+              data-nom="<?= $agent['nom_agent'] ?>"
+              data-telephone="<?= $agent['telephone_agent'] ?>"
+              data-role="<?= $agent['role'] ?>"
+              title="Modifier l’agent/ l'admin">
+            
+              <i class="bi bi-pencil"></i>
+          </button>
+
+          <?php if ($agent['status'] == 0): ?>
+          <button
+            type="button"
+            class="btn btn-success btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#confirmActivateModal"
+            data-username="<?= $agent['username'] ?>"
+            title="Activer l'agent/ l'admin">
+            <i class="bi bi-person-check"></i>
+          </button>
+
+          <?php elseif ($agent['role'] === 'agent'): ?>
+          <button
+            type="button"
+            class="btn btn-danger btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#confirmDeactivateModal"
+            data-username="<?= $agent['username'] ?>"
+            data-role="<?= $agent['role'] ?>"
+            title="Désactiver l'agent/ l'admin"
+            style="background:rgb(255,0,0)">
+            <i class="bi bi-person-x"></i>
+          </button>
+          <?php endif; ?>
+
+        </div>
+      </td>
+    </tr>
+    <?php endforeach; ?>
+  </tbody>
+  <?php endif; ?>
+</table>
+
+<nav class="mt-3">
+  <ul class="pagination justify-content-center">
+    <?php if ($pageNum > 1): ?>
+      <li class="page-item">
+        <a class="page-link" href="?page=agents&p=<?= $pageNum-1 ?>">Précédent</a>
+      </li>
+    <?php endif; ?>
+     <li class="page-item active">
+        <span class="page-link"><?= $pageNum ?></span>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page=agents&p=<?= $pageNum+1 ?>">Suivant</a>
+      </li>
+  </ul>
 </nav>
+
     <!-- MODAL AJOUT AGENT -->
 <div class="modal fade" id="addAgentModal" tabindex="-1" >
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content agent-modal">
-
-      
-
       <form method="POST">
         <div class="modal-header">
           <h5 class="modal-title">Ajouter un agent</h5>
@@ -255,40 +409,62 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
-            <div class="col-md-6">
-              <label class="form-label">Username</label>
-              <input type="text" name="username" class="form-control" required style="border: 1px solid black ;">
-            </div>
-
-
-            <div class="col-md-6">
-              <label class="form-label">Email</label>
-              <input type="email" name="email" class="form-control " required style="border: 1px solid black ;">
-            </div>
-
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Prénom</label>
               <input type="text" name="prenom_agent" class="form-control " required style="border: 1px solid black ;">
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Nom</label>
               <input type="text" name="nom_agent" class="form-control " required style="border: 1px solid black ;">
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Téléphone</label>
               <input type="text" name="telephone_agent" class="form-control " required style="border: 1px solid black ;">
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
+              <label class="form-label">Username</label>
+              <input type="text" name="username" class="form-control" required style="border: 1px solid black ;">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control " required style="border: 1px solid black ;">
+            </div>
+
+            <div class="col-md-4">
               <label class="form-label " >Rôle</label>
-              <select name="role" class="form-select " style="border: 1px solid black ;" >
+              <select name="role" class="form-select" required style="border: 1px solid black ;">
+                <option value="" selected disabled>— Choisir un rôle —</option>
                 <option value="agent">Agent</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
 
+            <div id="services-container" style="display:none;">
+              <label class="form-label">Services autorisés</label>
+              <div class="row">
+                <?php foreach ($services as $service): ?>
+                  <div class="col-md-4">
+                    <div class="form-check">
+                      <input class="form-check-input"
+                            type="checkbox"
+                            name="services[]"
+                            value="<?= $service['codeService'] ?>">
+                      <label class="form-check-label">
+                        <?= htmlspecialchars($service['designService']) ?>
+                      </label>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+              <div id="services-error" class="text-danger mt-2" style="display:none;">
+                Veuillez sélectionner au moins un service pour cet agent.
+              </div>
+            </div>
+            
           </div>
         </div>
 
@@ -322,28 +498,33 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
           <div class="row g-3">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-
-            <div class="col-md-6">
-              <label class="form-label">Email</label>
-              <input type="email" name="email" class="form-control" required>
+            
+            <div class="col-md-4">
+              <label class="form-label">Prénom</label>
+              <input type="text" name="prenom_agent" class="form-control" required style="border: 1px solid black ;">
             </div>
 
+            <div class="col-md-4">
+              <label class="form-label">Nom</label>
+              <input type="text" name="nom_agent" class="form-control" required style="border: 1px solid black ;">
+            </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Téléphone</label>
               <input type="text" name="telephone_agent" class="form-control">
             </div>
 
             <div class="col-md-6">
-              <label class="form-label">Prénom</label>
-              <input type="text" name="prenom_agent" class="form-control" required style="border: 1px solid black ;">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                name="email"
+                class="form-control"
+                readonly
+                style="background-color:#f8f9fa; cursor:not-allowed;"
+              >
             </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Nom</label>
-              <input type="text" name="nom_agent" class="form-control" required style="border: 1px solid black ;">
-            </div>
-
+    
             <div class="col-md-6">
               <label class="form-label">Rôle</label>
               <select name="role" class="form-select">
@@ -351,8 +532,34 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
                 <option value="admin">Admin</option>
               </select>
             </div>
+
+            <div id="edit-services-container" style="display:none;">
+              <label class="form-label">Services autorisés</label>
+              <div class="row">
+                <?php foreach ($services as $service): ?>
+                  <div class="col-md-4">
+                    <div class="form-check">
+                      <input class="form-check-input edit-service-checkbox"
+                            type="checkbox"
+                            name="edit_services[]"
+                            value="<?= $service['codeService'] ?>">
+                      <label class="form-check-label">
+                        <?= htmlspecialchars($service['designService']) ?>
+                      </label>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+              <div id="edit-services-error" class="text-danger mt-2" style="display:none;">
+                Veuillez sélectionner au moins un service pour cet agent.
+              </div>
+            </div>
+
+
           </div>
         </div>
+
+        
 
         <div class="modal-footer">
           <button type="submit" name="edit_agent" class="btn btn-primary">
@@ -436,6 +643,9 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
   </div>
 </div>
 
+</div>
+</div>
+
 <!-- script MODAL CONFIRMER ACTIVATION -->
 
 <script>
@@ -461,18 +671,58 @@ if (deactivateModal) {
 
 <!-- script MODAL MODIFIER AGENT -->
 <script>
+const agentServicesMap = <?= json_encode($agentServicesMap) ?>;
 const editModal = document.getElementById('editAgentModal');
 
-editModal.addEventListener('show.bs.modal', function (event) {
+if (editModal) {
+  editModal.addEventListener('show.bs.modal', function (event) {
     const button = event.relatedTarget;
+    if (!button) return;
 
-    editModal.querySelector('[name="username"]').value = button.dataset.username;
-    editModal.querySelector('[name="email"]').value = button.dataset.email;
-    editModal.querySelector('[name="prenom_agent"]').value = button.dataset.prenom;
-    editModal.querySelector('[name="nom_agent"]').value = button.dataset.nom;
-    editModal.querySelector('[name="telephone_agent"]').value = button.dataset.telephone;
-    editModal.querySelector('[name="role"]').value = button.dataset.role;
-});
+    // 🧩 Champs texte
+    editModal.querySelector('input[name="username"]').value =
+      button.getAttribute('data-username') || '';
+
+    editModal.querySelector('input[name="prenom_agent"]').value =
+      button.getAttribute('data-prenom') || '';
+
+    editModal.querySelector('input[name="nom_agent"]').value =
+      button.getAttribute('data-nom') || '';
+
+    editModal.querySelector('input[name="telephone_agent"]').value =
+      button.getAttribute('data-telephone') || '';
+
+    editModal.querySelector('input[name="email"]').value =
+      button.getAttribute('data-email') || '';
+
+    // 🎭 Rôle
+    const role = button.getAttribute('data-role') || 'admin';
+    editModal.querySelector('select[name="role"]').value = role;
+
+    // 🧠 Services
+    const username = button.getAttribute('data-username');
+    const servicesBox = document.getElementById('edit-services-container');
+    const checkboxes = servicesBox.querySelectorAll('.edit-service-checkbox');
+
+    // reset
+    checkboxes.forEach(cb => cb.checked = false);
+
+    if (role === 'agent') {
+      servicesBox.style.display = 'block';
+
+      if (agentServicesMap[username]) {
+        agentServicesMap[username].forEach(code => {
+          const cb = servicesBox.querySelector(
+            `input[value="${code}"]`
+          );
+          if (cb) cb.checked = true;
+        });
+      }
+    } else {
+      servicesBox.style.display = 'none';
+    }
+  });
+}
 </script>
 
 <script>
@@ -483,5 +733,68 @@ document.addEventListener("DOMContentLoaded", function () {
     tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
 });
 </script>
-</div>
-</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const modal = document.getElementById('addAgentModal');
+  if (!modal) return;
+
+  const form = modal.querySelector('form');
+  const roleSelect = modal.querySelector('select[name="role"]');
+  const servicesBox = document.getElementById('services-container');
+  const servicesError = document.getElementById('services-error');
+
+  if (!form || !roleSelect || !servicesBox || !servicesError) return;
+
+  // 🔄 Reset des services
+  function resetServices() {
+    servicesBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+    });
+    servicesBox.style.display = 'none';
+    servicesError.style.display = 'none';
+  }
+
+  // 👁️ Afficher / masquer les services selon le rôle
+  function toggleServices() {
+    const role = roleSelect.value.toLowerCase();
+    servicesBox.style.display = (role === 'agent') ? 'block' : 'none';
+
+    // si on passe admin → cacher l’erreur
+    if (role !== 'agent') {
+      servicesError.style.display = 'none';
+    }
+  }
+
+  // 🚫 Validation élégante à la soumission
+  form.addEventListener('submit', function (e) {
+    const role = roleSelect.value;
+    const checked = servicesBox.querySelectorAll('input[type="checkbox"]:checked');
+
+    servicesError.style.display = 'none';
+
+    if (role === 'agent' && checked.length === 0) {
+      e.preventDefault();
+      servicesError.style.display = 'block';
+    }
+  });
+
+  // ✨ Faire disparaître l’erreur dès qu’on coche un service
+  servicesBox.addEventListener('change', function () {
+    servicesError.style.display = 'none';
+  });
+
+  // 🪟 À chaque ouverture du modal
+  modal.addEventListener('show.bs.modal', function () {
+    resetServices();
+  });
+
+  // 🔁 Changement de rôle
+  roleSelect.addEventListener('change', toggleServices);
+});
+</script>
+
+
+
+
+
