@@ -62,25 +62,6 @@ if ($role === 'agent') {
         throw new Exception("⛔ Service non autorisé pour cet agent.");
     }
 }
-if ($_SESSION['role'] === 'agent') {
-
-    $check = $db->prepare("
-        SELECT 1
-        FROM agent_service
-        WHERE agent_username = ?
-          AND codeService = ?
-    ");
-    $check->execute([
-        $_SESSION['username'],
-        $codeService
-    ]);
-
-    if (!$check->fetch()) {
-        throw new Exception(
-            "Vous n’êtes pas autorisé à créer un rendez-vous pour ce service."
-        );
-    }
-}
 
 
     /* =====================================================

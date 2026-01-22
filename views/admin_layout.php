@@ -63,7 +63,48 @@ switch ($page) {
         $title = "Tableau de bord"; 
         break;
 }
+
+// ============================
+// INFOS ADMIN CONNECTÉ
+// ============================
+$db = getConnection();
+
+$stmt = $db->prepare("
+    SELECT prenom_agent, nom_agent, email, photo
+    FROM agent
+    WHERE id = ?
+    LIMIT 1
+");
+$stmt->execute([$_SESSION['user_id']]);
+$admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Sécurité fallback
+$prenom = $admin['prenom_agent'] ?? 'Admin';
+$nom    = $admin['nom_agent'] ?? '';
+$email  = $admin['email'] ?? '';
+$path = '../assets/img/' . $admin['photo'];
+$avatar = file_exists($path)
+    ? $path . '?v=' . filemtime($path)
+    : '../assets/img/avatar.jpg';
+
+
+$stmt = $db->prepare("
+    SELECT prenom_agent, nom_agent, email, telephone_agent, photo
+    FROM agent
+    WHERE id = ?
+    LIMIT 1
+");
+$stmt->execute([$_SESSION['user_id']]);
+$admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$prenom = $admin['prenom_agent'] ?? 'Admin';
+$nom    = $admin['nom_agent'] ?? '';
+$email  = $admin['email'] ?? '';
+$tel    = $admin['telephone_agent'] ?? '';
+
 ?>
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -85,7 +126,7 @@ switch ($page) {
 
 </head>
 
-<body class="<?= $page ?>"  >
+<body class="<?= $page ?> dark">
 
 <div class="dashboard-container">
 
@@ -179,10 +220,58 @@ switch ($page) {
 
             <h2><?= $title ?></h2>
 
-            <div class="topbar-user">
-                <i class="bi bi-person-circle"></i>
-                <span><?= $_SESSION['email'] ?></span>
+            <div class="profile-trigger" id="profileMenuBtn">
+                <img
+                    src="<?= $avatar ?>"
+                    class="topbar-avatar profile-preview"
+                    alt="Avatar"
+                >
+
+                <div class="topbar-user">
+                    <span class="topbar-name">
+                        <?= htmlspecialchars($prenom . ' ' . $nom) ?>
+                    </span>
+                    <small class="topbar-role">Administrateur</small>
+                </div>
+
             </div>
+
+            <div class="profile-dropdown" id="profileDropdown">
+
+                <!-- HEADER -->
+                <div class="profile-header">
+                    <img src="<?= $avatar ?>" class="dropdown-avatar profile-preview">
+
+                    <div class="profile-info">
+                        <div class="profile-hello">
+                            Bonjour <strong><?= htmlspecialchars($prenom) ?></strong> 👋
+                        </div>
+                        <div class="profile-email">
+                            <?= htmlspecialchars($email) ?>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ACTIONS -->
+                <a href="admin.php?page=profile" class="dropdown-item">
+                    <i class="bi bi-gear"></i>
+                    <span>Gérer votre compte</span>
+                </a>
+
+                <form method="POST" action="logout.php">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <button type="submit" class="dropdown-item logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Se déconnecter</span>
+                    </button>
+                </form>
+
+            </div>
+
+
+
         </header>
 
         <!-- PAGE CONTENT -->
@@ -202,15 +291,27 @@ switch ($page) {
 
 </div>
 
-
 <script src="../assets/js/dashboard-theme.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-
 <!-- Bootstrap JS (OBLIGATOIRE POUR MODALS) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script>
+const btn = document.getElementById('profileMenuBtn');
+const menu = document.getElementById('profileDropdown');
+
+btn.addEventListener('click', () => {
+    menu.classList.toggle('show');
+});
+
+document.addEventListener('click', (e) => {
+    if (!btn.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.remove('show');
+    }
+});
+</script>
+
 
 </body>
 </html>

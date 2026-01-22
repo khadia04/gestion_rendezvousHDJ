@@ -273,6 +273,13 @@ if ($rdvYearPrev > 0) {
 
         <div class="col-md-6">
             <div class="chart-card" >
+                <p class="text-muted">
+                    <?= $mois
+                        ? "Mois de <strong>{$monthNames[$mois]}</strong>"
+                        : "Année <strong>$annee</strong>"
+                    ?>
+                </p>
+
                 <canvas id="rdvPerService"></canvas>
                  <h4 class="chart-title">
                     Répartition des rendez-vous par service
