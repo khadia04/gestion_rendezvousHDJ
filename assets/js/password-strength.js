@@ -3,6 +3,10 @@ const strengthBar = document.getElementById("strengthBar");
 const strengthText = document.getElementById("strengthText");
 const strengthWrapper = document.getElementById("strengthWrapper");
 const submitBtn = document.getElementById("submitBtn");
+let currentPasswordOk = false;
+let passwordStrong = false;
+let confirmPasswordOk = false;
+
 
 passwordInput.addEventListener("input", () => {
     const value = passwordInput.value;
@@ -26,18 +30,21 @@ passwordInput.addEventListener("input", () => {
         strengthBar.style.width = "33%";
         strengthBar.className = "progress-bar bg-danger";
         strengthText.textContent = "Mot de passe faible";
-        submitBtn.disabled = true;
+        passwordStrong = false;
+        
     } 
     else if (strength <= 4) {
         strengthBar.style.width = "66%";
         strengthBar.className = "progress-bar bg-warning";
         strengthText.textContent = "Mot de passe moyen";
-        submitBtn.disabled = true;
+        passwordStrong = false;
     } 
     else {
         strengthBar.style.width = "100%";
         strengthBar.className = "progress-bar bg-success";
         strengthText.textContent = "Mot de passe fort";
-        submitBtn.disabled = false;
+        passwordStrong = true;
     }
+    updateSubmitState();
+
 });

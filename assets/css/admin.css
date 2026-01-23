@@ -24,8 +24,16 @@ body {
     background: #0e6bb7;
     color: white;
     padding: 20px 0;
-    display: flex;
+    display: sticky;
+    top: 0;
+    flex-shrink: 0;         /* empêche le rétrécissement */
+    overflow-y: auto;      /* scroll interne si besoin */
     flex-direction: column;
+}
+/* ZONE DE CONTENU */
+.content-wrapper {
+    flex: 1;
+    overflow-y: auto;       /* scroll ici */
 }
 
 .sidebar-header {
@@ -2716,3 +2724,194 @@ body:not(.dark-dashboard) .dropdown-item.logout {
 body:not(.dark-dashboard) .dropdown-item.logout i {
     color: #dc3545 !important;
 }
+/* =========================
+   DROPDOWN ANIMATION (PRO)
+========================= */
+
+.profile-dropdown {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    pointer-events: none;
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+}
+
+.profile-dropdown.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* FORCER curseur sur bouton désactivé */
+button:disabled,
+.btn:disabled,
+button[disabled],
+.btn[disabled] {
+    cursor: not-allowed !important;
+    pointer-events: auto !important; /* clé magique */
+    opacity: 0.65;
+}
+
+/* empêcher animation au hover */
+button:disabled:hover,
+.btn:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.shake {
+    animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    50% { transform: translateX(4px); }
+    75% { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
+}
+
+.progress-bar {
+    transition: width 0.35s ease, background-color 0.3s ease;
+}
+
+#submitBtn {
+    transition: all 0.25s ease;
+}
+
+#submitBtn:enabled {
+    box-shadow: 0 8px 20px rgba(255, 193, 7, 0.35);
+    transform: translateY(0);
+}
+
+#submitBtn:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+    box-shadow: none;
+}
+
+.form-control {
+    transition: all 0.25s ease;
+}
+
+/* Focus */
+.form-control:focus {
+    border-color: #f5c542;
+    box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.25);
+}
+
+/* Succès */
+.form-control.is-valid {
+    border-color: #198754;
+}
+
+/* Erreur */
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+.tab-pane {
+    animation: tabFade 0.35s ease;
+}
+
+@keyframes tabFade {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-dropdown {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    pointer-events: none;
+    transition: all 0.25s ease;
+}
+
+.profile-dropdown.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.alert {
+    animation: fadeInAlert 0.4s ease;
+}
+
+@keyframes fadeInAlert {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================
+   DARK MODE - MESSAGES FORM
+========================= */
+
+body.dark-dashboard  .text-danger {
+    color: #ff6b6b !important; /* rouge doux mais visible */
+}
+
+body.dark-dashboard  .text-success {
+    color: #51cf66 !important; /* vert clean */
+}
+
+body.dark-dashboard  .text-warning {
+    color: #fcc419 !important;
+}
+
+body.dark-dashboard  small.text-danger,
+body.dark-dashboard  small.text-success {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+/* Fond subtil */
+body.dark-dashboard  small.text-danger {
+    background: rgba(255, 107, 107, 0.12);
+}
+
+body.dark-dashboard  small.text-success {
+    background: rgba(81, 207, 102, 0.12);
+}
+
+body.dark-dashboard  .form-control.is-invalid {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.25);
+}
+
+body.dark-dashboard  .form-control.is-valid {
+    border-color: #51cf66;
+    box-shadow: 0 0 0 2px rgba(81, 207, 102, 0.25);
+}
+
+
