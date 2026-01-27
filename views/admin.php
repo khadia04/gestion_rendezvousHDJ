@@ -1,103 +1,78 @@
 <?php
-require_once __DIR__ . '/../security_headers.php';
-
-session_start(); // 🔥 TOUJOURS EN PREMIER
-
+session_start();
 require_once '../middlewares/auth.php';
 require_once '../middlewares/csrf.php';
 require_once '../modele/database.php';
+require_once '../helpers/activity.php';
 
-// ===============================
-// AUTH
-// ===============================
 requireAuth('admin');
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    session_unset();
-    session_destroy();
-    header("Location: ../index.php?session=expired");
-    exit;
-}
+/* =========================
+   TRAITEMENT SERVICES (POST)
+========================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['page'] ?? '') === 'services') {
 
-// ===============================
-// CSRF TOKEN
-// ===============================
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-
-// ===============================
-// ROUTING
-// ===============================
-$page = $_GET['page'] ?? 'dashboard';
-
-// ===============================
-// TRAITEMENT POST PROFIL
-// ===============================
-if (
-    $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['update_profile']) &&
-    $page === 'profile'
-) {
-    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-        $_SESSION['error'] = "Session invalide.";
-        header("Location: admin.php?page=profile");
-        exit;
-    }
-
+    verifyCsrfToken();
     $db = getConnection();
-    $userId = $_SESSION['user_id'];
 
-    $prenom = trim($_POST['prenom']);
-    $nom = trim($_POST['nom']);
-    $tel = trim($_POST['telephone']);
+    /* AJOUT SERVICE */
+    if (isset($_POST['add_service'])) {
 
-    if (!$prenom || !$nom) {
-        $_SESSION['error'] = "Nom et prénom obligatoires.";
-        header("Location: admin.php?page=profile");
-        exit;
-    }
+        $designService = strtoupper(trim($_POST['designService']));
+        $max_rdv_jour  = $_POST['max_rdv_jour'];
+        $is_active     = $_POST['is_active'];
+        $jours         = $_POST['jours'] ?? [];
 
-    $photoName = null;
-    if (!empty($_FILES['photo']['name'])) {
-        $ext = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, ['jpg','jpeg','png'])) {
-            $_SESSION['error'] = "Format image invalide.";
-            header("Location: admin.php?page=profile");
+        $codeService = substr(
+            strtolower(preg_replace('/[^a-zA-Z]/', '', $designService)),
+            0,
+            6
+        );
+
+        try {
+            $db->beginTransaction();
+
+            $db->prepare(
+                "INSERT INTO service (codeService, designService) VALUES (?, ?)"
+            )->execute([$codeService, $designService]);
+
+            $db->prepare(
+                "INSERT INTO service_config (codeService, max_rdv_jour, is_active)
+                 VALUES (?, ?, ?)"
+            )->execute([$codeService, $max_rdv_jour, $is_active]);
+
+            if ($jours) {
+                $stmt = $db->prepare(
+                    "INSERT INTO service_jour (codeService, jour) VALUES (?, ?)"
+                );
+                foreach ($jours as $jour) {
+                    $stmt->execute([$codeService, $jour]);
+                }
+            }
+
+            $db->commit();
+
+            logActivity(
+                $_SESSION['user_id'],
+                "Ajout d’un service",
+                "Service ajouté : ".$designService,
+                $_SESSION['role']
+            );
+
+            $_SESSION['success'] = "Service ajouté avec succès";
+            header("Location: admin.php?page=services");
+            exit;
+
+        } catch (Exception $e) {
+            $db->rollBack();
+            $_SESSION['error'] = "Erreur lors de l’ajout du service";
+            header("Location: admin.php?page=services");
             exit;
         }
-
-        $photoName = "admin_$userId.$ext";
-        move_uploaded_file(
-            $_FILES['photo']['tmp_name'],
-            "../assets/img/$photoName"
-        );
     }
-
-    $sql = "
-        UPDATE agent
-        SET prenom_agent = :prenom,
-            nom_agent = :nom,
-            telephone_agent = :tel
-            ".($photoName ? ", photo = :photo" : "")."
-        WHERE id = :id
-    ";
-
-    $stmt = $db->prepare($sql);
-    $stmt->execute([
-        'prenom' => $prenom,
-        'nom' => $nom,
-        'tel' => $tel,
-        'photo' => $photoName,
-        'id' => $userId
-    ]);
-
-    $_SESSION['success'] = "Profil mis à jour avec succès.";
-    header("Location: admin.php?page=profile");
-    exit;
 }
 
-// ===============================
-// AFFICHAGE (HTML)
-// ===============================
+/* ==================================================
+   AFFICHAGE
+================================================== */
 require 'admin_layout.php';

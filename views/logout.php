@@ -19,6 +19,32 @@ if (
 }
 
 /* =========================
+   SAUVEGARDER USER ID AVANT DE TOUT DÉTRUIRE
+========================= */
+$userId = $_SESSION['user_id'] ?? null;
+
+/* =========================
+   LOG AVANT DE CASSER LA SESSION
+========================= */
+
+$duration = null;
+
+if (!empty($_SESSION['login_time'])) {
+    $duration = time() - $_SESSION['login_time'];
+}
+
+require_once '../helpers/activity.php';
+
+logActivity(
+    $_SESSION['user_id'],
+    'Déconnexion',
+    'Déconnexion du compte',
+    $_SESSION['role'],
+    $duration
+);
+
+
+/* =========================
    DESTRUCTION PROPRE
 ========================= */
 $_SESSION = [];

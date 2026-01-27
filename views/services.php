@@ -2,6 +2,8 @@
 require_once '../middlewares/auth.php';
 require_once '../middlewares/csrf.php';
 require_once '../modele/database.php';
+require_once __DIR__ . '/../helpers/activity.php';
+
 
 requireAuth('admin');
 
@@ -88,8 +90,15 @@ if (isset($_POST['add_service'])) {
         }
 
         $db->commit();
-        header("Location: admin.php?page=services");
-        exit;
+        logActivity(
+    $_SESSION['user_id'],
+    "Modification d’un service",
+    "Service modifié : " . $designService,
+    $_SESSION['role']
+);
+
+  /* MESSAGE UNIQUEMENT */
+$_SESSION['success'] = "Service ajouté avec succès";
 
     } catch (Exception $e) {
         $db->rollBack();
@@ -139,9 +148,19 @@ if (isset($_POST['update_service'])) {
             }
         }
 
-        $db->commit();
-        header("Location: admin.php?page=services");
-        exit;
+       $db->commit();
+
+/* LOG ACTIVITÉ */
+logActivity(
+    $_SESSION['user_id'],
+    "Modification d’un service",
+    "Service modifié : " . $designService,
+    $_SESSION['role']
+);
+
+$_SESSION['success'] = "Service modifié avec succès";
+
+
 
     } catch (Exception $e) {
         $db->rollBack();
@@ -172,8 +191,14 @@ if (isset($_POST['delete_service'])) {
         $stmt->execute([$codeService]);
 
         $db->commit();
-        header("Location: admin.php?page=services");
-        exit;
+        logActivity(
+    $_SESSION['user_id'],
+    "Suppression d’un service",
+    "Service supprimé (code) : " . $codeService,
+    $_SESSION['role']
+);
+/* MESSAGE UNIQUEMENT */
+$_SESSION['success'] = "Service supprimé avec succès";
 
     } catch (Exception $e) {
         $db->rollBack();

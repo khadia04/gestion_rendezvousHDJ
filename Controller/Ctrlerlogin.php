@@ -1,15 +1,15 @@
 <?php
 session_start();
-require_once '../modele/database.php';
 
+require_once '../modele/database.php';
+require_once '../helpers/activity.php';
 
 /* =========================
-   VALIDATION FORM
+   VALIDATION FORMULAIRE
 ========================= */
 if (empty($_POST['email']) || empty($_POST['pwd'])) {
     $_SESSION['error'] = "Veuillez remplir tous les champs";
     header("Location: ../index.php");
-
     exit;
 }
 
@@ -27,13 +27,11 @@ $stmt = $db->prepare("
     WHERE email = ?
 ");
 $stmt->execute([$email]);
-
-$user = $stmt->fetch();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
     $_SESSION['error'] = "Email ou mot de passe incorrect";
     header("Location: ../index.php");
-
     exit;
 }
 
@@ -43,17 +41,15 @@ if (!$user) {
 if ((int)$user['status'] !== 1) {
     $_SESSION['error'] = "Compte désactivé";
     header("Location: ../index.php");
-
     exit;
 }
 
 /* =========================
    ANTI BRUTE FORCE
 ========================= */
-if ($user['failed_attempts'] >= 30) {
+if ((int)$user['failed_attempts'] >= 30) {
     $_SESSION['error'] = "Compte temporairement bloqué";
     header("Location: ../index.php");
-
     exit;
 }
 
@@ -63,14 +59,13 @@ if ($user['failed_attempts'] >= 30) {
 if (!password_verify($password, $user['password'])) {
 
     $db->prepare("
-        UPDATE agent 
+        UPDATE agent
         SET failed_attempts = failed_attempts + 1
         WHERE id = ?
     ")->execute([$user['id']]);
 
     $_SESSION['error'] = "Email ou mot de passe incorrect";
     header("Location: ../index.php");
-
     exit;
 }
 
@@ -78,24 +73,38 @@ if (!password_verify($password, $user['password'])) {
    LOGIN OK
 ========================= */
 $db->prepare("
-    UPDATE agent 
+    UPDATE agent
     SET failed_attempts = 0
     WHERE id = ?
 ")->execute([$user['id']]);
 
 session_regenerate_id(true);
 
-$_SESSION['user_id'] = $user['id'];
-$_SESSION['email']   = $user['email'];
-$_SESSION['role']    = $user['role'];
-$_SESSION['username'] = $user['email']; // ou $user['username'] si tu as ce champ
-
+/* =========================
+   INITIALISATION SESSION
+========================= */
+$_SESSION['user_id']      = (int) $user['id'];
+$_SESSION['email']        = $user['email'];
+$_SESSION['role']         = $user['role'];
+$_SESSION['username']     = $user['email'];
+$_SESSION['login_time']   = time();
+$_SESSION['last_user_id'] = (int) $user['id'];
 
 $_SESSION['toast'] = "Connexion réussie";
 $_SESSION['toast_type'] = "success";
 
 /* =========================
-   JETON CSRF
+   LOG CONNEXION
+========================= */
+logActivity(
+    $_SESSION['user_id'],
+    'Connexion',
+    'Connexion au tableau de bord',
+    $_SESSION['role']
+);
+
+/* =========================
+   CSRF TOKEN
 ========================= */
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -104,32 +113,19 @@ if (empty($_SESSION['csrf_token'])) {
 /* =========================
    REDIRECTION PAR RÔLE
 ========================= */
-if ($user['role'] === 'admin') {
+if ($_SESSION['role'] === 'admin') {
     header("Location: /rendezvous/views/admin.php");
     exit;
 }
 
-if ($user['role'] === 'agent') {
+if ($_SESSION['role'] === 'agent') {
     header("Location: /rendezvous/views/agents.php");
     exit;
 }
 
-/* Sécurité fallback */
-header("Location: ../index.php");
-
-
 /* =========================
-   COMPTE VERROUILLÉ ?  
+   FALLBACK SÉCURITÉ
 ========================= */
-
-if ($user['locked_until'] && strtotime($user['locked_until']) > time()) {
-    $_SESSION['error'] = "Compte temporairement verrouillé";
-    header("Location: ../index.php");
-    exit;
-    
-}
-
-
+session_destroy();
+header("Location: ../index.php");
 exit;
-
-

@@ -1,20 +1,25 @@
 <?php
+
 require_once '../middlewares/auth.php';
 require_once '../middlewares/csrf.php';
 require_once '../modele/databaseAgent.php';
 require_once __DIR__ . '/../modele/database.php';
-
+require_once __DIR__ . '/../helpers/activity.php';
 
 requireAuth('admin');
 
-/* CSRF UNIQUEMENT EN POST */
+/* =========================
+   CSRF (POST uniquement)
+========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrfToken();
 }
 
-/* PAGINATION & FILTRES */
-$limit = 5;
-$pageNum = isset($_GET['p']) ? (int)$_GET['p'] : 1;
+/* =========================
+   PAGINATION & FILTRES
+========================= */
+$limit   = 5;
+$pageNum = isset($_GET['p']) && (int)$_GET['p'] > 0 ? (int)$_GET['p'] : 1;
 $offset = ($pageNum - 1) * $limit;
 
 $search = $_GET['search'] ?? '';
@@ -22,24 +27,22 @@ $role   = $_GET['role'] ?? '';
 
 $agents = getAgentsPaginated($search, $role, $limit, $offset);
 
-/* Récupérer les services pour l'ajout d'agent */
+/* =========================
+   SERVICES
+========================= */
 $services = executeSQL(
-  "SELECT codeService, designService FROM service"
+    "SELECT codeService, designService FROM service"
 )->fetchAll();
 
-/* Récupérer les services par agent pour l'édition */
+/* =========================
+   SERVICES PAR AGENT
+========================= */
 $agentServicesMap = [];
-
-foreach ($agents as $a) {
-    if ($a['role'] === 'agent') {
-        $agentServicesMap[$a['username']] = getAgentServices($a['username']);
-    }
-}
-/* Compter les services par agent */
 $agentServiceCount = [];
 
 foreach ($agents as $a) {
     if ($a['role'] === 'agent') {
+        $agentServicesMap[$a['username']] = getAgentServices($a['username']);
         $agentServiceCount[$a['username']] =
             count($agentServicesMap[$a['username']] ?? []);
     } else {
@@ -47,37 +50,31 @@ foreach ($agents as $a) {
     }
 }
 
-
-
-
-/* AJOUTER AGENT */
+/* =========================
+   AJOUT AGENT
+========================= */
 if (isset($_POST['add_agent'])) {
 
-    // 1. Sécurité
-    verifyCsrfToken();
-
-    $prenom    = $_POST['prenom_agent'];
-    $nom       = $_POST['nom_agent'];
-    $telephone = $_POST['telephone_agent'];
-    $username  = $_POST['username'];
-    $email     = $_POST['email'];
+    $prenom    = trim($_POST['prenom_agent']);
+    $nom       = trim($_POST['nom_agent']);
+    $telephone = trim($_POST['telephone_agent']);
+    $username  = trim($_POST['username']);
+    $email     = trim($_POST['email']);
     $role      = $_POST['role'];
 
-    // 2. Mot de passe temporaire (exemple)
-    $password = password_hash('123456', PASSWORD_DEFAULT);
-
-    // 🔒 Vérification : un agent doit avoir au moins un service
     if ($role === 'agent' && empty($_POST['services'])) {
         $_SESSION['error'] = "Un agent doit avoir au moins un service.";
         header("Location: admin.php?page=agents");
         exit;
     }
 
+    $password = password_hash('123456', PASSWORD_DEFAULT);
 
-    // 3. Insertion agent
     prepare_executeSQL(
-        "INSERT INTO agent (prenom_agent, nom_agent, telephone_agent, username, email, role, password, status)
-         VALUES (:prenom, :nom, :tel, :username, :email, :role, :password, 1)",
+        "INSERT INTO agent 
+        (prenom_agent, nom_agent, telephone_agent, username, email, role, password, status)
+        VALUES 
+        (:prenom, :nom, :tel, :username, :email, :role, :password, 1)",
         [
             'prenom'   => $prenom,
             'nom'      => $nom,
@@ -89,9 +86,7 @@ if (isset($_POST['add_agent'])) {
         ]
     );
 
-    // 4. Attribution des services UNIQUEMENT si agent
-    if ($role === 'agent' && !empty($_POST['services'])) {
-
+    if ($role === 'agent') {
         foreach ($_POST['services'] as $codeService) {
             prepare_executeSQL(
                 "INSERT INTO agent_service (agent_username, codeService)
@@ -104,83 +99,100 @@ if (isset($_POST['add_agent'])) {
         }
     }
 
+    logActivity(
+        $_SESSION['user_id'],
+        "Ajout d’un agent",
+        "Agent {$prenom} {$nom} ajouté (rôle : {$role})",
+        $_SESSION['role']
+    );
+
     $_SESSION['success'] = "Agent ajouté avec succès";
-    header("Location: admin.php?page=agents");
-    exit;
+    
 }
 
+/* =========================
+   MODIFICATION AGENT
+========================= */
 if (isset($_POST['edit_agent'])) {
 
-  $username = $_POST['username'];
-  $role     = $_POST['role'];
-  $prenom    = $_POST['prenom_agent'];
-  $nom       = $_POST['nom_agent'];
-  $telephone = $_POST['telephone_agent'];
+    $username  = $_POST['username'];
+    $role      = $_POST['role'];
+    $prenom    = trim($_POST['prenom_agent']);
+    $nom       = trim($_POST['nom_agent']);
+    $telephone = trim($_POST['telephone_agent']);
 
+    if ($role === 'agent' && empty($_POST['edit_services'])) {
+        $_SESSION['error'] = "Un agent doit avoir au moins un service.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
 
-  // 🔒 Si on passe admin → agent, il faut des services
-  if ($role === 'agent' && empty($_POST['edit_services'])) {
-      $_SESSION['error'] = "Un agent doit avoir au moins un service.";
-      header("Location: admin.php?page=agents");
-      exit;
-  }
+    prepare_executeSQL(
+        "UPDATE agent 
+         SET prenom_agent = :prenom,
+             nom_agent = :nom,
+             telephone_agent = :telephone,
+             role = :role
+         WHERE username = :username",
+        [
+            'prenom'    => $prenom,
+            'nom'       => $nom,
+            'telephone' => $telephone,
+            'role'      => $role,
+            'username'  => $username
+        ]
+    );
 
-  // 1. Mettre à jour le rôle
-  prepare_executeSQL(
-    "UPDATE agent 
-     SET prenom_agent = :prenom,
-         nom_agent = :nom,
-         telephone_agent = :telephone,
-         role = :role
-     WHERE username = :username",
-    [
-        'prenom'   => $prenom,
-        'nom'      => $nom,
-        'telephone'=> $telephone,
-        'role'     => $role,
-        'username' => $username
-    ]
-);
+    prepare_executeSQL(
+        "DELETE FROM agent_service WHERE agent_username = :username",
+        ['username' => $username]
+    );
 
+    if ($role === 'agent') {
+        foreach ($_POST['edit_services'] as $codeService) {
+            prepare_executeSQL(
+                "INSERT INTO agent_service (agent_username, codeService)
+                 VALUES (:username, :codeService)",
+                [
+                    'username'    => $username,
+                    'codeService' => $codeService
+                ]
+            );
+        }
+    }
 
-  // 2. Nettoyer TOUJOURS les anciens services
-  prepare_executeSQL(
-      "DELETE FROM agent_service WHERE agent_username = :username",
-      ['username' => $username]
-  );
+    logActivity(
+        $_SESSION['user_id'],
+        "Modification d’un agent",
+        "Agent {$prenom} {$nom} modifié (rôle : {$role})",
+        $_SESSION['role']
+    );
 
-  // 3. Réinsérer uniquement si agent
-  if ($role === 'agent') {
-      foreach ($_POST['edit_services'] as $codeService) {
-          prepare_executeSQL(
-              "INSERT INTO agent_service (agent_username, codeService)
-              VALUES (:username, :codeService)",
-              [
-                  'username' => $username,
-                  'codeService' => $codeService
-              ]
-          );
-      }
-  }
-
-  $_SESSION['success'] = "Agent modifié avec succès";
-  header("Location: admin.php?page=agents");
-  exit;
-
+    $_SESSION['success'] = "Agent modifié avec succès";
+    
 }
 
-
-
-/* ACTIVER */
+/* =========================
+   ACTIVATION
+========================= */
 if (isset($_POST['activate_agent'], $_POST['username'])) {
+
     toggleAgentStatus($_POST['username'], 1);
+
+    logActivity(
+        $_SESSION['user_id'],
+        "Activation d’un agent",
+        "Agent activé : ".$_POST['username'],
+        $_SESSION['role']
+    );
+
     $_SESSION['success'] = "Agent activé avec succès";
-    header("Location: admin.php?page=agents");
-    exit;
+   
 }
 
-
-/* DESACTIVER */
+/* =========================
+   DÉSACTIVATION
+========================= */
 if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
     if ($_POST['username'] === $_SESSION['username']) {
@@ -188,29 +200,22 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
     } elseif ($_POST['role'] === 'admin') {
         $_SESSION['error'] = "Impossible de désactiver un administrateur.";
     } else {
+
         toggleAgentStatus($_POST['username'], 0);
+
+        logActivity(
+            $_SESSION['user_id'],
+            "Désactivation d’un agent",
+            "Agent désactivé : ".$_POST['username'],
+            $_SESSION['role']
+        );
+
         $_SESSION['success'] = "Agent désactivé avec succès";
     }
 
-    header("Location: admin.php?page=agents");
-    exit;
-
-     // Mise à jour rôle
-    prepare_executeSQL(
-        "UPDATE agent SET email = :email, role = :role WHERE username = :username",
-        [
-            'email' => $_POST['email'],
-            'role' => $_POST['role'],
-            'username' => $_POST['username']
-        ]
-    );
-
-    echo "<script>
-        alert('Agent modifié avec succès');
-        window.location.href='admin.php?page=agents';
-    </script>";
-
+    
 }
+
 ?>
 
 
