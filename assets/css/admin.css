@@ -2929,3 +2929,222 @@ body.dark-dashboard  .form-control.is-valid {
   }
 }
 
+/* =========================
+   VARIABLES PAR DÉFAUT (MODE CLAIR)
+========================= */
+:root {
+  --bg-card: #ffffff;
+  --bg-page: #f8fafc;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --icon-bg: #ffffff;
+  --icon-color: #374151;
+  --shadow-soft: 0 6px 20px rgba(0,0,0,.06);
+}
+
+/* =========================
+   MODE SOMBRE (IMPORTANT)
+========================= */
+body.dark-dashboard {
+  --bg-card: #0b1220;
+  --bg-page: #020617;
+  --text-main: #e5e7eb;
+  --text-muted: #9ca3af;
+  --icon-bg: #111827;
+  --icon-color: #e5e7eb;
+  --shadow-soft: 0 6px 20px rgba(0,0,0,.45);
+}
+
+/* =========================
+   ACTIVITY CARD
+========================= */
+.activity-card {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+  border-left: 5px solid var(--primary);
+  box-shadow: var(--shadow-soft);
+  transition: all .25s ease;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
+}
+
+/* =========================
+   TEXT
+========================= */
+.activity-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.activity-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+
+.activity-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* =========================
+   ICON ACTIONS
+========================= */
+.icon-action {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: none;
+  background: var(--icon-bg);
+  color: var(--icon-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: all .25s ease;
+}
+
+.icon-action:hover {
+  transform: translateY(-2px);
+  color: var(--primary);
+}
+
+.icon-action.primary {
+  color: #2563eb;
+}
+
+.icon-action.danger {
+  color: #dc2626;
+}
+
+/* =========================
+   INPUTS
+========================= */
+input.form-control {
+  border-radius: 12px;
+}
+
+/* =========================
+   TAB ANIMATION
+========================= */
+.tab-pane {
+  animation: fadeSlide .25s ease;
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+  .activity-card {
+    padding: 14px;
+  }
+
+  .icon-action {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* ===== Activity Icons ===== */
+.activity-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Couleurs */
+.icon-success {
+  background: #e6f9f0;
+  color: #16a34a;
+}
+
+.icon-primary {
+  background: #eef2ff;
+  color: #2563eb;
+}
+
+.icon-danger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.icon-muted {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.icon-default {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+/* Apparition douce */
+.activity-card {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fadeUp .4s ease forwards;
+}
+
+.activity-card:nth-child(1) { animation-delay: .05s; }
+.activity-card:nth-child(2) { animation-delay: .1s; }
+.activity-card:nth-child(3) { animation-delay: .15s; }
+.activity-card:nth-child(4) { animation-delay: .2s; }
+.activity-card:nth-child(5) { animation-delay: .25s; }
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.activity-card {
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(0,0,0,.08);
+}
+
+.activity-icon {
+  transition: transform .25s ease;
+}
+
+.activity-card:hover .activity-icon {
+  transform: scale(1.08);
+}
+
+.activity-card {
+  transition: all .25s ease;
+}
+

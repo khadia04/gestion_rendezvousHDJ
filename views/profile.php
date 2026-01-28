@@ -88,8 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     );
 
     $_SESSION['success'] = "Profil mis à jour avec succès.";
-    header("Location: admin.php?page=profile#info");
-    exit;
+    
 }
 
 /* =========================================================
@@ -176,6 +175,55 @@ $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 
 $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ===============================
+// GROUPER LES ACTIVITÉS PAR JOUR
+// ===============================
+$groupedActivities = [];
+
+foreach ($activities as $act) {
+
+    $dateKey = date('Y-m-d', strtotime($act['created_at']));
+
+    // Libellé humain
+    if ($dateKey === date('Y-m-d')) {
+        $label = "Aujourd’hui";
+    } elseif ($dateKey === date('Y-m-d', strtotime('-1 day'))) {
+        $label = "Hier";
+    } else {
+        $dateObj = new DateTime($dateKey);
+        $label = $dateObj->format('d F Y');
+
+    }
+
+    // Icône selon l’action
+    $icon = 'bi-activity';
+    $iconClass = 'icon-default';
+
+    if (stripos($act['action'], 'connexion') !== false) {
+        $icon = 'bi-box-arrow-in-right';
+        $iconClass = 'icon-success';
+    } elseif (stripos($act['action'], 'déconnexion') !== false) {
+        $icon = 'bi-box-arrow-left';
+        $iconClass = 'icon-muted';
+    } elseif (stripos($act['action'], 'export') !== false) {
+        $icon = 'bi-file-earmark-pdf';
+        $iconClass = 'icon-danger';
+    } elseif (stripos($act['action'], 'mise à jour') !== false) {
+        $icon = 'bi-pencil-square';
+        $iconClass = 'icon-primary';
+    } elseif (stripos($act['action'], 'suppression') !== false) {
+        $icon = 'bi-trash';
+        $iconClass = 'icon-danger';
+    }
+
+    $act['icon'] = $icon;
+    $act['iconClass'] = $iconClass;
+    $groupedActivities[$label][] = $act;
+    
+
+}
+
 ?>
 
 
@@ -281,6 +329,8 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                     </div>
 
+                    <div class="row">
+
                     <!-- Prénom -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Prénom</label>
@@ -330,6 +380,7 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             value="<?= htmlspecialchars($tel ?? '') ?>"
                         >
                     </div>
+                    </div>
 
                     <!-- Bouton -->
                     <div class="col-12 mt-3">
@@ -365,7 +416,10 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
+                <h5>🔒 Pour votre sécurité, choisissez un mot de passe fort.</h5>
+
                 <!-- Mot de passe actuel -->
+                 <div class="row">
                 <div class="col-md-6">
                     <label class="form-label">Mot de passe actuel</label>
                     <input
@@ -405,6 +459,7 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <small id="confirmPasswordMsg" class="d-none"></small>
 
                 </div>
+                
 
                 <!-- FORCE MOT DE PASSE -->
                 <div class="col-md-6" id="strengthWrapper" style="display:none;">
@@ -413,6 +468,7 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div id="strengthBar" class="progress-bar" style="width:0%"></div>
                     </div>
                     <small id="strengthText"></small>
+                </div>
                 </div>
 
                 <!-- BOUTON -->
@@ -438,123 +494,174 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             <h4 class="mb-4">Historique des activités</h4>
 
-
+            <!-- FILTRES -->
             <form method="get" action="admin.php#activity" class="row g-3 mb-4">
 
                 <input type="hidden" name="page" value="profile">
 
-                <!-- Recherche par nom -->
+                <!-- Recherche -->
                 <div class="col-md-3">
-                    <input type="text" name="q" class="form-control"
-                        placeholder="Nom, prénom ou actions"
-                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+                    <label for="q">Recherche</label>
+                    <input
+                        id="q"
+                        name="q"
+                        type="text"
+                        class="form-control"
+                        placeholder="Nom, prénom ou action"
+                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
+                    >
                 </div>
 
                 <!-- Date début -->
                 <div class="col-md-2">
-                    <input type="date" name="date_from" class="form-control"
-                        value="<?= $_GET['date_from'] ?? '' ?>">
+                    <label>Date début</label>
+                    <input
+                        type="date"
+                        name="date_from"
+                        class="form-control"
+                        value="<?= $_GET['date_from'] ?? '' ?>"
+                    >
                 </div>
 
                 <!-- Date fin -->
                 <div class="col-md-2">
-                    <input type="date" name="date_to" class="form-control"
-                        value="<?= $_GET['date_to'] ?? '' ?>">
+                    <label>Date fin</label>
+                    <input
+                        type="date"
+                        name="date_to"
+                        class="form-control"
+                        value="<?= $_GET['date_to'] ?? '' ?>"
+                    >
                 </div>
 
-                <!-- Boutons -->
-                <div class="col-md-2 d-flex gap-2">
-                    <button class="btn btn-primary w-100">Filtrer</button>
-                    <a href="admin.php?page=profile#activity" class="btn btn-outline-secondary w-100">
-                        Réinitialiser
-                    </a>
+                <!-- Actions -->
+                <div class="col-md-3 d-flex gap-3 align-items-end">
+
+                    <button class="icon-action primary" title="Filtrer">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+
                     <a
-                        href="../exports/activities_pdf.php?
-                            q=<?= urlencode($_GET['q'] ?? '') ?>
-                            &date_from=<?= urlencode($_GET['date_from'] ?? '') ?>
-                            &date_to=<?= urlencode($_GET['date_to'] ?? '') ?>"
-                        class="btn btn-outline-danger"
-                        target="_blank"
+                        href="admin.php?page=profile#activity"
+                        class="icon-action"
+                        title="Réinitialiser"
                     >
-                        Export PDF
+                        <i class="bi bi-arrow-clockwise"></i>
                     </a>
 
+                    <a
+                        href="../exports/activities_pdf.php?<?= http_build_query($_GET) ?>"
+                        target="_blank"
+                        class="icon-action danger"
+                        title="Exporter en PDF"
+                    >
+                        <i class="bi bi-file-earmark-pdf"></i>
+                    </a>
 
                 </div>
             </form>
 
-
-            <?php if (empty($activities)): ?>
+            <!-- CONTENU ACTIVITÉS -->
+            <?php if (empty($groupedActivities)): ?>
                 <p class="text-muted">Aucune activité enregistrée.</p>
             <?php else: ?>
-                <ul class="list-group list-group-flush">
-                    <?php foreach ($activities as $act): ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-start">
+
+                <?php foreach ($groupedActivities as $day => $acts): ?>
+
+                    <!-- TITRE JOUR -->
+                    <div class="activity-day">
+                        <i class="bi bi-calendar-event"></i>
+                        <?= htmlspecialchars($day) ?>
+                    </div>
+
+                    <?php foreach ($acts as $act): ?>
+                        <div class="activity-card d-flex align-items-start gap-3"
+                            data-action="<?= strtolower($act['action']) ?>"
+                            data-user="<?= strtolower($act['prenom_agent'].' '.$act['nom_agent']) ?>"
+                            data-role="<?= strtolower($act['role']) ?>"
+                            data-ip="<?= $act['ip_address'] ?>"
+                        >
+
+                        <!-- ICÔNE -->
+                        <div class="activity-icon <?= $act['iconClass'] ?>">
+                            <i class="bi <?= $act['icon'] ?>"></i>
+                        </div>
+
+                        <!-- CONTENU -->
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+
                             <div>
-                                <strong><?= htmlspecialchars($act['action']) ?></strong>
-                                <span >– <?= htmlspecialchars($act['prenom_agent'] . ' ' . $act['nom_agent']) ?></span>
-
-                                <?php if ($act['role'] === 'admin'): ?>
-                                    <span class="badge bg-primary ms-2">Admin</span>
-                                <?php endif; ?>
-
-                                <?php if ($act['role'] === 'agent'): ?>
-                                    <span class="badge bg-secondary ms-2">Agent</span>
-                                <?php endif; ?>
-
-                                <?php if ($act['description']): ?>
-                                    <div class="text-muted small">
-                                        <?= htmlspecialchars($act['description']) ?>
-                                    </div>
-                                <?php endif; ?>
-
-                                <div class="text-muted small">
-                                    IP : <?= htmlspecialchars($act['ip_address']) ?>
+                                <div class="activity-title">
+                                <?= htmlspecialchars($act['action']) ?>
+                                <span class="badge <?= $act['role'] === 'admin' ? 'bg-primary' : 'bg-secondary' ?> ms-2">
+                                    <?= ucfirst($act['role']) ?>
+                                </span>
                                 </div>
 
-                                <?php if ($act['action'] === 'Déconnexion' && !empty($act['session_duration'])): ?>
-                                    <div class="text-muted small">
-                                        Durée de session : <?= gmdate('H:i:s', $act['session_duration']) ?>
-                                    </div>
+                                <div class="activity-desc">
+                                <?= htmlspecialchars($act['prenom_agent'].' '.$act['nom_agent']) ?>
+                                </div>
+
+                                <?php if (!empty($act['description'])): ?>
+                                <div class="activity-meta">
+                                    <?= htmlspecialchars($act['description']) ?>
+                                </div>
                                 <?php endif; ?>
 
+                                <div class="activity-meta">
+                                IP : <?= htmlspecialchars($act['ip_address']) ?>
+                                </div>
                             </div>
 
-                            <span class="badge bg-light text-dark">
-                                <?= date('d/m/Y H:i', strtotime($act['created_at'])) ?>
-                            </span>
-                        </li>
+                            <div class="activity-meta">
+                                <?= date('H:i', strtotime($act['created_at'])) ?>
+                            </div>
+
+                            </div>
+                        </div>
+
+                        </div>
                     <?php endforeach; ?>
-                </ul>
-                
+
+                <?php endforeach; ?>
+
+                <!-- PAGINATION -->
+                <?php if ($totalPages > 1): ?>
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center">
+
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <li class="page-item <?= $i === $pageAct ? 'active' : '' ?>">
+                                    <a
+                                        class="page-link"
+                                        href="admin.php?page=profile&page_act=<?= $i ?>#activity"
+                                    >
+                                        <?= $i ?>
+                                    </a>
+                                </li>
+                            <?php endfor; ?>
+
+                        </ul>
+                    </nav>
+                <?php endif; ?>
+
             <?php endif; ?>
-            <?php if ($totalPages > 1): ?>
-                <nav class="mt-4">
-                    <ul class="pagination justify-content-center">
-
-                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <li class="page-item <?= $i === $pageAct ? 'active' : '' ?>">
-                            <a class="page-link"
-                            href="admin.php?page=profile&page_act=<?= $i ?>#activity">
-                            <?= $i ?>
-                            </a>
-                        </li>
-                        <?php endfor; ?>
-
-                    </ul>
-                </nav>
-            <?php endif; ?>
-
 
         </div>
 
-
     </div>  <!-- fermeture tab content -->
-
 </div>
 
 
 <script>
+// ===============================
+// VARIABLES GLOBALES (OBLIGATOIRE)
+// ===============================
+let currentPasswordOk = false;
+let confirmPasswordOk = false;
+let passwordStrong = false;
+
 // ===============================
 // PREVIEW PHOTO INSTANTANÉE
 // ===============================
@@ -570,12 +677,10 @@ function previewProfilePhoto(input) {
     }
 
     const reader = new FileReader();
-    reader.onload = function (e) {
-        // Image dans le formulaire
+    reader.onload = e => {
         const preview = document.getElementById('profilePreview');
         if (preview) preview.src = e.target.result;
 
-        // Image dans la topbar
         const topbarAvatar = document.querySelector('.topbar .avatar');
         if (topbarAvatar) topbarAvatar.src = e.target.result;
     };
@@ -584,25 +689,8 @@ function previewProfilePhoto(input) {
 }
 
 // ===============================
-// MISE À JOUR NOM / PRÉNOM LIVE
+// DEBOUNCE
 // ===============================
-document.addEventListener('DOMContentLoaded', () => {
-
-    const prenomInput = document.getElementById('prenomInput');
-    const nomInput = document.getElementById('nomInput');
-    const topbarName = document.querySelector('.profile-name');
-
-    function updateTopbarName() {
-        if (!topbarName) return;
-        topbarName.textContent = prenomInput.value + ' ' + nomInput.value;
-    }
-
-    if (prenomInput && nomInput) {
-        prenomInput.addEventListener('input', updateTopbarName);
-        nomInput.addEventListener('input', updateTopbarName);
-    }
-});
-
 function debounce(fn, delay = 500) {
     let timer;
     return (...args) => {
@@ -612,168 +700,180 @@ function debounce(fn, delay = 500) {
 }
 
 // ===============================
-// VÉRIFICATION MOT DE PASSE ACTUEL
+// DOM READY
+// ===============================
 document.addEventListener('DOMContentLoaded', () => {
+
+    const submitBtn = document.getElementById('submitBtn');
+
+    // ===============================
+    // VÉRIFICATION MOT DE PASSE ACTUEL
+    // ===============================
     const currentInput = document.getElementById('currentPassword');
-    const msg = document.getElementById('currentPasswordMsg');
+    const currentMsg = document.getElementById('currentPasswordMsg');
 
-    if (!currentInput || !msg || !submitBtn) return;
+    if (currentInput && currentMsg) {
+        const checkCurrentPassword = debounce(() => {
+            const value = currentInput.value.trim();
 
-    const debouncedCheckCurrentPassword = debounce(() => {
-    const value = currentInput.value.trim();
+            if (value.length < 4) {
+                currentMsg.className = 'd-none';
+                currentPasswordOk = false;
+                updateSubmitState();
+                return;
+            }
 
-    if (value.length < 4) {
-        msg.className = 'd-none';
-        currentPasswordOk = false;
-        updateSubmitState();
-        return;
+            fetch('../controller/checkCurrentPassword.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'password=' + encodeURIComponent(value)
+            })
+            .then(res => res.json())
+            .then(data => {
+                currentMsg.classList.remove('d-none');
+
+                if (data.status === 'ok') {
+                    currentMsg.textContent = 'Mot de passe correct';
+                    currentMsg.className = 'text-success fade-in';
+                    currentPasswordOk = true;
+                } else {
+                    currentMsg.textContent = 'Mot de passe incorrect';
+                    currentMsg.className = 'text-danger shake';
+                    currentPasswordOk = false;
+                }
+
+                updateSubmitState();
+            });
+        }, 500);
+
+        currentInput.addEventListener('input', checkCurrentPassword);
     }
 
-    fetch('../controller/checkCurrentPassword.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'password=' + encodeURIComponent(value)
-    })
-    .then(res => res.json())
-    .then(data => {
-        msg.classList.remove('d-none');
+    // ===============================
+    // FORCE DU MOT DE PASSE
+    // ===============================
+    const newPasswordInput = document.getElementById('password');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    const strengthWrapper = document.getElementById('strengthWrapper');
 
-        if (data.status === 'ok') {
-            msg.textContent = 'Mot de passe correct';
-            msg.className = 'text-success fade-in';
-            currentPasswordOk = true;
+    if (newPasswordInput) {
+        newPasswordInput.addEventListener('input', () => {
+            const value = newPasswordInput.value;
+            let strength = 0;
+
+            if (value.length >= 8) strength++;
+            if (/[A-Z]/.test(value)) strength++;
+            if (/[0-9]/.test(value)) strength++;
+            if (/[^A-Za-z0-9]/.test(value)) strength++;
+
+            if (!value) {
+                strengthWrapper.style.display = 'none';
+                passwordStrong = false;
+                updateSubmitState();
+                return;
+            }
+
+            strengthWrapper.style.display = 'block';
+            strengthBar.style.width = (strength * 25) + '%';
+
+            if (strength >= 3) {
+                strengthBar.className = 'progress-bar bg-success';
+                strengthText.textContent = 'Mot de passe fort';
+                passwordStrong = true;
+            } else {
+                strengthBar.className = 'progress-bar bg-danger';
+                strengthText.textContent = 'Mot de passe faible';
+                passwordStrong = false;
+            }
+
+            updateSubmitState();
+        });
+    }
+
+    // ===============================
+    // CONFIRMATION MOT DE PASSE
+    // ===============================
+    const confirmInput = document.getElementById('confirm');
+    const confirmMsg = document.getElementById('confirmPasswordMsg');
+
+    function checkPasswordMatch() {
+        if (!newPasswordInput || !confirmInput) return;
+
+        const newPass = newPasswordInput.value.trim();
+        const confirmPass = confirmInput.value.trim();
+
+        if (!confirmPass) {
+            confirmMsg.classList.add('d-none');
+            confirmInput.classList.remove('is-valid', 'is-invalid');
+            confirmPasswordOk = false;
+            updateSubmitState();
+            return;
+        }
+
+        confirmMsg.classList.remove('d-none');
+
+        if (newPass === confirmPass) {
+            confirmMsg.textContent = 'Les mots de passe correspondent';
+            confirmMsg.className = 'text-success fade-in';
+            confirmInput.classList.add('is-valid');
+            confirmInput.classList.remove('is-invalid');
+            confirmPasswordOk = true;
         } else {
-            msg.textContent = 'Mot de passe incorrect';
-            msg.className = 'text-danger shake';
-            currentPasswordOk = false;
+            confirmMsg.textContent = 'Les mots de passe ne correspondent pas';
+            confirmMsg.className = 'text-danger shake';
+            confirmInput.classList.add('is-invalid');
+            confirmInput.classList.remove('is-valid');
+            confirmPasswordOk = false;
         }
 
         updateSubmitState();
-    });
-}, 500);
-
-currentInput.addEventListener('input', debouncedCheckCurrentPassword);
-
-});
-
-// ===============================
-// VÉRIFICATION CONFIRMATION MOT DE PASSE   
-// ===============================
-// SÉLECTEURS
-// ===============================
-const newPasswordInput = document.getElementById('password');
-const confirmInput = document.getElementById('confirm');
-const confirmMsg = document.getElementById('confirmPasswordMsg');
-
-const profileBtn = document.querySelector('.profile-btn');
-const dropdown = document.querySelector('.profile-dropdown');
-
-
-// ===============================
-// VALIDATION CONFIRMATION MOT DE PASSE
-// ===============================
-function checkPasswordMatch() {
-    const newPass = newPasswordInput.value.trim();
-    const confirmPass = confirmInput.value.trim();
-
-    // Champ vide → reset
-    if (confirmPass.length === 0) {
-        confirmMsg.classList.add('d-none');
-        confirmInput.classList.remove('is-valid', 'is-invalid');
-        confirmPasswordOk = false;
-        updateSubmitState();
-        return;
     }
 
-    confirmMsg.classList.remove('d-none');
-
-    if (newPass === confirmPass) {
-        confirmMsg.textContent = 'Les mots de passe correspondent';
-        confirmMsg.className = 'text-success fade-in';
-        confirmInput.classList.add('is-valid');
-        confirmInput.classList.remove('is-invalid');
-        confirmPasswordOk = true;
-    } else {
-        confirmMsg.textContent = 'Les mots de passe ne correspondent pas';
-        confirmMsg.className = 'text-danger shake';
-        confirmInput.classList.add('is-invalid');
-        confirmInput.classList.remove('is-valid');
-        confirmPasswordOk = false;
+    if (newPasswordInput && confirmInput) {
+        newPasswordInput.addEventListener('input', checkPasswordMatch);
+        confirmInput.addEventListener('input', checkPasswordMatch);
     }
 
-    updateSubmitState();
-}
-
-
-// ===============================
-// ÉTAT DU BOUTON SUBMIT
-// ===============================
-function updateSubmitState() {
-    submitBtn.disabled = !(
-        currentPasswordOk &&
-        passwordStrong &&
-        confirmPasswordOk
-    );
-}
-
-
-// ===============================
-// EVENTS
-// ===============================
-confirmInput.addEventListener('input', checkPasswordMatch);
-newPasswordInput.addEventListener('input', checkPasswordMatch);
-
-
-// ===============================
-// DROPDOWN PROFIL
-// ===============================
-if (profileBtn && dropdown) {
-    profileBtn.addEventListener('click', () => {
-        dropdown.classList.toggle('show');
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    const hash = window.location.hash;
-
-    if (!hash) return;
-
-    const map = {
-        '#info': 'info-tab',
-        '#security': 'security-tab',
-        '#activity': 'activity-tab'
-    };
-
-    if (map[hash]) {
-        const tabTrigger = document.getElementById(map[hash]);
-        if (tabTrigger) {
-            new bootstrap.Tab(tabTrigger).show();
-        }
+    // ===============================
+    // ÉTAT DU BOUTON
+    // ===============================
+    function updateSubmitState() {
+        if (!submitBtn) return;
+        submitBtn.disabled = !(
+            currentPasswordOk &&
+            passwordStrong &&
+            confirmPasswordOk
+        );
     }
 });
-
-
-document.addEventListener('DOMContentLoaded', () => {
-
-  const tabs = document.querySelectorAll('[data-bs-toggle="tab"]');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('shown.bs.tab', e => {
-      localStorage.setItem('activeProfileTab', e.target.getAttribute('data-bs-target'));
-    });
-  });
-
-  const activeTab = localStorage.getItem('activeProfileTab');
-  if (activeTab) {
-    const trigger = document.querySelector(`[data-bs-target="${activeTab}"]`);
-    if (trigger) {
-      new bootstrap.Tab(trigger).show();
-    }
-  }
-});
-
-
 </script>
 
+<script>
+// ===============================
+// MÉMORISATION ONGLET ACTIF
+// ===============================
+document.addEventListener('DOMContentLoaded', () => {
 
+    const tabs = document.querySelectorAll('[data-bs-toggle="tab"]');
 
+    // Sauvegarde l’onglet actif
+    tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', e => {
+            const target = e.target.getAttribute('data-bs-target');
+            if (target) {
+                localStorage.setItem('activeProfileTab', target);
+            }
+        });
+    });
+
+    // Restaure l’onglet actif après refresh
+    const activeTab = localStorage.getItem('activeProfileTab');
+    if (activeTab) {
+        const trigger = document.querySelector(`[data-bs-target="${activeTab}"]`);
+        if (trigger) {
+            new bootstrap.Tab(trigger).show();
+        }
+    }
+});
+</script>
