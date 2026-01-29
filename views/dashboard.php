@@ -10,7 +10,8 @@ $annee = isset($_GET['year'])
     ? (int) $_GET['year'] 
     : date('Y');
 
-$rdvPerMonth   = getRdvPerMonth($mois, $annee);
+// IMPORTANT : le graphique mensuel dépend UNIQUEMENT de l'année
+$rdvPerMonth = getRdvPerMonth(null, $annee);
 
 $isAdmin  = ($_SESSION['role'] === 'admin');
 $username = $_SESSION['username'];
@@ -203,7 +204,7 @@ if ($rdvYearPrev > 0) {
 
 
     <!-- FILTRAGE -->
-    <form method="get" action="admin.php" class="row g-3 mb-4">
+    <form id="filterForm" method="get" action="admin.php" class="row g-3 mb-4">
     <input type="hidden" name="month" value="<?= htmlspecialchars($mois) ?>">
     <input type="hidden" name="year" value="<?= htmlspecialchars($annee) ?>">
 
@@ -261,7 +262,9 @@ if ($rdvYearPrev > 0) {
     <div class="row g-4 mt-2">
         <div class="col-md-6">
             <div class="chart-card">
-                <h6 class="mb-3 ">Rendez-vous par mois</h6>
+                <h6 class="mb-3">
+                    Évolution mensuelle des rendez-vous – <?= $annee ?>
+                </h6>
                 <canvas id="rdvPerMonth" ></canvas>
                 <h4 class="chart-title" >
                     Évolution mensuelle des rendez-vous
@@ -422,63 +425,6 @@ new Chart(document.getElementById("rdvPerMonth"), {
         }
     }
 });
-
-new Chart(document.getElementById("rdvPerMonth"), {
-    type: "line",
-    data: {
-        labels: <?= json_encode($months) ?>,
-        datasets: [{
-            label: "Rendez-vous",
-            data: <?= json_encode($monthData) ?>,
-            borderColor: "#006aff",
-            backgroundColor: "rgba(0,106,255,0.15)",
-            tension: 0.4,
-            borderWidth: 3,
-            fill: true
-        }]
-    },
-    options: {
-    responsive: true,
-    maintainAspectRatio: false,
-
-    plugins: {
-        legend: {
-            labels: {
-                color: isDark ? "#e5e7eb" : "#1f2937",
-                font: { size: 12 }
-            }
-        },
-        tooltip: {
-            backgroundColor: isDark ? "#020617" : "#ffffff",
-            titleColor: isDark ? "#ffffff" : "#000000",
-            bodyColor: isDark ? "#e5e7eb" : "#1f2937",
-            borderColor: isDark ? "#334155" : "#e5e7eb",
-            borderWidth: 1
-        }
-    },
-
-    scales: {
-        x: {
-            ticks: {
-                color: isDark ? "#cbd5f5" : "#374151"
-            },
-            grid: {
-                color: isDark ? "rgba(255,255,255,0.05)" : "#e5e7eb"
-            }
-        },
-        y: {
-            ticks: {
-                color: isDark ? "#cbd5f5" : "#374151"
-            },
-            grid: {
-                color: isDark ? "rgba(255,255,255,0.05)" : "#e5e7eb"
-            }
-        }
-    }
-}
-
-});
-
 
 
 // Affichage du loader lors de la soumission du formulaire

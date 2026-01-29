@@ -33,32 +33,36 @@
         <p class="text-center" style="font-size: 20px; color:#ffffff;">Connexion à votre espace</p>
 
         <div class="login-alert-zone">
-            <?php if (!empty($_SESSION['error'])) : ?>
-                <div class="alert alert-danger text-center">
-                    <?= $_SESSION['error']; unset($_SESSION['error']); ?>
-                </div>
-            <?php endif; ?>
+            <?php
+            if (!empty($_SESSION['error'])) {
+                echo '<div class="alert alert-danger text-center">'
+                    . $_SESSION['error'] .
+                    '</div>';
+                unset($_SESSION['error']);
+            }
+            elseif (isset($_GET['status']) && $_GET['status'] === 'blocked') {
+                echo '<div class="alert alert-danger text-center">
+                        Compte bloqué.
+                    </div>';
+            }
+            elseif (isset($_GET['exist']) && $_GET['exist'] === 'false') {
+                echo '<div class="alert alert-danger text-center">
+                        Email ou mot de passe incorrect.
+                    </div>';
+            }
+            elseif (isset($_GET['reset']) && $_GET['reset'] === 'success') {
+                echo '<div class="alert alert-success text-center">
+                        Mot de passe réinitialisé.
+                    </div>';
+            }
+            elseif (isset($_GET['session']) && $_GET['session'] === 'expired') {
+                echo '<div class="alert alert-warning text-center">
+                        Session expirée. Veuillez vous reconnecter.
+                    </div>';
+            }
+            ?>
         </div>
-        <!-- Messages d’erreur -->
-        <?php 
-        if (isset($_GET['status']) && $_GET['status'] == 'blocked') {
-            echo '<div class="alert alert-danger"  py-1 >Votre compte a été bloqué.</div>';
-        }
-        else if (isset($_GET['exist']) && $_GET['exist'] == 'false') {
-            echo '<div class="alert alert-danger" py-1 >Nom d’utilisateur ou mot de passe incorrect.</div>';
-        }
-        else if (isset($_GET['pass']) && $_GET['pass'] == 'false') {
-            echo '<div class="alert alert-warning" py-1 >Mot de passe incorrect. Tentatives restantes : '.$_GET['rest'].'</div>';
-        }
-        else if (isset($_GET['reset']) && $_GET['reset'] == 'success') {
-            echo '<div class="alert alert-success" py-1 >Mot de passe réinitialisé avec succès.</div>';
-        }
-        if (isset($_GET['session']) && $_GET['session'] == 'expired') {
-            echo '<div class="alert alert-warning" py-1 >Votre session a expiré. Veuillez vous reconnecter.</div>';
-        }
 
-
-        ?>
 
         <form action="/rendezvous/Controller/Ctrlerlogin.php" method="post">
 

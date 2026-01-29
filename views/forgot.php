@@ -34,16 +34,24 @@ session_start();
             <p class="login-slogan">Votre santé, notre priorité.</p>
         </div>
 
-        <p class="text-center" style="font-size: 18px; color:#D3D3D3;">
+        <p class="text-center login-title">
             Réinitialisation du mot de passe
         </p>
 
-        <!-- MESSAGE -->
-        <?php if (isset($_GET['status']) && $_GET['status'] === 'sent'): ?>
-            <div class="alert alert-success text-center">
-                Un lien de réinitialisation a été envoyé.
-            </div>
-        <?php endif; ?>
+        <div class="login-alert-zone">
+            <?php
+            if (!empty($_SESSION['error'])) {
+                echo '<div class="alert alert-danger">❌ '
+                    . $_SESSION['error'] .
+                    '</div>';
+                unset($_SESSION['error']);
+            }
+            elseif (isset($_GET['status']) && $_GET['status'] === 'sent') {
+                echo '<div class="alert alert-success">✅ Lien de réinitialisation envoyé.</div>';
+            }
+            ?>
+        </div>
+
 
         <!-- FORM -->
         <form method="post" action="/rendezvous/Controller/CtrlerForgot.php">

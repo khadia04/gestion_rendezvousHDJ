@@ -302,20 +302,41 @@ function updateRv($idRv, $codeService, $jour) {
     return true; // Si aucune condition ne s'applique
 }
 
-function getRdvPerMonth($annee) {
+// ==============================
+// RDV PAR MOIS (graphique Dashboard- evolution par mois des RV) (FILTRÉ PAR ANNÉE)
+// ==============================
+function getRdvPerMonth($mois = null, $annee)
+{
+    $db = getConnection();
 
     $sql = "
         SELECT 
-            MONTH(dateDemande) AS mois,
+            MONTH(dateRvServ) AS mois,
             COUNT(*) AS total
         FROM rendezvs
-        WHERE YEAR(dateDemande) = YEAR(CURDATE())
-        GROUP BY MONTH(dateDemande)
-        ORDER BY MONTH(dateDemande)
+        WHERE YEAR(dateRvServ) = :annee
     ";
 
-    return executesql($sql)->fetchAll();
+    $params = [
+        'annee' => $annee
+    ];
+
+    if (!empty($mois)) {
+        $sql .= " AND MONTH(dateRvServ) = :mois";
+        $params['mois'] = $mois;
+    }
+
+    $sql .= "
+        GROUP BY MONTH(dateRvServ)
+        ORDER BY mois ASC
+    ";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+
+    return $stmt->fetchAll();
 }
+
 
 function getRdvPerServiceByAgent($username, $mois = null, $annee = null)
 {

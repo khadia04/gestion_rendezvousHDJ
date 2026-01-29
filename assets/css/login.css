@@ -399,41 +399,37 @@ body.dark-mode .theme-toggle-dashboard i {
 body:not(.dark-mode) .theme-toggle-dashboard i {
     transform: rotate(0deg);
 }
+
 /* =========================
-   LOGIN – ZONE MESSAGE D'ERREUR FIXE
+   LOGIN – MESSAGE INLINE
 ========================= */
+.login-title {
+    font-size: 18px;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
 
 .login-alert-zone {
-    height: 32px;
-    margin-bottom: 10px;
-    transition: height 0.2s ease, margin 0.2s ease;
+    margin: 10px 0 12px;
+    min-height: 22px;
 }
+
+/* Message compact */
 .login-alert-zone .alert {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-
+    padding: 5px 10px;
     font-size: 12px;
-    padding: 6px 10px;
+    line-height: 1.3;
     border-radius: 8px;
-    line-height: 1.4;
-
+    margin: 0;
+    text-align: center;
     animation: fadeAlert 0.25s ease;
 }
-.login-alert-zone {
-    position: absolute;
-    top: 120px;
-    left: 20px;
-    right: 20px;
-    z-index: 10;
+
+/* Quand il n’y a rien */
+.login-alert-zone:empty {
+    display: none;
 }
 
-/* quand il n’y a PAS d’erreur */
-.login-alert-zone:empty {
-    height: 0;
-    margin-bottom: 0;
-}
 
 /* Animation douce */
 @keyframes fadeAlert {
