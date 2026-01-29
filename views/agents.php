@@ -8,12 +8,34 @@ require_once __DIR__ . '/../helpers/activity.php';
 
 requireAuth('admin');
 
-/* =========================
-   CSRF (POST uniquement)
-========================= */
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (
+    isset($_POST['ajax']) &&
+    $_POST['ajax'] === 'save_services'
+) {
     verifyCsrfToken();
+
+    $username = $_POST['username'];
+    $services = json_decode($_POST['services'], true);
+
+    prepare_executeSQL(
+        "DELETE FROM agent_service WHERE agent_username = :username",
+        ['username' => $username]
+    );
+
+    foreach ($services as $codeService) {
+        prepare_executeSQL(
+            "INSERT INTO agent_service (agent_username, codeService)
+             VALUES (:username, :code)",
+            [
+                'username' => $username,
+                'code' => $codeService
+            ]
+        );
+    }
+
+    exit;
 }
+
 
 /* =========================
    PAGINATION & FILTRES
@@ -46,7 +68,7 @@ foreach ($agents as $a) {
         $agentServiceCount[$a['username']] =
             count($agentServicesMap[$a['username']] ?? []);
     } else {
-        $agentServiceCount[$a['username']] = 0;
+        $agentServiceCount[$a['username']] = 'ALL';
     }
 }
 
@@ -57,18 +79,26 @@ if (isset($_POST['add_agent'])) {
 
     $prenom    = trim($_POST['prenom_agent']);
     $nom       = trim($_POST['nom_agent']);
-    $telephone = trim($_POST['telephone_agent']);
+    $telephone = !empty($_POST['telephone_agent_full'])
+    ? $_POST['telephone_agent_full']
+    : ($_POST['telephone_agent'] ?? null);
+
     $username  = trim($_POST['username']);
     $email     = trim($_POST['email']);
     $role      = $_POST['role'];
 
     if ($role === 'agent' && empty($_POST['services'])) {
         $_SESSION['error'] = "Un agent doit avoir au moins un service.";
-        header("Location: admin.php?page=agents");
-        exit;
+        
     }
 
     $password = password_hash('123456', PASSWORD_DEFAULT);
+
+    if (!preg_match('/^\+221(70|71|75|76|77|78|33)[0-9]{7}$/', $telephone)) {
+    $_SESSION['error'] = "Numéro de téléphone sénégalais invalide.";
+    
+}
+
 
     prepare_executeSQL(
         "INSERT INTO agent 
@@ -113,18 +143,29 @@ if (isset($_POST['add_agent'])) {
 /* =========================
    MODIFICATION AGENT
 ========================= */
+
 if (isset($_POST['edit_agent'])) {
 
     $username  = $_POST['username'];
     $role      = $_POST['role'];
     $prenom    = trim($_POST['prenom_agent']);
     $nom       = trim($_POST['nom_agent']);
-    $telephone = trim($_POST['telephone_agent']);
+    $telephone = !empty($_POST['telephone_agent_full'])
+    ? $_POST['telephone_agent_full']
+    : ($_POST['telephone_agent'] ?? null);
+
+
 
     if ($role === 'agent' && empty($_POST['edit_services'])) {
         $_SESSION['error'] = "Un agent doit avoir au moins un service.";
         header("Location: admin.php?page=agents");
         exit;
+    }
+
+    if (!preg_match('/^\+221(70|71|75|76|77|78|33)[0-9]{7}$/', $telephone)) {
+    $_SESSION['error'] = "Numéro de téléphone sénégalais invalide.";
+    header("Location: admin.php?page=agents");
+    exit;
     }
 
     prepare_executeSQL(
@@ -251,20 +292,19 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
     <div class="row g-3 align-items-center">
 
         <!-- INPUT EMAIL -->
-        <div class="col-md-4" style="margin: 5px; " >
+        <div class="col-md-4" >
             <input
                 type="text"
                 name="search"
-                style="height: 50px"
                 class="form-control"
-                placeholder="Rechercher (email, nom, prénom, username)"
+                placeholder="Rechercher (email, nom, prénom, username, téléphone)"
                 value="<?= htmlspecialchars($_GET['search'] ?? '') ?>"
             >
         </div>
 
         <!-- SELECT ROLE -->
-        <div class="col-md-3" style="margin: 5px; ">
-            <select name="role" class="form-select" style="height: 50px">
+        <div class="col-md-3" >
+            <select name="role" class="form-select" >
                 <option value="">Tous les rôles</option>
                 <option value="admin" <?= ($_GET['role'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
                 <option value="agent" <?= ($_GET['role'] ?? '') === 'agent' ? 'selected' : '' ?>>Agent</option>
@@ -272,9 +312,9 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
         </div>
 
         <!-- BOUTON RECHERCHE -->
-        <div class="col-md-1 d-grid" style="margin: 5px; font-weight: bold; font-size: 2rem; background-color: rgb(13, 110, 253);border:#0d6efd solid 2px; border-radius: 5px; height: 50px;"  >
-            <button type="submit" class="btn" style="font-size:2rem; background:rgb(13, 110, 253); ">
-                <i class="bi bi-search" style=" color:#ffffff ; border:1px solid rgb(13, 110, 253);"></i>
+        <div class="col-md-1 d-grid" style=" font-size: 1.5rem; "  >
+            <button type="submit" class="btn" title="Rechercher"  style="color: #2563eb; background-color: none;">
+                <i class="bi bi-search"></i>
             </button>
         </div>
 
@@ -282,7 +322,7 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 </form>
   <div class="card shadow-sm border-0 p-3">
     <table class="table agents-table">
-      <thead class="table-primary">
+      <thead class="table-light">
         <tr>
           <th>Username</th>
           <th>Nom</th>
@@ -323,14 +363,21 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
           </td>
 
           <td class="text-center">
-            <?php if ($agentServiceCount[$agent['username']] === 0): ?>
-              <span class="badge bg-secondary" title="⚠ Aucun service attribué">0</span>
-            <?php else: ?>
-              <span class="badge bg-primary">
-                <?= $agentServiceCount[$agent['username']] ?>
-              </span>
-            <?php endif; ?>
-          </td>
+          <?php if ($agent['role'] === 'admin'): ?>
+            <span class="badge bg-success" title="Accès à tous les services">
+              Tous
+            </span>
+          <?php elseif ($agentServiceCount[$agent['username']] === 0): ?>
+            <span class="badge bg-secondary" title="Aucun service attribué">
+              0
+            </span>
+          <?php else: ?>
+            <span class="badge bg-primary">
+              <?= $agentServiceCount[$agent['username']] ?>
+            </span>
+          <?php endif; ?>
+        </td>
+
 
 
           <td><?= date('d/m/Y', strtotime($agent['created_at'])) ?></td>
@@ -405,8 +452,9 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
     <!-- MODAL AJOUT AGENT -->
 <div class="modal fade" id="addAgentModal" tabindex="-1" >
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content agent-modal">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+
+    <div class="modal-content agent-modal shadow-lg rounded-4">
       <form method="POST">
         <div class="modal-header">
           <h5 class="modal-title">Ajouter un agent</h5>
@@ -420,60 +468,120 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
             <div class="col-md-4">
               <label class="form-label">Prénom</label>
-              <input type="text" name="prenom_agent" class="form-control " required style="border: 1px solid black ;">
+              <input type="text" name="prenom_agent" class="form-control " placeholder="Prenom de agent/admin" required >
             </div>
 
             <div class="col-md-4">
               <label class="form-label">Nom</label>
-              <input type="text" name="nom_agent" class="form-control " required style="border: 1px solid black ;">
+              <input type="text" name="nom_agent" class="form-control " placeholder="Nom de agent/admin" required >
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-4 col-lg-3">
               <label class="form-label">Téléphone</label>
-              <input type="text" name="telephone_agent" class="form-control " required style="border: 1px solid black ;">
+
+              <div class="phone-wrapper">
+                <input
+                  id="telephone_agent_add"
+                  type="tel"
+                  name="telephone_agent"
+                  class="form-control"
+                  placeholder="77 123 45 67"
+                  required
+                >
+                <!-- Icône validation -->
+                <span class="phone-valid-icon d-none">
+                  ✔️
+                </span>
+              </div>
+              <input type="hidden" name="telephone_agent_full">
             </div>
+
 
             <div class="col-md-4">
               <label class="form-label">Username</label>
-              <input type="text" name="username" class="form-control" required style="border: 1px solid black ;">
+              <input type="text" name="username" class="form-control" placeholder="Username de agent/admin" required >
             </div>
 
             <div class="col-md-4">
               <label class="form-label">Email</label>
-              <input type="email" name="email" class="form-control " required style="border: 1px solid black ;">
+              <input type="email" name="email" class="form-control " placeholder="Veillez mettre l'email de agent/admin" required >
             </div>
 
             <div class="col-md-4">
               <label class="form-label " >Rôle</label>
-              <select name="role" class="form-select" required style="border: 1px solid black ;">
-                <option value="" selected disabled>— Choisir un rôle —</option>
+              <select name="role" class="form-select" required  >
+                <option value="" selected disabled>— Choisir le rôle —</option>
                 <option value="agent">Agent</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
 
-            <div id="services-container" style="display:none;">
-              <label class="form-label">Services autorisés</label>
-              <div class="row">
-                <?php foreach ($services as $service): ?>
-                  <div class="col-md-4">
-                    <div class="form-check">
-                      <input class="form-check-input"
-                            type="checkbox"
-                            name="services[]"
-                            value="<?= $service['codeService'] ?>">
-                      <label class="form-check-label">
-                        <?= htmlspecialchars($service['designService']) ?>
-                      </label>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
+            <div id="add-services-container" class="services-container" style="display:none;">
+
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong>Services autorisés</strong>
+                <span class="badge bg-primary services-count">0 sélectionné</span>
+
               </div>
-              <div id="services-error" class="text-danger mt-2" style="display:none;">
-                Veuillez sélectionner au moins un service pour cet agent.
+
+              <div class="row align-items-center mb-3">
+
+                <!-- Recherche -->
+                <div class="col-md-5">
+                  <input
+                    type="text"
+                    class="form-control service-search"
+                    placeholder="Rechercher un service..."
+                  >
+                </div>
+
+                <!-- Actions -->
+                <div class="col-md-2 d-flex gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm select-all"
+                    title="Tout sélectionner"
+                  >
+                    <i class="bi bi-check2-square"></i>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm deselect-all"
+                    title="Tout désélectionner"
+                  >
+                    <i class="bi bi-x-square"></i>
+                  </button>
+                </div>
+              </div>
+
+
+              <!--  Liste -->
+              <div class=" services-list">
+                <div class="row">
+                  <?php foreach ($services as $service): ?>
+                    <div class="col-md-4 service-item">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input service-checkbox"
+                          type="checkbox"
+                          name="services[]"
+                          value="<?= $service['codeService'] ?>"
+                        >
+                        <label class="form-check-label">
+                          <?= htmlspecialchars($service['designService']) ?>
+                        </label>
+                      </div>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+
+              <div class="text-danger mt-2 services-error" style="display:none;">
+                Veuillez sélectionner au moins un service.
               </div>
             </div>
-            
+
           </div>
         </div>
 
@@ -493,8 +601,9 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
 <!-- MODAL MODIFIER AGENT -->
 <div class="modal fade" id="editAgentModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content agent-modal">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+
+    <div class="modal-content agent-modal shadow-lg rounded-4">
 
       <form method="POST">
         <div class="modal-header">
@@ -510,18 +619,36 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
             
             <div class="col-md-4">
               <label class="form-label">Prénom</label>
-              <input type="text" name="prenom_agent" class="form-control" required style="border: 1px solid black ;">
+              <input type="text" name="prenom_agent" class="form-control" required >
             </div>
 
             <div class="col-md-4">
               <label class="form-label">Nom</label>
-              <input type="text" name="nom_agent" class="form-control" required style="border: 1px solid black ;">
+              <input type="text" name="nom_agent" class="form-control" required >
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-4 col-lg-3">
               <label class="form-label">Téléphone</label>
-              <input type="text" name="telephone_agent" class="form-control">
+
+              <div class="phone-wrapper">
+                <input
+                  id="telephone_agent_edit"
+                  type="tel"
+                  name="telephone_agent"
+                  class="form-control"
+                  placeholder="77 123 45 67"
+                  required
+                >
+                <!-- Icône validation -->
+                <span class="phone-valid-icon d-none">
+                  ✔️
+                </span>
+              </div>
+              <input type="hidden" name="telephone_agent_full">
+
+
             </div>
+
 
             <div class="col-md-6">
               <label class="form-label">Email</label>
@@ -542,28 +669,74 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
               </select>
             </div>
 
-            <div id="edit-services-container" style="display:none;">
-              <label class="form-label">Services autorisés</label>
-              <div class="row">
-                <?php foreach ($services as $service): ?>
-                  <div class="col-md-4">
-                    <div class="form-check">
-                      <input class="form-check-input edit-service-checkbox"
-                            type="checkbox"
-                            name="edit_services[]"
-                            value="<?= $service['codeService'] ?>">
-                      <label class="form-check-label">
-                        <?= htmlspecialchars($service['designService']) ?>
-                      </label>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
+            <div id="edit-services-container" class="services-container" style="display:none;">
+
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong>Services autorisés</strong>
+                <span class="badge bg-primary services-count">0 sélectionné</span>
+
               </div>
-              <div id="edit-services-error" class="text-danger mt-2" style="display:none;">
-                Veuillez sélectionner au moins un service pour cet agent.
+              
+              <div class="row align-items-center mb-3">
+
+                <!-- Recherche -->
+                <div class="col-md-5">
+                  <input
+                    type="text"
+                    class="form-control service-search"
+                    placeholder="Rechercher un service..."
+                  >
+                </div>
+
+                <!--  Actions -->
+                <div class="col-md-2 d-flex gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm select-all"
+                    title="Tout sélectionner"
+                  >
+                    <i class="bi bi-check2-square"></i>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm deselect-all"
+                    title="Tout désélectionner"
+                  >
+                    <i class="bi bi-x-square"></i>
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Liste -->
+              <div class=" services-list">
+                <div class="row">
+                  <?php foreach ($services as $service): ?>
+                    <div class="col-md-4 service-item">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input service-checkbox"
+                          type="checkbox"
+                          name="edit_services[]"
+                          value="<?= $service['codeService'] ?>"
+                        >
+                        <label class="form-check-label">
+                          <?= htmlspecialchars($service['designService']) ?>
+                        </label>
+                      </div>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+
+              <div class="text-danger mt-2 services-error" style="display:none;">
+                Veuillez sélectionner au moins un service.
               </div>
             </div>
 
+
+           
 
           </div>
         </div>
@@ -657,6 +830,9 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
 <!-- script MODAL CONFIRMER ACTIVATION -->
 
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.3.5/build/js/intlTelInput.min.js"></script>
+
+
 <script>
 const activateModal   = document.getElementById('confirmActivateModal');
 const deactivateModal = document.getElementById('confirmDeactivateModal');
@@ -688,7 +864,7 @@ if (editModal) {
     const button = event.relatedTarget;
     if (!button) return;
 
-    // 🧩 Champs texte
+    //  Champs texte
     editModal.querySelector('input[name="username"]').value =
       button.getAttribute('data-username') || '';
 
@@ -704,11 +880,11 @@ if (editModal) {
     editModal.querySelector('input[name="email"]').value =
       button.getAttribute('data-email') || '';
 
-    // 🎭 Rôle
+    //  Rôle
     const role = button.getAttribute('data-role') || 'admin';
     editModal.querySelector('select[name="role"]').value = role;
 
-    // 🧠 Services
+    // Services
     const username = button.getAttribute('data-username');
     const servicesBox = document.getElementById('edit-services-container');
     const checkboxes = servicesBox.querySelectorAll('.edit-service-checkbox');
@@ -755,7 +931,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (!form || !roleSelect || !servicesBox || !servicesError) return;
 
-  // 🔄 Reset des services
+  //  Reset des services
   function resetServices() {
     servicesBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
       cb.checked = false;
@@ -764,7 +940,7 @@ document.addEventListener('DOMContentLoaded', function () {
     servicesError.style.display = 'none';
   }
 
-  // 👁️ Afficher / masquer les services selon le rôle
+  //  Afficher / masquer les services selon le rôle
   function toggleServices() {
     const role = roleSelect.value.toLowerCase();
     servicesBox.style.display = (role === 'agent') ? 'block' : 'none';
@@ -775,7 +951,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // 🚫 Validation élégante à la soumission
+  //  Validation élégante à la soumission
   form.addEventListener('submit', function (e) {
     const role = roleSelect.value;
     const checked = servicesBox.querySelectorAll('input[type="checkbox"]:checked');
@@ -788,22 +964,223 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ✨ Faire disparaître l’erreur dès qu’on coche un service
+  //  Faire disparaître l’erreur dès qu’on coche un service
   servicesBox.addEventListener('change', function () {
     servicesError.style.display = 'none';
   });
 
-  // 🪟 À chaque ouverture du modal
+  // À chaque ouverture du modal
   modal.addEventListener('show.bs.modal', function () {
     resetServices();
   });
 
-  // 🔁 Changement de rôle
+  // Changement de rôle
   roleSelect.addEventListener('change', toggleServices);
 });
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
 
+  function initServices(modalId, containerId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
 
+    const roleSelect = modal.querySelector('select[name="role"]');
+    const container  = modal.querySelector(containerId);
+
+    if (!roleSelect || !container) return;
+
+    const searchInput = container.querySelector('.service-search');
+    const checkboxes  = container.querySelectorAll('.service-checkbox');
+    const countBadge  = container.querySelector('.services-count');
+    const selectAll   = container.querySelector('.select-all');
+    const deselectAll = container.querySelector('.deselect-all');
+    const errorBox    = container.querySelector('.services-error');
+
+    function updateCount() {
+      const count = [...checkboxes].filter(cb => cb.checked).length;
+      countBadge.textContent = count + ' sélectionné' + (count > 1 ? 's' : '');
+      if (count > 0 && errorBox) errorBox.style.display = 'none';
+    }
+
+    function toggleServices() {
+      container.style.display =
+        roleSelect.value === 'agent' ? 'block' : 'none';
+    }
+
+    roleSelect.addEventListener('change', toggleServices);
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const value = searchInput.value.toLowerCase();
+        container.querySelectorAll('.service-item').forEach(item => {
+          item.style.display =
+            item.textContent.toLowerCase().includes(value)
+              ? 'block'
+              : 'none';
+        });
+      });
+    }
+
+    if (selectAll) {
+      selectAll.addEventListener('click', () => {
+        checkboxes.forEach(cb => cb.checked = true);
+        updateCount();
+      });
+    }
+
+    if (deselectAll) {
+      deselectAll.addEventListener('click', () => {
+        checkboxes.forEach(cb => cb.checked = false);
+        updateCount();
+      });
+    }
+
+    checkboxes.forEach(cb =>
+      cb.addEventListener('change', updateCount)
+    );
+
+    modal.addEventListener('show.bs.modal', () => {
+      toggleServices();
+      updateCount();
+    });
+  }
+
+  // 🔥 Inalisation des deux modals
+  initServices('addAgentModal', '#add-services-container');
+  initServices('editAgentModal', '#edit-services-container');
+
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  const editModal = document.getElementById('editAgentModal');
+  if (!editModal) return;
+
+  const container = editModal.querySelector('#edit-services-container');
+  if (!container) return;
+
+  const checkboxes = container.querySelectorAll('.service-checkbox');
+
+  let saveTimeout = null;
+
+  function autoSaveServices() {
+    const username = editModal.querySelector('input[name="username"]').value;
+    const services = [...checkboxes]
+      .filter(cb => cb.checked)
+      .map(cb => cb.value);
+
+    clearTimeout(saveTimeout);
+
+    saveTimeout = setTimeout(() => {
+      fetch('admin.php?page=agents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          ajax: 'save_services',
+          username: username,
+          services: JSON.stringify(services),
+          csrf_token: '<?= $_SESSION['csrf_token'] ?>'
+        })
+      });
+    }, 600); // anti-spam
+  }
+
+  checkboxes.forEach(cb =>
+    cb.addEventListener('change', autoSaveServices)
+  );
+
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  function initPhone(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    const validIcon = input.parentElement.querySelector('.phone-valid-icon');
+
+    const iti = window.intlTelInput(input, {
+      initialCountry: "sn",
+      separateDialCode: true,
+      nationalMode: true,
+      autoPlaceholder: "polite",
+      utilsScript:
+        "https://cdn.jsdelivr.net/npm/intl-tel-input@18.3.5/build/js/utils.js",
+    });
+
+    function isValidSenegalNumber(fullNumber) {
+      // Nettoyage
+      const num = fullNumber.replace(/\s+/g, '');
+
+      // +221XXXXXXXXX
+      if (!num.startsWith('+221')) return false;
+
+      const local = num.substring(4); // après +221
+
+      if (local.length !== 9) return false;
+
+      const prefix = local.substring(0, 2);
+
+      const validPrefixes = [
+        '70','71','75','76','77','78','33'
+      ];
+
+      return validPrefixes.includes(prefix);
+    }
+
+    function validate() {
+      const fullNumber = iti.getNumber();
+
+      if (isValidSenegalNumber(fullNumber)) {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        validIcon.classList.remove('d-none');
+      } else {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        validIcon.classList.add('d-none');
+      }
+    }
+
+    input.addEventListener('input', validate);
+    input.addEventListener('blur', validate);
+
+    return iti;
+  }
+
+  // 🔥 Initialisation ADD & EDIT
+  const itiAdd  = initPhone('telephone_agent_add');
+  const itiEdit = initPhone('telephone_agent_edit');
+
+  // Sauvegarde du numéro complet à la soumission
+  document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', e => {
+      const input = form.querySelector('[type="tel"]');
+      const hidden = form.querySelector('[name="telephone_agent_full"]');
+      if (!input || !hidden) return;
+
+      const iti = input.id.includes('add') ? itiAdd : itiEdit;
+      const fullNumber = iti.getNumber();
+
+      if (!fullNumber) {
+        e.preventDefault();
+        alert("Numéro de téléphone invalide");
+        return;
+      }
+
+      hidden.value = fullNumber;
+    });
+  });
+
+});
+</script>
 
 

@@ -1866,6 +1866,9 @@ body.dark-dashboard .agent-modal .modal-header {
     background: linear-gradient(135deg, #0e6bb7, #0a58ca);
     color: #ffffff;
 }
+body.dark-dashboard .agent-modal .modal-header input::placeholder  {
+    color: #1a1c23;
+}
 
 /* Body & footer */
 body.dark-dashboard .agent-modal .modal-body,
@@ -1879,10 +1882,6 @@ body.dark-dashboard .agent-modal select {
     background-color: #020617;
     color: #e5e7eb;
     border: 1px solid #334155;
-}
-
-body.dark-dashboard .agent-modal input::placeholder {
-    color: #94a3b8;
 }
 
 /* Buttons */
@@ -3143,16 +3142,24 @@ input.form-control {
 }
 
 .agents-table  {
-    border-radius: 10px;
+    border-radius: 7px;
 }
 .agents-table thead th {
-  background: #f5f7fa;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: bold;
+  font-size: 1.4rem;
   color: #333;
   border-bottom: 1px solid #e5e7eb;
   padding: 14px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f5f7fa;
 }
+.agents-table tbody tr {
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
 
 .agents-table tbody td {
   padding: 14px 16px;
@@ -3172,6 +3179,8 @@ input.form-control {
 
 /* Cellule actions */
 .actions-cell {
+  opacity: 1;
+  transition: opacity 0.2s ease;
   white-space: nowrap;
 }
 
@@ -3184,4 +3193,192 @@ input.form-control {
 
 .card {
     border-radius: 20px ;
+}
+
+.agents-table td:first-child {
+  font-weight: 600;
+  color: #111827;
+}
+
+.agents-table td:nth-child(2) {
+  font-weight: 500;
+}
+
+.agents-table td:nth-child(3) {
+  color: #595b61;
+  font-size: 1rem;
+}
+
+.badge.bg-success {
+  background-color: #22c55e !important;
+}
+
+.badge.bg-secondary {
+  background-color: #9ca3af !important;
+}
+
+@media (max-width: 768px) {
+  .agents-table th:nth-child(4),
+  .agents-table td:nth-child(4),
+  .agents-table th:nth-child(7),
+  .agents-table td:nth-child(7),
+  .agents-table th:nth-child(8),
+  .agents-table td:nth-child(8) {
+    display: none;
+  }
+}
+
+.agent-modal .modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.services-scroll {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.agent-modal {
+  border-radius: 18px;
+}
+
+.agent-modal .modal-header {
+  background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+  color: #fff;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.agent-modal .modal-title {
+  font-weight: 600;
+}
+
+.agent-modal .modal-footer {
+  background: #f8f9fa;
+}
+
+.services-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.service-item {
+  transition: background 0.2s ease;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.service-item:hover {
+  background: #f1f5ff;
+}
+
+/* ===============================
+   MODAL AGENT – INPUTS COMPACTS
+================================ */
+
+.agent-modal .form-control,
+.agent-modal .form-select {
+  height: 38px;              /* 🔽 réduit la hauteur */
+  padding: 6px 12px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+}
+
+.agent-modal label.form-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.agent-modal select.form-select {
+  background-color: #f8fafc;
+}
+
+.iti {
+  width: 100%;
+}
+
+.iti__selected-flag {
+  border-radius: 10px 0 0 10px;
+}
+
+.iti input {
+  border-radius: 10px;
+}
+
+/* Réduire la taille de l’indicatif */
+.iti__selected-flag {
+  padding: 0 8px;
+}
+
+.iti__selected-dial-code {
+  font-size: 0.90rem;   /* 👈 taille plus petite */
+  font-weight: 500;
+  color: #020617;
+}
+
+.iti input {
+  padding-left: 100px !important; /* ajuste selon le rendu */
+}
+
+/* Icône validation */
+.phone-valid-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #16a34a; /* vert */
+  font-size: 1.2rem;
+}
+
+.phone-wrapper {
+  position: relative;
+}
+
+
+/* ===========================
+   intl-tel-input – MODAL SOMBRE
+=========================== */
+
+/* Input téléphone dans le modal agent */
+.agent-modal .iti input {
+  color: #ffffff !important;
+}
+
+/* Indicatif +221 */
+.agent-modal .iti__selected-dial-code {
+  color: #ffffff !important;
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* Bouton drapeau */
+.agent-modal .iti__flag-container {
+  background-color: transparent;
+}
+
+/* Placeholder */
+.agent-modal .iti input::placeholder {
+  color: #79808a !important;
+}
+
+/* Dropdown pays */
+.agent-modal .iti__country-list {
+  background-color: #0f172a;
+  color: #ffffff;
+}
+
+/* Pays survolé */
+.agent-modal .iti__country:hover {
+  background-color: #1e293b;
+}
+
+.agent-modal .iti__selected-dial-code {
+  color: #1e293b !important; /* bleu clair */
 }

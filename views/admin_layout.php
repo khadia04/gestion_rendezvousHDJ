@@ -116,6 +116,11 @@ $tel    = $admin['telephone_agent'] ?? '';
 
     <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.3.5/build/css/intlTelInput.css"
+    />
+
 
     <!-- CSS Admin -->
     <link rel="stylesheet" href="../assets/css/admin.css">

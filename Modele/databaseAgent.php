@@ -167,33 +167,33 @@ require_once 'database.php';
 
 function getAgentsPaginated($search, $role, $limit, $offset)
 {
-    $db = getConnection(); // ✅ OBLIGATOIRE
+    $db = getConnection();
 
     $sql = "SELECT * FROM agent WHERE 1=1";
     $params = [];
 
     if (!empty($search)) {
-    $sql .= " AND (
-        email LIKE :search_email
-        OR username LIKE :search_username
-        OR prenom_agent LIKE :search_prenom
-        OR nom_agent LIKE :search_nom
-    )";
+        // supprimer espaces pour téléphone
+        $searchClean = str_replace(' ', '', $search);
 
-    $params['search_email']    = "%$search%";
-    $params['search_username'] = "%$search%";
-    $params['search_prenom']   = "%$search%";
-    $params['search_nom']      = "%$search%";
-}
+        $sql .= " AND (
+            username LIKE :search
+            OR email LIKE :search
+            OR prenom_agent LIKE :search
+            OR nom_agent LIKE :search
+            OR REPLACE(telephone_agent, ' ', '') LIKE :search_phone
+        )";
 
-
+        $params['search'] = "%$search%";
+        $params['search_phone'] = "%$searchClean%";
+    }
 
     if (!empty($role)) {
         $sql .= " AND role = :role";
         $params['role'] = $role;
     }
 
-    $sql .= " LIMIT :limit OFFSET :offset";
+    $sql .= " ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
 
     $stmt = $db->prepare($sql);
 
@@ -203,13 +203,11 @@ function getAgentsPaginated($search, $role, $limit, $offset)
 
     $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
     $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-    // var_dump($sql, $params); exit;
-
 
     $stmt->execute();
-
     return $stmt->fetchAll();
 }
+
 
 function getAgentServices($username) {
     $stmt = prepare_executeSQL(
