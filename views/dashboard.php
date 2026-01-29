@@ -10,8 +10,7 @@ $annee = isset($_GET['year'])
     ? (int) $_GET['year'] 
     : date('Y');
 
-// IMPORTANT : le graphique mensuel dépend UNIQUEMENT de l'année
-$rdvPerMonth = getRdvPerMonth(null, $annee);
+$rdvPerMonth   = getRdvPerMonth($mois, $annee);
 
 $isAdmin  = ($_SESSION['role'] === 'admin');
 $username = $_SESSION['username'];
@@ -191,7 +190,7 @@ if ($rdvYearPrev > 0) {
 
 
     <!-- GRAPHIQUES -->
-    <h4 class="mt-5">Statistiques Visuelles</h4>
+    <h4 class="mt-5" id="stats">Statistiques Visuelles</h4>
 
 
     <p class="text-muted mb-4">
@@ -204,7 +203,7 @@ if ($rdvYearPrev > 0) {
 
 
     <!-- FILTRAGE -->
-    <form id="filterForm" method="get" action="admin.php" class="row g-3 mb-4">
+    <form method="get"  id="statsFilterForm" action="admin.php#stats" class="row g-3 mb-4">
     <input type="hidden" name="month" value="<?= htmlspecialchars($mois) ?>">
     <input type="hidden" name="year" value="<?= htmlspecialchars($annee) ?>">
 
@@ -262,9 +261,7 @@ if ($rdvYearPrev > 0) {
     <div class="row g-4 mt-2">
         <div class="col-md-6">
             <div class="chart-card">
-                <h6 class="mb-3">
-                    Évolution mensuelle des rendez-vous – <?= $annee ?>
-                </h6>
+                <h6 class="mb-3 ">Rendez-vous par mois</h6>
                 <canvas id="rdvPerMonth" ></canvas>
                 <h4 class="chart-title" >
                     Évolution mensuelle des rendez-vous
@@ -428,7 +425,7 @@ new Chart(document.getElementById("rdvPerMonth"), {
 
 
 // Affichage du loader lors de la soumission du formulaire
-const form = document.getElementById('filterForm');
+const form = document.getElementById('statsFilterForm');
 const loader = document.getElementById('loading');
 
 form.addEventListener('submit', () => {
@@ -460,7 +457,22 @@ animateValue("totalRdv", 0, <?= $totalRdv ?>);
 </script>
 
 
+<script>
+window.addEventListener('beforeunload', () => {
+  localStorage.setItem('dashboardScroll', window.scrollY);
+});
 
+document.addEventListener('DOMContentLoaded', () => {
+  const scrollPos = localStorage.getItem('dashboardScroll');
+  if (scrollPos !== null) {
+    window.scrollTo({
+      top: parseInt(scrollPos),
+      behavior: 'instant'
+    });
+    localStorage.removeItem('dashboardScroll');
+  }
+});
+</script>
 
 
 
