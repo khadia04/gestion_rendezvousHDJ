@@ -280,108 +280,112 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
     </div>
 </form>
-    <table class="table table-bordered table-hover agents-table">
-        <thead class="table-primary">
-            <tr>
-                <th>Username</th>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Téléphone</th>
-                <th>Rôle</th>
-                <th>Statut</th>
-                <th>Services</th>
-                <th>Création</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+  <div class="card shadow-sm border-0 p-3">
+    <table class="table agents-table">
+      <thead class="table-primary">
+        <tr>
+          <th>Username</th>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Services</th>
+          <th>Création</th>
+          <th>Actions</th>
+        </tr>    
+      </thead>
 
-        <?php if (empty($agents)): ?>
-    <tr>
-        <td colspan="8" class="text-center text-muted">
+      <?php if (empty($agents)): ?>
+        <tr>
+          <td colspan="8" class="text-center text-muted">
             Aucun agent trouvé
-        </td>
-    </tr>
-    <?php else: ?>
-            <tbody>
-    <?php foreach ($agents as $agent): ?>
-    <tr>
-      <td><?= htmlspecialchars($agent['username']) ?></td>
-      <td><?= htmlspecialchars($agent['prenom_agent'].' '.$agent['nom_agent']) ?></td>
-      <td><?= htmlspecialchars($agent['email']) ?></td>
-      <td><?= htmlspecialchars($agent['telephone_agent']) ?></td>
+          </td>
+        </tr>
+      <?php else: ?>
 
-      <td>
-          <span class="badge bg-info"><?= $agent['role'] ?></span>
-      </td>
+      <tbody>
+        <?php foreach ($agents as $agent): ?>
+        <tr>
+          <td><?= htmlspecialchars($agent['username']) ?></td>
+          <td><?= htmlspecialchars($agent['prenom_agent'].' '.$agent['nom_agent']) ?></td>
+          <td><?= htmlspecialchars($agent['email']) ?></td>
+          <td><?= htmlspecialchars($agent['telephone_agent']) ?></td>
 
-      <td>
-          <?= $agent['status'] 
-              ? '<span class="badge bg-success">Actif</span>' 
-              : '<span class="badge bg-secondary">Désactivé</span>' ?>
-      </td>
+          <td>
+              <span class="badge bg-info"><?= $agent['role'] ?></span>
+          </td>
 
-      <td class="text-center">
-        <?php if ($agentServiceCount[$agent['username']] === 0): ?>
-          <span class="badge bg-secondary" title="⚠ Aucun service attribué">0</span>
-        <?php else: ?>
-          <span class="badge bg-primary">
-            <?= $agentServiceCount[$agent['username']] ?>
-          </span>
-        <?php endif; ?>
-      </td>
+          <td>
+              <?= $agent['status'] 
+                  ? '<span class="badge bg-success">Actif</span>' 
+                  : '<span class="badge bg-secondary">Désactivé</span>' ?>
+          </td>
+
+          <td class="text-center">
+            <?php if ($agentServiceCount[$agent['username']] === 0): ?>
+              <span class="badge bg-secondary" title="⚠ Aucun service attribué">0</span>
+            <?php else: ?>
+              <span class="badge bg-primary">
+                <?= $agentServiceCount[$agent['username']] ?>
+              </span>
+            <?php endif; ?>
+          </td>
 
 
-      <td><?= date('d/m/Y', strtotime($agent['created_at'])) ?></td>
+          <td><?= date('d/m/Y', strtotime($agent['created_at'])) ?></td>
 
-      <td class="actions-cell" >
-        <div class="d-flex gap-2 ">
-          <!-- MODIFIER -->
-          <button class="btn btn-primary btn-sm "  
-              data-bs-toggle="modal"
-              data-bs-target="#editAgentModal"
-              data-username="<?= $agent['username'] ?>"
-              data-email="<?= $agent['email'] ?>"
-              data-prenom="<?= $agent['prenom_agent'] ?>"
-              data-nom="<?= $agent['nom_agent'] ?>"
-              data-telephone="<?= $agent['telephone_agent'] ?>"
-              data-role="<?= $agent['role'] ?>"
-              title="Modifier l’agent/ l'admin">
-            
-              <i class="bi bi-pencil"></i>
-          </button>
+          <td class="actions-cell" >
+            <div class="d-flex gap-2 ">
+              <!-- MODIFIER -->
+              <button class="btn btn-primary btn-sm "  
+                  data-bs-toggle="modal"
+                  data-bs-target="#editAgentModal"
+                  data-username="<?= $agent['username'] ?>"
+                  data-email="<?= $agent['email'] ?>"
+                  data-prenom="<?= $agent['prenom_agent'] ?>"
+                  data-nom="<?= $agent['nom_agent'] ?>"
+                  data-telephone="<?= $agent['telephone_agent'] ?>"
+                  data-role="<?= $agent['role'] ?>"
+                  title="Modifier l’agent/ l'admin">
+                
+                  <i class="bi bi-pencil"></i>
+              </button>
 
-          <?php if ($agent['status'] == 0): ?>
-          <button
-            type="button"
-            class="btn btn-success btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#confirmActivateModal"
-            data-username="<?= $agent['username'] ?>"
-            title="Activer l'agent/ l'admin">
-            <i class="bi bi-person-check"></i>
-          </button>
+              <?php if ($agent['status'] == 0): ?>
+              <button
+                type="button"
+                class="btn btn-success btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#confirmActivateModal"
+                data-username="<?= $agent['username'] ?>"
+                title="Activer l'agent/ l'admin">
+                <i class="bi bi-person-check"></i>
+              </button>
 
-          <?php elseif ($agent['role'] === 'agent'): ?>
-          <button
-            type="button"
-            class="btn btn-danger btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#confirmDeactivateModal"
-            data-username="<?= $agent['username'] ?>"
-            data-role="<?= $agent['role'] ?>"
-            title="Désactiver l'agent/ l'admin"
-            style="background:rgb(255,0,0)">
-            <i class="bi bi-person-x"></i>
-          </button>
-          <?php endif; ?>
+              <?php elseif ($agent['role'] === 'agent'): ?>
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#confirmDeactivateModal"
+                data-username="<?= $agent['username'] ?>"
+                data-role="<?= $agent['role'] ?>"
+                title="Désactiver l'agent/ l'admin"
+                style="background:rgb(255,0,0)">
+                <i class="bi bi-person-x"></i>
+              </button>
+              <?php endif; ?>
 
-        </div>
-      </td>
-    </tr>
-    <?php endforeach; ?>
-  </tbody>
-  <?php endif; ?>
-</table>
+            </div>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+      <?php endif; ?>
+    </table>
+
+  </div>
 
 <nav class="mt-3">
   <ul class="pagination justify-content-center">

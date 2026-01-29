@@ -232,12 +232,12 @@ $pdf->Cell(
 );
 
 // Cachet (en bas à droite)
-$pdf->Image(
-    '../assets/img/cachet.png',
-    125,                // X → bien à droite
-    $pdf->GetY() + 2,   // Y → juste sous "Signature"
-    70                  // largeur cachet
-);
+//$pdf->Image(
+//    '../assets/img/cachet.png',
+//    125,                // X → bien à droite
+//    $pdf->GetY() + 2,   // Y → juste sous "Signature"
+//    70                  // largeur cachet
+//);
 
 /* =========================
    SORTIE
