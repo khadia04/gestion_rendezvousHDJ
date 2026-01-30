@@ -3382,3 +3382,187 @@ input.form-control {
 .agent-modal .iti__selected-dial-code {
   color: #1e293b !important; /* bleu clair */
 }
+
+/* =========================
+   MODALS SERVICES - AJUSTEMENT FONT SIZE
+========================= */
+
+.service-modal .modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.service-modal label.form-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Inputs & selects */
+.service-modal .form-control,
+.service-modal .form-select {
+  font-size: 0.9rem;
+  padding: 0.45rem 0.75rem;
+}
+
+/* Même si form-control-lg est utilisé */
+.service-modal .form-control-lg,
+.service-modal .form-select-lg {
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Switch jours */
+.service-modal .form-check-label {
+  font-size: 0.9rem;
+}
+
+/* Boutons */
+.service-modal .btn {
+  font-size: 0.9rem;
+  padding: 0.45rem 0.9rem;
+}
+
+/* Footer espacé mais compact */
+.service-modal .modal-footer {
+  padding-top: 0.75rem;
+}
+
+.service-modal .modal-body {
+  padding: 1.25rem 1.5rem;
+}
+
+/* =========================
+   JOURS DE RDV – UNIFORME
+========================= */
+
+.service-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.day-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Taille normale du checkbox */
+.day-switch input[type="checkbox"] {
+  width: 34px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Texte bien aligné */
+.day-switch span {
+  line-height: 1;
+  user-select: none;
+}
+
+/* Switch actif */
+.day-switch input:checked {
+  accent-color: #0d6efd;
+}
+
+.services-table th {
+  font-weight: 600;
+  letter-spacing: .04em;
+  background: #f8fafc;
+}
+
+.services-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+}
+
+.services-table tr:not(:last-child) {
+  border-bottom: 1px solid #eef2f7;
+}
+
+.jours-wrapper {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  background: #f9fafb;
+}
+
+.jours-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: #374151;
+}
+
+.jours-header .btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #2563eb;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.jours-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+}
+
+body.services.dark-dashboard .jours-wrapper  {
+    background: #030b2e;
+    border: none;
+}
+
+body.services.dark-dashboard .jours-header .counter  {
+    color: #a1a3b0;
+}
+
+.jour-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.jour-item input {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  font-size: 18px;
+  color: #2563eb;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.icon-btn:hover {
+  color: #1d4ed8;
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+.white {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+body.services.dark-dashboard .white {
+    background: #020617;
+}

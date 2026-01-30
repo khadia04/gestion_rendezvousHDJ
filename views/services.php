@@ -286,7 +286,7 @@ $stmtJours = $db->prepare("
 <form method="GET" class="row g-3 align-items-center mb-4">
     <input type="hidden" name="page" value="services">
 
-    <div class="col-md-5">
+    <div class="col-md-3">
         <input
             type="text"
             name="search"
@@ -296,7 +296,7 @@ $stmtJours = $db->prepare("
         >
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
         <select name="status" class="form-select">
             <option value="">Tous les statuts</option>
             <option value="1" <?= $status === '1' ? 'selected' : '' ?>>Actif</option>
@@ -305,184 +305,207 @@ $stmtJours = $db->prepare("
     </div>
 
     <div class="col-md-1 d-grid">
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-search"></i>
+        <button type="submit" class="btn  px-3" title="Rechercher" style="color: #0d6efd;">
+          <i class="bi bi-search"></i>
         </button>
+
     </div>
 </form>
 
 <!-- =========================
     TABLE
 ========================= -->
-<div class="table-responsive">
-    <table class="table table-bordered align-middle">
-        <thead class="table-primary">
+<div
+class="white">
+<div class="card border-0 rounded-4">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 services-table">
+      <thead class="text-uppercase small text-muted"  >
+        <tr>
+          <th>Service</th>
+          <th class="text-center">Jours de RDV</th>
+          <th class="text-center">Max / jour</th>
+          <th class="text-center">Statut</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+            <?php if (empty($services)): ?>
+                <tr>
+                    <td colspan="5" class="text-center text-muted">
+                        Aucun service trouvé
+                    </td>
+                </tr>
+            <?php endif; ?>
+
+            <?php foreach ($services as $service): ?>
+            <?php
+            $stmtJours->execute([$service['codeService']]);
+            $serviceJours = $stmtJours->fetchAll(PDO::FETCH_COLUMN);
+            ?>
+
             <tr>
-                <th class="text-center">Service</th>
-                <th class="text-center">Jours de RDV</th>
-                <th class="text-center">Max RDV/jour</th>
-                <th class="text-center">Statut</th>
-                <th class="text-center">Actions</th>
+              <td><?= htmlspecialchars($service['designService']) ?></td>
+
+              <td class="text-center">
+                <?= $service['jours_rdv'] 
+                  ? htmlspecialchars($service['jours_rdv']) 
+                  : '<span class="text-muted"><i class="bi bi-exclamation-circle me-1"></i> Non configuré </span>' 
+                ?>
+              </td>
+              <td class="text-center"><?= $service['max_rdv_jour'] ?></td>
+              <td class="text-center">
+                  <?php if ($service['is_active'] == 1): ?>
+                      <span class="badge rounded-pill bg-success">Actif</span>
+
+                  <?php else: ?>
+                      <span class="badge rounded-pill bg-secondary">Inactif</span>
+                  <?php endif; ?>
+              </td>
+
+              <td class="text-center">
+                <button 
+                  class="btn btn-sm btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editServiceModal<?= $service['codeService'] ?>"
+                  title="Modifier le service">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <form method="POST" class="d-inline"
+                  onsubmit="return confirm('Supprimer définitivement ce service ?');">
+                  <input type="hidden" name="codeService" value="<?= $service['codeService'] ?>">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteServiceModal"
+                    data-code="<?= $service['codeService'] ?>"
+                    title="Supprimer le service">
+                    <i class="bi bi-trash"></i>
+                  </button>
+
+                </form>
+
+              </td>
             </tr>
-        </thead>
-        <tbody>
-
-        <?php if (empty($services)): ?>
-            <tr>
-                <td colspan="5" class="text-center text-muted">
-                    Aucun service trouvé
-                </td>
-            </tr>
-        <?php endif; ?>
-
-       <?php foreach ($services as $service): ?>
-        <?php
-$stmtJours->execute([$service['codeService']]);
-$serviceJours = $stmtJours->fetchAll(PDO::FETCH_COLUMN);
-?>
-
-<tr>
-    <td><?= htmlspecialchars($service['designService']) ?></td>
-
-    <td class="text-center">
-    <?= $service['jours_rdv'] 
-        ? htmlspecialchars($service['jours_rdv']) 
-        : '<span class="text-muted">Non configuré</span>' ?>
-</td>
-
-
-
-    <td class="text-center"><?= $service['max_rdv_jour'] ?></td>
-
-    <td class="text-center">
-        <?php if ($service['is_active'] == 1): ?>
-            <span class="badge bg-success">Actif</span>
-        <?php else: ?>
-            <span class="badge bg-secondary">Inactif</span>
-        <?php endif; ?>
-    </td>
-
-    <td class="text-center">
-        <button 
-            class="btn btn-sm btn-primary"
-            data-bs-toggle="modal"
-            data-bs-target="#editServiceModal<?= $service['codeService'] ?>"
-            title="Modifier le service">
-            <i class="bi bi-pencil"></i>
-        </button>
-        <form method="POST" class="d-inline"
-      onsubmit="return confirm('Supprimer définitivement ce service ?');">
-    <input type="hidden" name="codeService" value="<?= $service['codeService'] ?>">
-    <button
-  type="button"
-  class="btn btn-sm btn-danger"
-  data-bs-toggle="modal"
-  data-bs-target="#deleteServiceModal"
-  data-code="<?= $service['codeService'] ?>"
-  title="Supprimer le service">
-  <i class="bi bi-trash"></i>
-</button>
-
-</form>
-
-    </td>
-</tr>
 
 
 
 
-<!-- MODAL MODIFIER -->
-<div class="modal fade" id="editServiceModal<?= $service['codeService'] ?>" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content service-modal">
+  <!-- MODAL MODIFIER -->
+  <div class="modal fade" id="editServiceModal<?= $service['codeService'] ?>" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content service-modal">
 
-      <form method="POST">
-        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-        <input type="hidden" name="codeService" value="<?= $service['codeService'] ?>">
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+          <input type="hidden" name="codeService" value="<?= $service['codeService'] ?>">
 
-        <!-- HEADER -->
-        <div class="modal-header">
-          <h5 class="modal-title">
-            <i class="bi bi-pencil-square me-2"></i>
-            Modifier le service
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <!-- BODY -->
-        <div class="modal-body">
-          <div class="row g-4">
-
-            <div class="col-12">
-              <label class="form-label fw-semibold">Nom du service</label>
-              <input type="text"
-                     name="designService"
-                     class="form-control form-control-lg"
-                     value="<?= htmlspecialchars($service['designService']) ?>"
-                     required>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Max RDV / jour</label>
-              <select name="max_rdv_jour" class="form-select form-select-lg">
-                <?php foreach ([10,15,20,30] as $val): ?>
-                  <option value="<?= $val ?>" <?= $service['max_rdv_jour'] == $val ? 'selected' : '' ?>>
-                    <?= $val ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Statut</label>
-              <select name="is_active" class="form-select form-select-lg">
-                <option value="1" <?= $service['is_active'] == 1 ? 'selected' : '' ?>>Actif</option>
-                <option value="0" <?= $service['is_active'] == 0 ? 'selected' : '' ?>>Inactif</option>
-              </select>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label fw-semibold">Jours de RDV</label>
-              <div class="d-flex flex-wrap gap-2 service-days">
-                <?php foreach (['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'] as $jour): ?>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           name="jours[]"
-                           value="<?= $jour ?>"
-                           <?= in_array($jour, $serviceJours) ? 'checked' : '' ?>>
-                    <label class="form-check-label"><?= $jour ?></label>
-                  </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-
+          <!-- HEADER -->
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-pencil-square me-2"></i>
+              Modifier le service
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
-        </div>
 
-        <!-- FOOTER -->
-        <div class="modal-footer">
-          <button type="submit" name="update_service" class="btn btn-primary btn-lg">
-            <i class="bi bi-save me-1"></i> Enregistrer
-          </button>
-          <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-dismiss="modal">
-            Annuler
-          </button>
-        </div>
+          <!-- BODY -->
+          <div class="modal-body">
+            <div class="row g-4">
 
-      </form>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Nom du service</label>
+                <input type="text"
+                      name="designService"
+                      class="form-control form-control"
+                      value="<?= htmlspecialchars($service['designService']) ?>"
+                      required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Max RDV / jour</label>
+                <input
+                  type="number"
+                  name="max_rdv_jour"
+                  class="form-control"
+                  min="1"
+                  max="500"
+                  step="1"
+                  value="<?= $service['max_rdv_jour'] ?>"
+                  required
+                >
+
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Statut</label>
+                <select name="is_active" class="form-select form-select">
+                  <option value="1" <?= $service['is_active'] == 1 ? 'selected' : '' ?>>Actif</option>
+                  <option value="0" <?= $service['is_active'] == 0 ? 'selected' : '' ?>>Inactif</option>
+                </select>
+              </div>
+
+              <div class="jours-wrapper">
+                <div class="jours-header">
+                  <span class="counter">0 jour sélectionné</span>
+
+                  <div class="actions">
+                    <button type="button" class="icon-btn select-all" title="Tout sélectionner">
+                      <i class="bi bi-check2-square"></i>
+                    </button>
+
+                    <button type="button" class="icon-btn deselect-all" title="Tout désélectionner">
+                      <i class="bi bi-x-square"></i>
+                    </button>
+                  </div>
+
+                </div>
+
+                <div class="jours-grid">
+                  <?php foreach (['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'] as $jour): ?>
+                    <label class="jour-item">
+                      <input
+                        type="checkbox"
+                        name="jours[]"
+                        value="<?= $jour ?>"
+                        <?= isset($serviceJours) && in_array($jour, $serviceJours) ? 'checked' : '' ?>
+                      >
+                      <span><?= $jour ?></span>
+                    </label>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+
+
+
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="modal-footer">
+            <button type="submit" name="update_service" class="btn btn-primary btn-lg">
+              <i class="bi bi-save me-1"></i> Enregistrer
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-dismiss="modal">
+              Annuler
+            </button>
+          </div>
+
+        </form>
+      </div>
     </div>
   </div>
-</div>
 
-</div>
-<?php endforeach; ?>
-
+  </div>
+  <?php endforeach; ?>
 
 
-        </tbody>
-    </table>
-    <!-- Pagination -->
+
+          </tbody>
+      </table>
+      <!-- Pagination -->
 <?php if ($totalPages > 1): ?>
 <nav class="mt-3">
   <ul class="pagination justify-content-center">
@@ -517,6 +540,8 @@ $serviceJours = $stmtJours->fetchAll(PDO::FETCH_COLUMN);
   </ul>
 </nav>
 <?php endif; ?>
+
+</div>  <!-- fin card shadow -->
 
 </div>
 <!-- =========================
@@ -581,7 +606,7 @@ $serviceJours = $stmtJours->fetchAll(PDO::FETCH_COLUMN);
               <label class="form-label fw-semibold">Nom du service</label>
               <input type="text"
                      name="designService"
-                     class="form-control form-control-lg"
+                     class="form-control form-control"
                      placeholder="Ex : Dermatologie"
                      required>
             </div>
@@ -589,37 +614,60 @@ $serviceJours = $stmtJours->fetchAll(PDO::FETCH_COLUMN);
             <!-- MAX RDV -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Max RDV / jour</label>
-              <select name="max_rdv_jour" class="form-select form-select-lg">
-                <?php foreach ([10,15,20,30] as $val): ?>
-                  <option value="<?= $val ?>"><?= $val ?></option>
-                <?php endforeach; ?>
-              </select>
+              <input
+                type="number"
+                name="max_rdv_jour"
+                class="form-control"
+                min="1"
+                max="500"
+                step="1"
+                placeholder="Ex : 25"
+                required
+              >
             </div>
 
             <!-- STATUT -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Statut</label>
-              <select name="is_active" class="form-select form-select-lg">
+              <select name="is_active" class="form-select form-select">
                 <option value="1">Actif</option>
                 <option value="0">Inactif</option>
               </select>
             </div>
 
             <!-- JOURS -->
-            <div class="col-12">
-              <label class="form-label fw-semibold">Jours de RDV</label>
-              <div class="d-flex flex-wrap gap-2 service-days">
+            <div class="jours-wrapper">
+              <div class="jours-header">
+                <span class="counter">0 jour sélectionné</span>
+
+                <div class="actions">
+                  <button type="button" class="icon-btn select-all" title="Tout sélectionner">
+                    <i class="bi bi-check2-square"></i>
+                  </button>
+
+                  <button type="button" class="icon-btn deselect-all" title="Tout désélectionner">
+                    <i class="bi bi-x-square"></i>
+                  </button>
+                </div>
+
+              </div>
+
+              <div class="jours-grid">
                 <?php foreach (['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'] as $jour): ?>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           name="jours[]"
-                           value="<?= $jour ?>">
-                    <label class="form-check-label"><?= $jour ?></label>
-                  </div>
+                  <label class="jour-item">
+                    <input
+                      type="checkbox"
+                      name="jours[]"
+                      value="<?= $jour ?>"
+                      <?= isset($serviceJours) && in_array($jour, $serviceJours) ? 'checked' : '' ?>
+                    >
+                    <span><?= $jour ?></span>
+                  </label>
                 <?php endforeach; ?>
               </div>
             </div>
+
+
 
           </div>
         </div>
@@ -639,7 +687,6 @@ $serviceJours = $stmtJours->fetchAll(PDO::FETCH_COLUMN);
   </div>
 </div>
 
-
 </div>
 
 
@@ -652,4 +699,32 @@ if (deleteModal) {
   });
 }
 
+</script>
+
+<script>
+document.querySelectorAll('.jours-wrapper').forEach(wrapper => {
+  const checkboxes = wrapper.querySelectorAll('input[type="checkbox"]');
+  const counter = wrapper.querySelector('.counter');
+
+  const updateCounter = () => {
+    const count = [...checkboxes].filter(c => c.checked).length;
+    counter.textContent = count === 0
+      ? 'Aucun jour sélectionné'
+      : `${count} jour${count > 1 ? 's' : ''} sélectionné${count > 1 ? 's' : ''}`;
+  };
+
+  wrapper.querySelector('.select-all').onclick = () => {
+    checkboxes.forEach(c => c.checked = true);
+    updateCounter();
+  };
+
+  wrapper.querySelector('.deselect-all').onclick = () => {
+    checkboxes.forEach(c => c.checked = false);
+    updateCounter();
+  };
+
+  checkboxes.forEach(c => c.addEventListener('change', updateCounter));
+
+  updateCounter();
+});
 </script>

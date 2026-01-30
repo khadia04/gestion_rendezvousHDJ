@@ -57,17 +57,98 @@ try {
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
 
-    $mail->setFrom('contactchndj@gmail.com', 'CHNDJ - Sécurité');
+    $mail->setFrom('contactchndj@gmail.com', 'CHNDJ - Securite');
+    $mail->addReplyTo('contactchndj@gmail.com', 'CHNDJ Support');
     $mail->addAddress($email);
 
     $mail->isHTML(true);
-    $mail->Subject = 'Code de réinitialisation';
-    $mail->Body = "
-        <p>Bonjour,</p>
-        <p>Votre code de réinitialisation est :</p>
-        <h2 style='letter-spacing:3px;'>$otp</h2>
-        <p>Valable pendant <strong>10 minutes</strong>.</p>
-    ";
+    $mail->Subject = 'Verification de securite – Code OTP';
+
+
+    $mail->Body = '
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+    <meta charset="UTF-8">
+    <title>Verification de securite</title>
+    </head>
+    <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+        <tr>
+        <td align="center">
+
+            <!-- CARD -->
+            <table width="600" cellpadding="0" cellspacing="0"
+            style="background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+
+            <!-- LOGO / TITRE -->
+            <tr>
+                <td align="center" style="padding-bottom:20px;">
+                <h2 style="color:#2563eb; margin:0;">Vérification de sécurité</h2>
+                </td>
+            </tr>
+
+            <!-- TEXTE -->
+            <tr>
+                <td style="color:#374151; font-size:15px; line-height:22px; text-align:center;">
+                <p style="margin:0 0 10px;">Bonjour,</p>
+                <p style="margin:0;">
+                    Voici votre <strong>code de vérification (OTP)</strong> pour continuer la
+                    réinitialisation de votre mot de passe.
+                </p>
+                </td>
+            </tr>
+
+            <!-- CODE OTP -->
+            <tr>
+                <td align="center" style="padding:25px 0;">
+                <div style="
+                    display:inline-block;
+                    background:#eef2ff;
+                    color:#1e40af;
+                    font-size:28px;
+                    font-weight:bold;
+                    letter-spacing:6px;
+                    padding:15px 30px;
+                    border-radius:10px;">
+                    '.$otp.'
+                </div>
+                </td>
+            </tr>
+
+            <!-- VALIDITÉ -->
+            <tr>
+                <td align="center" style="color:#6b7280; font-size:14px;">
+                ⏳ Ce code est valable pendant <strong>10 minutes</strong>.
+                </td>
+            </tr>
+
+            <!-- INFO -->
+            <tr>
+                <td style="padding-top:25px; font-size:13px; color:#9ca3af; text-align:center;">
+                Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer cet email en toute sécurité.
+                </td>
+            </tr>
+
+            <!-- FOOTER -->
+            <tr>
+                <td align="center" style="padding-top:30px; font-size:12px; color:#9ca3af;">
+                © '.date('Y').' <strong>CHNDJ</strong> — Votre santé, notre priorité.
+                </td>
+            </tr>
+
+            </table>
+
+        </td>
+        </tr>
+    </table>
+
+    </body>
+    </html>
+    
+';
+
 
     $mail->send();
 } catch (Exception $e) {
