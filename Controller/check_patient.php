@@ -3,28 +3,50 @@ require_once '../Modele/database.php';
 
 header('Content-Type: application/json');
 
-$db = getConnection();
-$numero = $_GET['numero'] ?? '';
+try {
+    $db = getConnection();
 
-if (!$numero) {
-    echo json_encode(['status' => 'error']);
-    exit;
-}
+    $numero = trim($_GET['numero'] ?? '');
 
-$stmt = $db->prepare("
-    SELECT prenomPatient, nomPatient, telephonePatient
-    FROM patient
-    WHERE numeroDossierPatient = ?
-");
-$stmt->execute([$numero]);
-$patient = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($numero === '' || $numero === '0') {
+        echo json_encode(['status' => 'error']);
+        exit;
+    }
 
-if ($patient) {
+    $stmt = $db->prepare("
+        SELECT prenomPatient, nomPatient, telephonePatient
+        FROM patient
+        WHERE numeroDossierPatient = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$numero]);
+    $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    /* =========================
+       PATIENT EXISTE
+    ========================= */
+    if ($patient) {
+        echo json_encode([
+            'status' => 'exists',
+            'nom'    => $patient['prenomPatient'] . ' ' . $patient['nomPatient'],
+            'tel'    => $patient['telephonePatient']
+        ]);
+        exit;
+    }
+
+    /* =========================
+       PATIENT AVEC INDEX MAIS NON ENREGISTRÉ
+    ========================= */
     echo json_encode([
-        'status' => 'ok',
-        'nom' => $patient['prenomPatient'].' '.$patient['nomPatient'],
-        'tel' => $patient['telephonePatient']
+        'status' => 'not_found'
     ]);
-} else {
-    echo json_encode(['status' => 'error']);
+    exit;
+
+} catch (Exception $e) {
+
+    echo json_encode([
+        'status'  => 'error',
+        'message' => 'Erreur serveur'
+    ]);
+    exit;
 }

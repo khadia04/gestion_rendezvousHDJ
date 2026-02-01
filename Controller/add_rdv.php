@@ -28,6 +28,8 @@ try {
        DONNÉES COMMUNES
     ========================= */
     $patientType = $_POST['patient_type'] ?? '';
+    $isNewIndex = $_POST['is_new_index'] ?? '0';
+
     $codeService = $_POST['codeService'] ?? '';
     $dateRvServ  = $_POST['dateRvServ'] ?? '';
     $dateDemande = date('Y-m-d');
@@ -83,9 +85,55 @@ if ($role === 'agent') {
         ");
         $check->execute([$numeroDossier]);
 
-        if (!$check->fetch()) {
-            throw new Exception("Patient introuvable.");
-        }
+        $patientExiste = $check->fetch();
+
+        // 🟡 CAS 2 : patient avec index mais nouveau sur la plateforme
+        if (!$patientExiste && $isNewIndex === '1') {
+
+
+            $prenom    = trim($_POST['prenomComplet'] ?? '');
+            $nom       = trim($_POST['nom'] ?? '');
+            $telephone = trim($_POST['telephonePatient'] ?? '');
+
+            if (!$prenom || !$nom || !$telephone) {
+                throw new Exception("Informations patient obligatoires pour un nouveau patient avec index.");
+            }
+
+            $insertPatient = $db->prepare("
+                INSERT INTO patient (
+                    numeroDossierPatient,
+                    prenomPatient,
+                    nomPatient,
+                    telephonePatient,
+                    sexe,
+                    age,
+                    nationalite,
+                    email,
+                    groupeSanguin,
+                    identiteOfficielle,
+                    adresse,
+                    urgenceNom,
+                    urgenceTelephone
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+
+            $insertPatient->execute([
+                $numeroDossier,
+                $prenom,
+                $nom,
+                $telephone,
+                $_POST['sexe'] ?? null,
+                $_POST['age'] ?? null,
+                $_POST['nationalite'] ?? null,
+                $_POST['emailPatient'] ?? null,
+                $_POST['groupeSanguin'] ?? null,
+                $_POST['identiteOfficielle'] ?? null,
+                $_POST['adresse'] ?? null,
+                $_POST['urgenceNom'] ?? null,
+                $_POST['urgenceTelephone'] ?? null
+            ]);
+}
+
 
         // RDV
         $stmt = $db->prepare("

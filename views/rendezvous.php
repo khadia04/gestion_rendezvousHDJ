@@ -11,6 +11,12 @@ require_once '../Modele/database.php';
 $db = getConnection();
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+$pageNum = max(1, (int)($_GET['p'] ?? 1));
+$limit   = 10;
+$offset  = ($pageNum - 1) * $limit;
+
+
+
 /* =========================
    SERVICES
 ========================= */
@@ -47,7 +53,7 @@ $date    = $_GET['date'] ?? date('Y-m-d');
 /* =========================
    LISTE RDV (INDEX + NOINDEX)
 ========================= */
-$sql = "
+$sqlBase = "
 SELECT *
 FROM (
     SELECT
@@ -55,6 +61,7 @@ FROM (
         CONCAT(p.prenomPatient, ' ', p.nomPatient) AS patient,
         p.telephonePatient AS telephone,
         s.designService AS service,
+        s.codeService AS codeService, -- ✅ AJOUT
         r.dateDemande,
         r.dateRvServ
     FROM rendezvs r
@@ -68,10 +75,12 @@ FROM (
         CONCAT(n.prenomPatient, ' ', n.nomPatient),
         n.telephonePatient,
         s.designService,
+        s.codeService,
         n.dateDemande,
-        n.dateDisponible
+        n.dateDisponible AS dateRvServ
     FROM patientnoindex n
     JOIN service s ON s.codeService = n.codeService
+
 ) t
 WHERE 1=1
 ";
@@ -79,33 +88,67 @@ WHERE 1=1
 $params = [];
 
 if ($service) {
-    $sql .= " AND t.service = ?";
+    $sqlBase .= " AND t.codeService = ?";
     $params[] = $service;
 }
 
 if ($periode === 'jour') {
-    $sql .= " AND t.dateRvServ = ?";
+    $sqlBase .= " AND t.dateRvServ >= ? AND t.dateRvServ < DATE_ADD(?, INTERVAL 1 DAY)";
+    $params[] = $date;
     $params[] = $date;
 } elseif ($periode === 'mois') {
-    $sql .= " AND MONTH(t.dateRvServ)=MONTH(?) AND YEAR(t.dateRvServ)=YEAR(?)";
+    $sqlBase .= " AND MONTH(t.dateRvServ)=MONTH(?) AND YEAR(t.dateRvServ)=YEAR(?)";
     $params[] = $date;
     $params[] = $date;
 } elseif ($periode === 'annee') {
-    $sql .= " AND YEAR(t.dateRvServ)=YEAR(?)";
+    $sqlBase .= " AND YEAR(t.dateRvServ)=YEAR(?)";
     $params[] = $date;
 }
 
-$sql .= " ORDER BY t.dateRvServ DESC";
 
-$stmt = $db->prepare($sql);
+
+
+
+$filtresActifs = false;
+
+if (!empty($service)) $filtresActifs = true;
+if ($periode !== 'jour') $filtresActifs = true;
+/* =========================
+   TRI SELON LA PÉRIODE
+========================= */
+if ($periode === 'jour') {
+    // 🔥 File d’attente du jour :
+    // le premier qui a demandé passe en premier
+    $orderBy = "ORDER BY t.dateDemande ASC";
+} else {
+    // 🔥 Planning (mois / année) :
+    // RDV le plus proche en premier
+    $orderBy = "ORDER BY t.dateRvServ ASC";
+}
+if ($date !== date('Y-m-d')) $filtresActifs = true;
+
+// COUNT
+$countSql = "SELECT COUNT(*) FROM ($sqlBase) x";
+$stmtCount = $db->prepare($countSql);
+$stmtCount->execute($params);
+$total = (int)$stmtCount->fetchColumn();
+$totalPages = max(1, ceil($total / $limit));
+
+// DATA
+$sqlFinal = $sqlBase . " $orderBy LIMIT $limit OFFSET $offset";
+$stmt = $db->prepare($sqlFinal);
 $stmt->execute($params);
 $rendezvous = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-?>
+$rangJour = 1;
 
-<?php
-// fin de ton traitement PHP
-$services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if ($periode === 'jour') {
+    foreach ($rendezvous as $k => $rv) {
+        $rendezvous[$k]['rang_jour'] = $rangJour;
+        $rangJour++;
+    }
+}
+
 ?>
 
 <?php if ($_SESSION['role'] === 'agent' && empty($services)): ?>
@@ -115,6 +158,10 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
   </div>
   <?php return; ?>
 <?php endif; ?>
+
+
+
+
 
 
 
@@ -134,7 +181,15 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="chart-card">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="text-muted mb-0">Liste des rendez-vous</h6>
+        <h6 class="text-muted mb-0">
+            Liste des rendez-vous
+            <?php if ($filtresActifs): ?>
+                <span class="badge bg-warning text-dark ms-2">
+                    Filtres actifs
+                </span>
+            <?php endif; ?>
+        </h6>
+
 
         <?php if ($_SESSION['role'] === 'admin'): ?>
             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRdvModal">
@@ -148,38 +203,77 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         <div class="row g-3 mb-3">
             <!-- FILTRE SERVICE -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label">Service</label>
                 <select class="form-select" id="filterService">
                     <option value="">Tous les services</option>
                     <?php foreach ($services as $s): ?>
-                        <option value="<?= $s['codeService'] ?>">
+                        <option value="<?= $s['codeService'] ?>"
+                            <?= ($service === $s['codeService']) ? 'selected' : '' ?>>
                             <?= htmlspecialchars($s['designService']) ?>
                         </option>
+
                     <?php endforeach; ?>
                 </select>
             </div>
 
             <!-- FILTRE PÉRIODE -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label">Période</label>
                 <select class="form-select" id="filterPeriod">
-                    <option value="jour">Jour</option>
-                    <option value="mois">Mois</option>
-                    <option value="annee">Année</option>
+                    <option value="jour"   <?= $periode==='jour'?'selected':'' ?>>Jour</option>
+                    <option value="mois"   <?= $periode==='mois'?'selected':'' ?>>Mois</option>
+                    <option value="annee"  <?= $periode==='annee'?'selected':'' ?>>Année</option>
                 </select>
+
             </div>
 
             <!-- FILTRE DATE -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label">Date</label>
                 <input type="date" class="form-control" id="filterDate"
-                    value="<?= date('Y-m-d') ?>">
+                    value="<?= htmlspecialchars($date) ?>">
+
             </div>
+
+            <div class="col-md-3">
+                <button class="btn btn-primary" id="applyFiltersBtn" title="Filtrer">
+                    <i class="bi bi-funnel"></i>
+                </button>
+           
+                <?php if ($filtresActifs): ?>
+                    <a
+                        href="?page=rendezvous"
+                        class="btn btn-sm btn-outline-secondary"
+                        title="Réinitialiser les filtres">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                <?php endif; ?>
+
+                <?php if ($total > 0): ?>
+                    <a
+                        href="../exports/export_rdv_pdf.php?<?= http_build_query($_GET) ?>"
+                        class="btn btn-sm btn-outline-danger"
+                        data-bs-toggle="tooltip"
+                        target="_blank"
+                        rel="noopener"
+                        title="Exporter les rendez-vous filtrés en PDF">
+                        <i class="bi bi-file-earmark-pdf"></i>
+                    </a>
+                <?php endif; ?>
+
+            </div>
+
+
 
         </div>
 
-
+        <!-- TOTAL PATIENT (avec filtre) -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="text-muted">
+                <?= $total ?> rendez-vous trouvé<?= $total > 1 ? 's' : '' ?>
+            </small>
+        </div>
                 
         <table class="table table-hover align-middle">
             <thead class="table-light">
@@ -200,8 +294,23 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </td>
                 </tr>
             <?php else: foreach ($rendezvous as $rv): ?>
-                <tr>
-                    <td><?= htmlspecialchars($rv['dossier']) ?></td>
+                <tr class="<?= ($periode === 'jour' && ($rv['rang_jour'] ?? 0) === 1) ? 'table-success fw-bold' : '' ?>">
+
+                    <td>
+                        <?= htmlspecialchars($rv['dossier']) ?>
+
+                        <?php if ($periode === 'jour' && isset($rv['rang_jour'])): ?>
+                            <?php if ($rv['rang_jour'] === 1): ?>
+                                <span class="badge bg-danger ms-2">1er</span>
+                            <?php elseif ($rv['rang_jour'] === 2): ?>
+                                <span class="badge bg-warning text-dark ms-2">2e</span>
+                            <?php elseif ($rv['rang_jour'] === 3): ?>
+                                <span class="badge bg-secondary ms-2">3e</span>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </td>
+                    
+
                     <td><?= htmlspecialchars($rv['patient']) ?></td>
                     <td><?= htmlspecialchars($rv['telephone']) ?></td>
                     <td><span class="badge bg-info"><?= htmlspecialchars($rv['service']) ?></span></td>
@@ -212,6 +321,26 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php endforeach; endif; ?>
             </tbody>
         </table>
+
+        <nav>
+            <ul class="pagination justify-content-center">
+                <?php
+                    $paramsPage = $_GET;
+                    $paramsPage['page'] = 'rendezvous';
+                ?>
+                <?php for ($i=1; $i<=$totalPages; $i++): ?>
+                    <li class="page-item <?= $i==$pageNum?'active':'' ?>">
+                        <?php
+                        $paramsPage['p'] = $i;
+                        ?>
+                        <a class="page-link" href="?<?= http_build_query($paramsPage) ?>">
+                            <?= $i ?>
+                        </a>
+                    </li>
+                <?php endfor; ?>
+            </ul>
+        </nav>
+
     </div>
 </div>
 
@@ -259,10 +388,20 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
             data-value="noindex">
             Patient sans index
         </button>
+
+        <button
+            type="button"
+            class="btn btn-outline-success patient-type-btn"
+            data-value="new_index">
+            Nouveau patient
+        </button>
+
     </div>
 
-    <!-- Champ caché envoyé au backend -->
     <input type="hidden" name="patient_type" id="patientType" value="index">
+
+    <!-- Champ caché envoyé au backend -->
+    <input type="hidden" name="is_new_index" id="isNewIndex" value="0">
 </div>
 
 
@@ -674,6 +813,9 @@ function disableModalScroll() {
    CHECK PATIENT INDEX
 ========================= */
 patientInput.addEventListener('blur', () => {
+
+    // NE RIEN FAIRE SI LE CHAMP EST DÉSACTIVÉ
+    if (patientInput.disabled) return;
     const numero = patientInput.value.trim();
     if (!numero) {
         patientFeedback.innerHTML = '';
@@ -683,17 +825,76 @@ patientInput.addEventListener('blur', () => {
     fetch('../Controller/check_patient.php?numero=' + numero)
         .then(r => r.json())
         .then(d => {
-            patientFeedback.innerHTML =
-                d.status === 'ok'
-                ? `<div class="alert alert-success py-2">
-                     <strong>${d.nom}</strong><br>
-                     Téléphone : ${d.tel}
-                   </div>`
-                : `<div class="alert alert-danger py-2">
-                     Numéro de dossier invalide
-                   </div>`;
+
+            //  PATIENT EXISTE
+            if (d.status === 'exists') {
+                patientFeedback.innerHTML = `
+                    <div class="alert alert-success py-2">
+                        <strong>${d.nom}</strong><br>
+                        Téléphone : ${d.tel}
+                    </div>
+                `;
+                return;
+            }
+
+            // PATIENT AVEC INDEX MAIS NON ENREGISTRÉ
+            if (d.status === 'not_found') {
+                patientFeedback.innerHTML = `
+                    <div class="alert alert-warning py-2">
+                        Patient non enregistré sur la plateforme.<br>
+                        Veuillez compléter ses informations.
+                    </div>
+                `;
+
+                //  ouvrir le flow nouveau patient
+                openNewIndexPatient();
+                return;
+            }
+
+            //  ERREUR
+            patientFeedback.innerHTML = `
+                <div class="alert alert-danger py-2">
+                    Erreur lors de la vérification
+                </div>
+            `;
         });
+
 });
+
+function openNewIndexPatient() {
+
+    // forcer type index côté backend
+    patientTypeInput.value = 'index';
+
+    // afficher champs infos patient
+    indexFields.classList.add('d-none');
+    noIndexFields.classList.remove('d-none');
+
+    // verrouiller le numéro de dossier
+    patientInput.readOnly = true;
+    patientInput.classList.add('bg-light');
+
+    // désactiver patient sans index
+    const btnNoIndex = document.querySelector('[data-value="noindex"]');
+    btnNoIndex.classList.add('disabled');
+    btnNoIndex.style.pointerEvents = 'none';
+
+    // masquer calendrier tant que service non choisi
+    calendarWrapper.classList.add('d-none');
+
+    enableModalScroll();
+
+    showMessage(
+        "Nouveau patient avec index",
+        "Ce patient possède un numéro de dossier mais n’est pas encore enregistré sur la plateforme. Veuillez compléter ses informations.",
+        "info"
+    );
+
+    document.getElementById('isNewIndex').value = '1';
+
+}
+
+
 
 /* =========================
    SERVICE SEARCH
@@ -821,6 +1022,13 @@ document.getElementById('nextMonth').onclick = () => {
 document.querySelectorAll('.patient-type-btn').forEach(btn => {
     btn.onclick = () => {
 
+
+        // ✅ RÉACTIVER "patient sans index" À CHAQUE CHANGEMENT
+        const btnNoIndex = document.querySelector('[data-value="noindex"]');
+        btnNoIndex.classList.remove('disabled');
+        btnNoIndex.style.pointerEvents = 'auto';
+
+        
         // reset boutons
         document.querySelectorAll('.patient-type-btn').forEach(b => {
             b.classList.remove('btn-primary');
@@ -831,20 +1039,41 @@ document.querySelectorAll('.patient-type-btn').forEach(btn => {
         btn.classList.add('btn-primary');
 
         const type = btn.dataset.value;
-        patientTypeInput.value = type; // 🔴 CRUCIAL
+        patientTypeInput.value = (type === 'new_index') ? 'index' : type;
+
 
         if (type === 'index') {
             indexFields.classList.remove('d-none');
             noIndexFields.classList.add('d-none');
             patientInput.disabled = false;
+            document.getElementById('isNewIndex').value = '0';
+            patientInput.readOnly = false;
+            patientInput.classList.remove('bg-light');
+
         } else {
             indexFields.classList.add('d-none');
             noIndexFields.classList.remove('d-none');
+            document.getElementById('isNewIndex').value = '0';
+
 
             // 🔴 neutraliser totalement le champ index
             patientInput.value = '';
             patientInput.disabled = true;
         }
+
+        if (type === 'new_index') {
+
+            indexFields.classList.remove('d-none');
+            noIndexFields.classList.remove('d-none');
+
+            patientInput.disabled = false;
+            patientInput.readOnly = false;
+            patientInput.focus();
+
+            calendarWrapper.classList.add('d-none');
+            enableModalScroll();
+        }
+
 
         patientFeedback.innerHTML = '';
         selectedDateInput.value = '';
@@ -918,7 +1147,8 @@ saveBtn.onclick = () => {
         patientInput.value = '';
     }
 
-    if (patientType === 'noindex') {
+    if (patientType === 'noindex' || document.getElementById('isNewIndex').value === '1') {
+
         // téléphone patient
         if (!iti.isValidNumber()) {
             showMessage("Erreur", "Numéro de téléphone du patient invalide", "danger");
@@ -1022,5 +1252,30 @@ if (dateNaissance && ageInput) {
     });
 }
 
+const filterService = document.getElementById('filterService');
+const filterPeriod  = document.getElementById('filterPeriod');
+const filterDate    = document.getElementById('filterDate');
+
+function applyFilters() {
+    const params = new URLSearchParams(window.location.search);
+
+    params.set('page', 'rendezvous');
+    params.delete('p');
+
+    if (filterService.value) params.set('service', filterService.value);
+    else params.delete('service');
+
+    params.set('periode', filterPeriod.value);
+
+    if (filterDate.value) params.set('date', filterDate.value);
+
+    window.location.search = params.toString();
+}
+
+
+document.getElementById('applyFiltersBtn')
+    .addEventListener('click', applyFilters);
+
 
 </script>
+
