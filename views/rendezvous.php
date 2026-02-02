@@ -424,18 +424,33 @@ if ($periode === 'jour') {
 
     <div id="indexFields" class="section-animated show">
 
-    <!-- numéro de dossier + feedback -->
+        <!-- numéro de dossier + feedback -->
         <!-- Numéro de dossier -->
-        <div class="col-md-6">
-            <label class="form-label">Numéro de dossier</label>
-            <input
-                type="number"
-                name="numeroDossierPatient"
-                id="patientIndexInput"
-                class="form-control"
-                placeholder="Entrez le numéro de dossier du patient"
-            >
-            <div id="patientFeedback" class="mt-2"></div>
+         <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Numéro de dossier</label>
+                <input
+                    type="number"
+                    name="numeroDossierPatient"
+                    id="patientIndexInput"
+                    class="form-control"
+                    placeholder="Entrez le numéro de dossier du patient"
+                >
+                <div id="patientFeedback" class="mt-2"></div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Numéro de téléphone</label>
+                <input
+                    type="text"
+                    id="phoneSearchInput"
+                    class="form-control"
+                    placeholder="Rechercher par téléphone"
+                    inputmode="numeric"
+                >
+
+            </div>
+
         </div>
     </div>
 
@@ -1397,6 +1412,142 @@ document.addEventListener('click', e => {
     }
 });
 
+patientInput.addEventListener('input', () => {
+    patientInput.value = patientInput.value.replace(/\D+/g, '');
+});
+
+
+const phoneSearchInput = document.getElementById('phoneSearchInput');
+
+
+phoneSearchInput.addEventListener('blur', () => {
+    const phone = phoneSearchInput.value.trim();
+    if (!phone) return;
+
+    fetch('../Controller/check_patient_by_phone.php?phone=' + encodeURIComponent(phone))
+        .then(r => r.json())
+        .then(res => {
+
+            patientFeedback.innerHTML = '';
+
+            /* =========================
+               CAS 1 : PATIENT AVEC INDEX
+            ========================= */
+            if (res.status === 'patient') {
+
+                document.querySelector('[data-value="index"]').click();
+
+                patientInput.value = res.data.numeroDossierPatient;
+                patientInput.dispatchEvent(new Event('blur'));
+
+                patientFeedback.innerHTML = `
+                    <div class="alert alert-success py-2">
+                        <strong>${res.data.prenomPatient} ${res.data.nomPatient}</strong><br>
+                        Téléphone : ${res.data.telephonePatient}
+                    </div>
+                `;
+                return;
+            }
+
+            /* =========================
+               CAS 2 : ANCIEN SANS INDEX → NOUVEAU PATIENT
+            ========================= */
+            if (res.status === 'noindex') {
+
+                document.querySelector('[data-value="new_index"]').click();
+                document.getElementById('isNewIndex').value = '1';
+
+                document.querySelector('[name="prenomComplet"]').value = res.data.prenomPatient ?? '';
+                document.querySelector('[name="nom"]').value = res.data.nomPatient ?? '';
+                document.querySelector('[name="sexe"]').value = res.data.sexe ?? '';
+                document.querySelector('[name="dateNaissance"]').value = res.data.dateNaissance ?? '';
+                document.querySelector('[name="age"]').value = res.data.age ?? '';
+                document.querySelector('[name="nationalite"]').value = res.data.nationalite ?? '';
+                document.querySelector('[name="emailPatient"]').value = res.data.email ?? '';
+                document.querySelector('[name="groupeSanguin"]').value = res.data.groupeSanguin ?? '';
+                document.querySelector('[name="identiteOfficielle"]').value = res.data.identiteOfficielle ?? '';
+                document.querySelector('[name="adresse"]').value = res.data.adresse ?? '';
+                document.querySelector('[name="urgenceNom"]').value = res.data.urgenceNom ?? '';
+
+                if (res.data.telephonePatient) {
+                    iti.setNumber(res.data.telephonePatient);
+                    phoneHidden.value = res.data.telephonePatient;
+                }
+
+                if (res.data.urgenceTelephone) {
+                    itiUrgence.setNumber(res.data.urgenceTelephone);
+                    urgencePhoneHidden.value = res.data.urgenceTelephone;
+                }
+
+                patientFeedback.innerHTML = `
+                    <div class="alert alert-warning py-2">
+                        Patient retrouvé sans index.<br>
+                        Veuillez attribuer un numéro de dossier.
+                    </div>
+                `;
+                return;
+            }
+
+            /* =========================
+               CAS 3 : AUCUN PATIENT
+            ========================= */
+            if (res.status === 'not_found') {
+
+                document.querySelector('[data-value="noindex"]').click();
+
+                patientFeedback.innerHTML = `
+                    <div class="alert alert-warning py-2">
+                        Aucun patient trouvé avec ce numéro.
+                    </div>
+                `;
+            }
+        });
+});
+
+phoneSearchInput.addEventListener('input', () => {
+    phoneSearchInput.value = phoneSearchInput.value.replace(/\D+/g, '');
+});
+
+
+function openNewIndexPatientWithData(data) {
+
+    // passer sur onglet "Nouveau patient"
+    document.querySelector('[data-value="new_index"]').click();
+
+    // marquer nouveau index
+    document.getElementById('isNewIndex').value = '1';
+
+    // verrouiller index
+    patientInput.readOnly = false;
+    patientInput.focus();
+
+    // pré-remplissage
+    document.querySelector('[name="prenomComplet"]').value = data.prenomPatient ?? '';
+    document.querySelector('[name="nom"]').value = data.nomPatient ?? '';
+    document.querySelector('[name="sexe"]').value = data.sexe ?? '';
+    document.querySelector('[name="age"]').value = data.age ?? '';
+    document.querySelector('[name="nationalite"]').value = data.nationalite ?? '';
+    document.querySelector('[name="emailPatient"]').value = data.email ?? '';
+    document.querySelector('[name="groupeSanguin"]').value = data.groupeSanguin ?? '';
+    document.querySelector('[name="identiteOfficielle"]').value = data.identiteOfficielle ?? '';
+    document.querySelector('[name="adresse"]').value = data.adresse ?? '';
+    document.querySelector('[name="urgenceNom"]').value = data.urgenceNom ?? '';
+
+    // téléphone
+    iti.setNumber(data.telephonePatient);
+    if (data.urgenceTelephone) {
+        itiUrgence.setNumber(data.urgenceTelephone);
+    }
+
+    enableModalScroll();
+
+    patientFeedback.innerHTML = `
+        <div class="alert alert-info py-2">
+            Patient déjà connu sans index.<br>
+            Veuillez lui attribuer un numéro de dossier.
+        </div>
+    `;
+}
 
 
 </script>

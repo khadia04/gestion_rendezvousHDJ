@@ -8,8 +8,8 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once '../Modele/database.php';
 require_once '../Modele/databaseAgent.php';
 
-
 try {
+
     /* =========================
        CSRF
     ========================= */
@@ -28,7 +28,7 @@ try {
        DONNÉES COMMUNES
     ========================= */
     $patientType = $_POST['patient_type'] ?? '';
-    $isNewIndex = $_POST['is_new_index'] ?? '0';
+    $isNewIndex  = $_POST['is_new_index'] ?? '0';
 
     $codeService = $_POST['codeService'] ?? '';
     $dateRvServ  = $_POST['dateRvServ'] ?? '';
@@ -39,32 +39,42 @@ try {
     }
 
     /* =========================
-   SÉCURITÉ : SERVICE AUTORISÉ
-========================= */
-$role     = $_SESSION['role'] ?? '';
-$username = $_SESSION['username'] ?? '';
-
-if ($role === 'agent') {
-
-    if (empty($codeService)) {
-        throw new Exception("Service manquant.");
+       NETTOYAGE SÉCURITÉ
+       (chiffres uniquement)
+    ========================= */
+    if (isset($_POST['numeroDossierPatient'])) {
+        $_POST['numeroDossierPatient'] = preg_replace('/\D+/', '', $_POST['numeroDossierPatient']);
     }
 
-    // Vérifier que le service appartient bien à l’agent
-    $checkService = $db->prepare("
-        SELECT 1
-        FROM agent_service
-        WHERE agent_username = ?
-          AND codeService = ?
-        LIMIT 1
-    ");
-    $checkService->execute([$username, $codeService]);
-
-    if (!$checkService->fetch()) {
-        throw new Exception("⛔ Service non autorisé pour cet agent.");
+    if (isset($_POST['telephonePatient'])) {
+        $_POST['telephonePatient'] = preg_replace('/\D+/', '', $_POST['telephonePatient']);
     }
-}
 
+    if (isset($_POST['urgenceTelephone'])) {
+        $_POST['urgenceTelephone'] = preg_replace('/\D+/', '', $_POST['urgenceTelephone']);
+    }
+
+    /* =========================
+       SÉCURITÉ : SERVICE AGENT
+    ========================= */
+    $role     = $_SESSION['role'] ?? '';
+    $username = $_SESSION['username'] ?? '';
+
+    if ($role === 'agent') {
+
+        $checkService = $db->prepare("
+            SELECT 1
+            FROM agent_service
+            WHERE agent_username = ?
+              AND codeService = ?
+            LIMIT 1
+        ");
+        $checkService->execute([$username, $codeService]);
+
+        if (!$checkService->fetch()) {
+            throw new Exception("Service non autorisé pour cet agent.");
+        }
+    }
 
     /* =====================================================
        PATIENT AVEC INDEX
@@ -79,24 +89,23 @@ if ($role === 'agent') {
 
         // Vérifier existence patient
         $check = $db->prepare("
-            SELECT numeroDossierPatient 
-            FROM patient 
+            SELECT numeroDossierPatient
+            FROM patient
             WHERE numeroDossierPatient = ?
         ");
         $check->execute([$numeroDossier]);
 
         $patientExiste = $check->fetch();
 
-        // 🟡 CAS 2 : patient avec index mais nouveau sur la plateforme
+        /* 🟡 Patient avec index mais nouveau sur la plateforme */
         if (!$patientExiste && $isNewIndex === '1') {
-
 
             $prenom    = trim($_POST['prenomComplet'] ?? '');
             $nom       = trim($_POST['nom'] ?? '');
             $telephone = trim($_POST['telephonePatient'] ?? '');
 
             if (!$prenom || !$nom || !$telephone) {
-                throw new Exception("Informations patient obligatoires pour un nouveau patient avec index.");
+                throw new Exception("Informations patient obligatoires.");
             }
 
             $insertPatient = $db->prepare("
@@ -132,8 +141,7 @@ if ($role === 'agent') {
                 $_POST['urgenceNom'] ?? null,
                 $_POST['urgenceTelephone'] ?? null
             ]);
-}
-
+        }
 
         // RDV
         $stmt = $db->prepare("
@@ -163,7 +171,7 @@ if ($role === 'agent') {
     }
 
     /* =====================================================
-       PATIENT SANS INDEX  
+       PATIENT SANS INDEX
     ===================================================== */
     else {
 
@@ -193,9 +201,7 @@ if ($role === 'agent') {
                 adresse,
                 urgenceNom,
                 urgenceTelephone
-            ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-            )
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
         $stmt->execute([
@@ -216,7 +222,7 @@ if ($role === 'agent') {
             $_POST['urgenceTelephone'] ?? null
         ]);
 
-        // Historique SANS numeroDossier
+        // Historique
         $hist = $db->prepare("
             INSERT INTO rendezvs_history
             (numeroDossierPatient, codeService, dateDemande, dateRvServ, typePatient, telephonePatient, sourceTable)
@@ -229,8 +235,9 @@ if ($role === 'agent') {
             $telephone
         ]);
     }
-        /* =========================
-        COMMIT & LOGS   
+
+    /* =========================
+       LOG & COMMIT
     ========================= */
     $log = $db->prepare("
         INSERT INTO agent_logs (agent_username, action, details)
@@ -243,7 +250,7 @@ if ($role === 'agent') {
     ]);
 
     $db->commit();
-    
+
     echo json_encode([
         'status' => 'success',
         'message' => 'Rendez-vous enregistré avec succès'
@@ -256,9 +263,16 @@ if ($role === 'agent') {
         $db->rollBack();
     }
 
+    $message = $e->getMessage();
+
+    // Erreur index unique
+    if ($e instanceof PDOException && $e->getCode() === '23000') {
+        $message = "Ce numéro de dossier est déjà attribué à un patient.";
+    }
+
     echo json_encode([
         'status' => 'error',
-        'message' => $e->getMessage()
+        'message' => $message
     ]);
     exit;
 }
