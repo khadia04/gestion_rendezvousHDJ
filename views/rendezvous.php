@@ -61,7 +61,7 @@ FROM (
         CONCAT(p.prenomPatient, ' ', p.nomPatient) AS patient,
         p.telephonePatient AS telephone,
         s.designService AS service,
-        s.codeService AS codeService, -- ✅ AJOUT
+        s.codeService AS codeService, --  AJOUT
         r.dateDemande,
         r.dateRvServ
     FROM rendezvs r
@@ -171,51 +171,60 @@ if ($periode === 'jour') {
 
 <div class="page-header mb-3">
     <h4 class="fw-bold">Visualisation et filtrage des rendez-vous</h4>
-    <p class="text-muted mb-0">--</p>
+    <br>
 </div>
 
-<!-- =========================
-     TABLEAU
-========================= -->
-
-<div class="chart-card">
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="text-muted mb-0">
-            Liste des rendez-vous
-            <?php if ($filtresActifs): ?>
-                <span class="badge bg-warning text-dark ms-2">
-                    Filtres actifs
-                </span>
-            <?php endif; ?>
-        </h6>
-
-
-        <?php if ($_SESSION['role'] === 'admin'): ?>
-            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRdvModal">
-                <i class="bi bi-plus-circle"></i> Ajouter un RDV
-            </button>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="text-muted mb-0">
+        Liste des rendez-vous
+        <?php if ($filtresActifs): ?>
+            <span class="badge bg-warning text-dark ms-2">
+                Filtres actifs
+            </span>
         <?php endif; ?>
-    </div>
-    
-    
-    <div class="table-responsive">
+    </h6>
 
-        <div class="row g-3 mb-3">
+
+    <?php if ($_SESSION['role'] === 'admin'): ?>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRdvModal">
+            <i class="bi bi-plus-circle"></i> Ajouter un RDV
+        </button>
+    <?php endif; ?>
+</div>
+
+<div class="row g-3 mb-3">
             <!-- FILTRE SERVICE -->
-            <div class="col-md-3">
+            <div class="col-md-3 position-relative">
                 <label class="form-label">Service</label>
-                <select class="form-select" id="filterService">
-                    <option value="">Tous les services</option>
-                    <?php foreach ($services as $s): ?>
-                        <option value="<?= $s['codeService'] ?>"
-                            <?= ($service === $s['codeService']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($s['designService']) ?>
-                        </option>
 
+                <input
+                    type="text"
+                    id="filterServiceSearch"
+                    class="form-control bg-white"
+                    placeholder="Rechercher un service..."
+                    autocomplete="off"
+                    value="<?= $service ? htmlspecialchars(
+                        array_values(
+                            array_filter($services, fn($s) => $s['codeService'] === $service)
+                        )[0]['designService'] ?? ''
+                    ) : '' ?>"
+                >
+
+                <input type="hidden" id="filterService" value="<?= htmlspecialchars($service) ?>">
+
+                <div id="filterServiceDropdown" class="service-dropdown d-none">
+                    <?php foreach ($services as $s): ?>
+                        <div
+                            class="service-item"
+                            data-code="<?= $s['codeService'] ?>"
+                        >
+                            <strong><?= strtoupper($s['designService']) ?></strong><br>
+                            <small class="text-muted"><?= $s['codeService'] ?></small>
+                        </div>
                     <?php endforeach; ?>
-                </select>
+                </div>
             </div>
+
 
             <!-- FILTRE PÉRIODE -->
             <div class="col-md-3">
@@ -236,16 +245,14 @@ if ($periode === 'jour') {
 
             </div>
 
-            <div class="col-md-3">
+            <!-- Actions -->
+            <div class="col-md-3  actions gap-2 align-self-end mb-1 ">
                 <button class="btn btn-primary" id="applyFiltersBtn" title="Filtrer">
                     <i class="bi bi-funnel"></i>
                 </button>
-           
+
                 <?php if ($filtresActifs): ?>
-                    <a
-                        href="?page=rendezvous"
-                        class="btn btn-sm btn-outline-secondary"
-                        title="Réinitialiser les filtres">
+                    <a href="?page=rendezvous" class="btn btn-outline-secondary" title="Réinitialiser">
                         <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 <?php endif; ?>
@@ -253,20 +260,28 @@ if ($periode === 'jour') {
                 <?php if ($total > 0): ?>
                     <a
                         href="../exports/export_rdv_pdf.php?<?= http_build_query($_GET) ?>"
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="tooltip"
+                        class="btn btn-outline-danger"
                         target="_blank"
-                        rel="noopener"
-                        title="Exporter les rendez-vous filtrés en PDF">
+                        title="Exporter PDF">
                         <i class="bi bi-file-earmark-pdf"></i>
                     </a>
                 <?php endif; ?>
-
             </div>
 
 
-
         </div>
+<!-- =========================
+     TABLEAU
+========================= -->
+
+<div class="chart-card">
+
+    
+    
+    
+    <div class="table-responsive">
+
+        
 
         <!-- TOTAL PATIENT (avec filtre) -->
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -407,7 +422,8 @@ if ($periode === 'jour') {
 
 <div class="row g-3">
 
-    <div id="indexFields">
+    <div id="indexFields" class="section-animated show">
+
     <!-- numéro de dossier + feedback -->
         <!-- Numéro de dossier -->
         <div class="col-md-6">
@@ -425,7 +441,8 @@ if ($periode === 'jour') {
 
      <!-- champs pour patient sans index -->
     <!-- PATIENT SANS INDEX -->
-    <div id="noIndexFields" class="d-none">
+    <div id="noIndexFields" class="section-animated d-none">
+
 
         <h5 class="text-muted mb-2">Informations du patient</h5>
 
@@ -805,6 +822,7 @@ function updateSaveButton() {
 function enableModalScroll() {
     document.querySelector('#addRdvModal .modal-body').style.overflowY = 'auto';
 }
+
 function disableModalScroll() {
     document.querySelector('#addRdvModal .modal-body').style.overflowY = 'hidden';
 }
@@ -834,8 +852,24 @@ patientInput.addEventListener('blur', () => {
                         Téléphone : ${d.tel}
                     </div>
                 `;
+
+                // ✅ ACTIVER LE SCROLL DU MODAL
+                enableModalScroll();
+
+                // 🔓 Activer service
+                serviceSearch.removeAttribute('disabled');
+                serviceSearch.focus();
+
+                // 🔽 Ouvrir la liste des services
+                serviceDropdown.classList.remove('d-none');
+                serviceDropdown.querySelectorAll('.service-item')
+                    .forEach(item => item.style.display = 'block');
+
                 return;
             }
+
+
+
 
             // PATIENT AVEC INDEX MAIS NON ENREGISTRÉ
             if (d.status === 'not_found') {
@@ -863,36 +897,38 @@ patientInput.addEventListener('blur', () => {
 
 function openNewIndexPatient() {
 
-    // forcer type index côté backend
+    // 1. état logique
+    document.getElementById('isNewIndex').value = '1';
     patientTypeInput.value = 'index';
 
-    // afficher champs infos patient
-    indexFields.classList.add('d-none');
-    noIndexFields.classList.remove('d-none');
+    // 2. état visuel des boutons (sans click)
+    document.querySelectorAll('.patient-type-btn').forEach(b => {
+        b.classList.remove('active');
+    });
 
-    // verrouiller le numéro de dossier
+    const btnNewIndex = document.querySelector(
+        '.patient-type-btn[data-value="new_index"]'
+    );
+    if (btnNewIndex) {
+        btnNewIndex.classList.add('active');
+    }
+
+    // 3. affichage des sections (direct, sans animation cassante)
+    indexFields.classList.remove('d-none');
+    indexFields.classList.add('show');
+
+    noIndexFields.classList.remove('d-none');
+    noIndexFields.classList.add('show');
+
+    // 4. numéro de dossier visible mais verrouillé
     patientInput.readOnly = true;
     patientInput.classList.add('bg-light');
 
-    // désactiver patient sans index
-    const btnNoIndex = document.querySelector('[data-value="noindex"]');
-    btnNoIndex.classList.add('disabled');
-    btnNoIndex.style.pointerEvents = 'none';
-
-    // masquer calendrier tant que service non choisi
-    calendarWrapper.classList.add('d-none');
-
+    // 5. scroll activé
     enableModalScroll();
-
-    showMessage(
-        "Nouveau patient avec index",
-        "Ce patient possède un numéro de dossier mais n’est pas encore enregistré sur la plateforme. Veuillez compléter ses informations.",
-        "info"
-    );
-
-    document.getElementById('isNewIndex').value = '1';
-
 }
+
+
 
 
 
@@ -1016,73 +1052,106 @@ document.getElementById('nextMonth').onclick = () => {
     loadCalendar();
 };
 
+function showSection(section) {
+    section.classList.remove('d-none');
+    requestAnimationFrame(() => {
+        section.classList.add('show');
+    });
+}
+
+function hideSection(section) {
+    section.classList.remove('show');
+    setTimeout(() => {
+        section.classList.add('d-none');
+    }, 250);
+}
+
+
 /* =========================
-   SWITCH PATIENT TYPE
+   SWITCH TYPE PATIENT (ONGLETS)
 ========================= */
 document.querySelectorAll('.patient-type-btn').forEach(btn => {
-    btn.onclick = () => {
+    btn.addEventListener('click', () => {
 
+        //  empêcher clic si déjà actif
+        if (btn.classList.contains('active')) return;
 
-        // ✅ RÉACTIVER "patient sans index" À CHAQUE CHANGEMENT
-        const btnNoIndex = document.querySelector('[data-value="noindex"]');
-        btnNoIndex.classList.remove('disabled');
-        btnNoIndex.style.pointerEvents = 'auto';
+        // 1️ type choisi
+        const type = btn.dataset.value;
 
-        
-        // reset boutons
+        //  mémoriser le dernier onglet utilisé
+        localStorage.setItem('last_patient_type', type);
+
+        // 2️ reset boutons
         document.querySelectorAll('.patient-type-btn').forEach(b => {
-            b.classList.remove('btn-primary');
-            b.classList.add('btn-outline-secondary');
+            b.classList.remove('active');
         });
 
-        btn.classList.remove('btn-outline-secondary');
-        btn.classList.add('btn-primary');
+        // 3️ activer bouton courant
+        btn.classList.add('active');
 
-        const type = btn.dataset.value;
+        // 4️ valeur backend réelle
         patientTypeInput.value = (type === 'new_index') ? 'index' : type;
 
-
+        // 5️ affichage champs
         if (type === 'index') {
-            indexFields.classList.remove('d-none');
-            noIndexFields.classList.add('d-none');
+
+            showSection(indexFields);
+            hideSection(noIndexFields);
+
             patientInput.disabled = false;
-            document.getElementById('isNewIndex').value = '0';
             patientInput.readOnly = false;
             patientInput.classList.remove('bg-light');
-
-        } else {
-            indexFields.classList.add('d-none');
-            noIndexFields.classList.remove('d-none');
             document.getElementById('isNewIndex').value = '0';
 
+            //  PAS DE SCROLL
+            disableModalScroll();
 
-            // 🔴 neutraliser totalement le champ index
+        } else if (type === 'noindex') {
+
+            hideSection(indexFields);
+            showSection(noIndexFields);
+
             patientInput.value = '';
             patientInput.disabled = true;
-        }
+            document.getElementById('isNewIndex').value = '0';
 
-        if (type === 'new_index') {
+            //  SCROLL ACTIVÉ
+            enableModalScroll();
 
-            indexFields.classList.remove('d-none');
-            noIndexFields.classList.remove('d-none');
+            //  âge actif
+            initAgeCalculation();
+
+        } else if (type === 'new_index') {
+
+            showSection(indexFields);
+            showSection(noIndexFields);
 
             patientInput.disabled = false;
             patientInput.readOnly = false;
             patientInput.focus();
 
             calendarWrapper.classList.add('d-none');
+            document.getElementById('isNewIndex').value = '1';
+
+            //  SCROLL ACTIVÉ
             enableModalScroll();
+
+            //  âge actif
+            initAgeCalculation();
         }
 
 
-        patientFeedback.innerHTML = '';
+        // 6️ reset commun
+        if (type !== 'new_index') {
+            patientFeedback.innerHTML = '';
+        }
+
         selectedDateInput.value = '';
         calendarWrapper.classList.add('d-none');
         updateSaveButton();
-        disableModalScroll();
-    };
+    });
 });
-
 
 /* =========================
    MESSAGE / CONFIRMATION
@@ -1123,7 +1192,7 @@ saveBtn.onclick = () => {
     if (isSubmitting) return;
     isSubmitting = true;
 
-    let patientType = patientTypeInput.value;// 🔥 valeur réelle
+    let patientType = patientTypeInput.value;//  valeur réelle
     const form = document.querySelector('#addRdvModal form');
 
     if (!hiddenService.value || !selectedDateInput.value) {
@@ -1132,7 +1201,7 @@ saveBtn.onclick = () => {
         return;
     }
 
-    // 🔒 BLOQUER ABSOLUMENT LES CAS FAUX
+    //  BLOQUER ABSOLUMENT LES CAS FAUX
     if (patientType === 'index') {
         const dossier = patientInput.value.trim();
         if (!dossier || dossier === '0') {
@@ -1143,7 +1212,7 @@ saveBtn.onclick = () => {
     }
 
     if (patientType === 'noindex') {
-        // 🔥 IMPORTANT : supprimer toute trace de dossier
+        //  IMPORTANT : supprimer toute trace de dossier
         patientInput.value = '';
     }
 
@@ -1232,10 +1301,20 @@ saveBtn.onclick = () => {
 const dateNaissance = document.getElementById('dateNaissance');
 const ageInput      = document.getElementById('ageInput');
 
-if (dateNaissance && ageInput) {
-    dateNaissance.addEventListener('change', () => {
+function initAgeCalculation() {
+    const dateNaissance = document.getElementById('dateNaissance');
+    const ageInput = document.getElementById('ageInput');
+
+    if (!dateNaissance || !ageInput) return;
+
+    dateNaissance.onchange = () => {
+        if (!dateNaissance.value) {
+            ageInput.value = '';
+            return;
+        }
+
         const birth = new Date(dateNaissance.value);
-        if (isNaN(birth)) {
+        if (isNaN(birth.getTime())) {
             ageInput.value = '';
             return;
         }
@@ -1249,8 +1328,15 @@ if (dateNaissance && ageInput) {
         }
 
         ageInput.value = age >= 0 ? age : '';
-    });
+    };
 }
+
+// Initialiser le calcul de l’âge à l’ouverture de la modal
+document.getElementById('addRdvModal')
+    .addEventListener('shown.bs.modal', () => {
+        initAgeCalculation();
+    });
+
 
 const filterService = document.getElementById('filterService');
 const filterPeriod  = document.getElementById('filterPeriod');
@@ -1274,7 +1360,43 @@ function applyFilters() {
 
 
 document.getElementById('applyFiltersBtn')
-    .addEventListener('click', applyFilters);
+.addEventListener('click', applyFilters);
+
+const filterServiceSearch   = document.getElementById('filterServiceSearch');
+const filterServiceHidden   = document.getElementById('filterService');
+const filterServiceDropdown = document.getElementById('filterServiceDropdown');
+
+filterServiceSearch.addEventListener('focus', () => {
+    filterServiceDropdown.classList.remove('d-none');
+});
+
+filterServiceSearch.addEventListener('input', () => {
+    const v = filterServiceSearch.value.toLowerCase();
+    let found = 0;
+
+    filterServiceDropdown.querySelectorAll('.service-item').forEach(item => {
+        const ok = item.innerText.toLowerCase().includes(v);
+        item.style.display = ok ? 'block' : 'none';
+        if (ok) found++;
+    });
+
+    filterServiceDropdown.classList.toggle('d-none', found === 0);
+});
+
+filterServiceDropdown.querySelectorAll('.service-item').forEach(item => {
+    item.onclick = () => {
+        filterServiceSearch.value = item.querySelector('strong').innerText;
+        filterServiceHidden.value = item.dataset.code;
+        filterServiceDropdown.classList.add('d-none');
+    };
+});
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.position-relative')) {
+        filterServiceDropdown.classList.add('d-none');
+    }
+});
+
 
 
 </script>
