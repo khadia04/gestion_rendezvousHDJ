@@ -192,7 +192,7 @@ if ($periode === 'jour') {
     <?php endif; ?>
 </div>
 
-<div class="row g-3 mb-3">
+<div class="row g-3 mb-3 filters-animated">
             <!-- FILTRE SERVICE -->
             <div class="col-md-3 position-relative">
                 <label class="form-label">Service</label>
@@ -200,7 +200,7 @@ if ($periode === 'jour') {
                 <input
                     type="text"
                     id="filterServiceSearch"
-                    class="form-control bg-white"
+                    class="form-control "
                     placeholder="Rechercher un service..."
                     autocomplete="off"
                     value="<?= $service ? htmlspecialchars(
@@ -802,6 +802,11 @@ const btnOk         = document.getElementById('modalOk');
 let currentDate = new Date();
 let isSubmitting = false;
 
+// 🔹 Données patient courant (pour le récapitulatif)
+let currentPatientName  = '';
+let currentPatientPhone = '';
+
+
 /* =========================
    INTL TEL INPUT
 ========================= */
@@ -861,6 +866,9 @@ patientInput.addEventListener('blur', () => {
 
             //  PATIENT EXISTE
             if (d.status === 'exists') {
+                // ✅ MÉMORISER LES DONNÉES DU PATIENT
+                currentPatientName  = d.nom;
+                currentPatientPhone = d.tel;
                 patientFeedback.innerHTML = `
                     <div class="alert alert-success py-2">
                         <strong>${d.nom}</strong><br>
@@ -1262,11 +1270,19 @@ saveBtn.onclick = () => {
         .toLocaleDateString('fr-FR');
 
     if (type === 'index') {
-        recapHtml += `
-            <li class="list-group-item"><strong>Patient :</strong> ${patientFeedback.innerText || '—'}</li>
-            <li class="list-group-item"><strong>Dossier :</strong> ${patientInput.value}</li>
-        `;
-    } else {
+    recapHtml += `
+        <li class="list-group-item">
+            <strong>Patient :</strong> ${currentPatientName || '—'}
+        </li>
+        <li class="list-group-item">
+            <strong>Dossier :</strong> ${patientInput.value}
+        </li>
+        <li class="list-group-item">
+            <strong>Téléphone :</strong> ${currentPatientPhone || '—'}
+        </li>
+    `;
+    }
+    else {
         recapHtml += `
             <li class="list-group-item"><strong>Patient :</strong>
                 ${document.querySelector('[name="prenomComplet"]').value}
@@ -1276,14 +1292,20 @@ saveBtn.onclick = () => {
         `;
     }
 
+    if (type !== 'index') {
+        recapHtml += `
+            <li class="list-group-item">
+                <strong>Téléphone :</strong>
+                ${document.querySelector('[name="telephonePatient"]').value || '—'}
+            </li>
+        `;
+    }
+
+    // ✅ Service & Date TOUJOURS affichés
     recapHtml += `
-        <li class="list-group-item"><strong>Téléphone :</strong>
-            ${document.querySelector('[name="telephonePatient"]').value || '—'}
-        </li>
         <li class="list-group-item"><strong>Service :</strong> ${serviceLabel}</li>
         <li class="list-group-item"><strong>Date :</strong> ${dateLabel}</li>
     </ul>`;
-
 
     showConfirm(
         "Confirmer le rendez-vous",
@@ -1440,12 +1462,16 @@ phoneSearchInput.addEventListener('blur', () => {
                 patientInput.value = res.data.numeroDossierPatient;
                 patientInput.dispatchEvent(new Event('blur'));
 
+                currentPatientName  = `${res.data.prenomPatient} ${res.data.nomPatient}`;
+                currentPatientPhone = res.data.telephonePatient;
+
                 patientFeedback.innerHTML = `
                     <div class="alert alert-success py-2">
                         <strong>${res.data.prenomPatient} ${res.data.nomPatient}</strong><br>
                         Téléphone : ${res.data.telephonePatient}
                     </div>
                 `;
+
                 return;
             }
 

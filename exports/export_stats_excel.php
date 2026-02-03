@@ -1,8 +1,25 @@
 <?php
-date_default_timezone_set('Africa/Dakar');
+session_start();
 
+require_once "../middlewares/auth.php";
+require_once "../helpers/activity.php";
 require_once "../modele/database.php";
 require_once "../modele/databaseRv.php";
+
+requireAuth('admin');
+
+// LOG AVANT headers
+logActivity(
+    $_SESSION['user_id'],
+    "Export Excel statistiques",
+    "Export des statistiques RDV en Excel",
+    $_SESSION['role']
+);
+
+// HEADERS DIRECTEMENT APRÈS
+header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
+header("Content-Disposition: attachment; filename=rapport_rdv_CHNDJ.xls");
+
 
 /* =========================
    PARAMÈTRES

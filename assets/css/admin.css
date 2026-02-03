@@ -3693,3 +3693,1018 @@ body.services.dark-dashboard .white {
     pointer-events: auto;
 }
 
+
+
+body.rendezvous.dark-dashboard {
+    --bg-main: #070e23;
+    --bg-card: #070d20;
+    --bg-sidebar: #020617;
+    --text-main: #e5e7eb;
+    --text-muted: #9ca3af;
+    --border-color: #1e293b;
+    --primary: #3b82f6;
+}
+
+body.rendezvous.dark-dashboard body {
+    background: var(--bg-main);
+    color: var(--text-main);
+}
+
+body.rendezvous.dark-dashboard .sidebar {
+    background: var(--bg-sidebar);
+}
+
+body.rendezvous.dark-dashboard .main-content,
+body.rendezvous.dark-dashboard .content-wrapper,
+body.rendezvous.dark-dashboard .card,
+body.rendezvous.dark-dashboard .modal-content {
+    background: var(--bg-card);
+    color: var(--text-main);
+}
+
+body.rendezvous.dark-dashboard input,
+body.rendezvous.dark-dashboard select,
+body.rendezvous.dark-dashboard textarea {
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+body.rendezvous.dark-dashboard input::placeholder {
+    color: var(--text-muted);
+}
+
+body.rendezvous.dark-dashboard .table,
+body.rendezvous.dark-dashboard .table th,
+body.rendezvous.dark-dashboard .table td {
+    color: var(--text-main);
+    border-color: var(--border-color);
+    background: var(--bg-card);
+}
+
+body.rendezvous.dark-dashboard input .form-control,
+body.rendezvous.dark-dashboard select,
+body.rendezvous.dark-dashboard textarea {
+    background: #070d20;
+
+}
+
+/* =====================================================
+   RENDEZ-VOUS – TABLEAU MODE SOMBRE (SOURCE UNIQUE)
+===================================================== */
+
+body.rendezvous.dark-dashboard .chart-card {
+    background: #0b1320;
+    border-radius: 14px;
+    padding: 20px;
+}
+
+/* TABLE */
+body.rendezvous.dark-dashboard table {
+    background: transparent;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+/* THEAD */
+body.rendezvous.dark-dashboard thead th {
+    background: #0f1b2d;
+    color: #cfd8e3;
+    font-weight: 600;
+    border-bottom: 1px solid #1f2a3d;
+    padding: 14px;
+}
+
+/* ROW */
+body.rendezvous.dark-dashboard tbody tr {
+    background: #0b1320;
+    transition: background 0.2s ease;
+}
+
+/* ROW HOVER */
+body.rendezvous.dark-dashboard tbody tr:hover {
+    background: #122038;
+}
+
+/* CELL */
+body.rendezvous.dark-dashboard tbody td {
+    color: #e6edf5;
+    border-bottom: 1px solid #1f2a3d;
+    padding: 14px;
+    vertical-align: middle;
+}
+
+/* LIGNE 1er / 2e / 3e (file d’attente) */
+body.rendezvous.dark-dashboard tr.table-success {
+    background: #123d2c !important;
+    color: #eafff4;
+}
+
+/* BADGES SERVICE */
+body.rendezvous.dark-dashboard .badge.bg-info {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* BADGES RANG */
+body.rendezvous.dark-dashboard .badge.bg-danger {
+    background: #dc3545;
+}
+body.rendezvous.dark-dashboard .badge.bg-warning {
+    background: #ffc107;
+    color: #000;
+}
+body.rendezvous.dark-dashboard .badge.bg-secondary {
+    background: #6c757d;
+}
+
+/* MESSAGE "Aucun rendez-vous" */
+body.rendezvous.dark-dashboard td.text-muted {
+    color: #9fb0c8 !important;
+}
+
+/* ===============================
+   RENDEZVOUS – FILTRES DARK
+================================ */
+
+body.rendezvous.dark-dashboard .form-control,
+body.rendezvous.dark-dashboard .form-select {
+    background-color: #0f1b2d;
+    color: #e6edf5;
+    border: 1px solid #1f2a3d;
+}
+
+body.rendezvous.dark-dashboard .form-control::placeholder {
+    color: #9fb0c8;
+}
+
+body.rendezvous.dark-dashboard .form-control:focus,
+body.rendezvous.dark-dashboard .form-select:focus {
+    background-color: #0f1b2d;
+    color: #ffffff;
+    border-color: #2f81f7;
+    box-shadow: none;
+}
+
+/* ===============================
+   DROPDOWN SERVICE (custom)
+================================ */
+body.rendezvous.dark-dashboard .service-dropdown {
+    background-color: #0b1320;
+    border: 1px solid #1f2a3d;
+}
+
+body.rendezvous.dark-dashboard .service-item {
+    color: #e6edf5;
+}
+
+body.rendezvous.dark-dashboard .service-item:hover {
+    background-color: #122038;
+}
+
+/* ===============================
+   BOUTONS FILTRE / PDF
+================================ */
+body.rendezvous.dark-dashboard .btn-outline-danger,
+body.rendezvous.dark-dashboard .btn-outline-secondary {
+    color: #e6edf5;
+    border-color: #1f2a3d;
+}
+
+body.rendezvous.dark-dashboard .btn-outline-danger:hover {
+    background-color: #3a1f25;
+    color: #ffffff;
+}
+
+body.rendezvous.dark-dashboard .btn-outline-secondary:hover {
+    background-color: #1b2f52;
+    color: #ffffff;
+}
+
+/* Icônes */
+body.rendezvous.dark-dashboard .btn i {
+    background-color: none;
+}
+
+body.rendezvous.dark-dashboard .actions .btn:has(i.bi-funnel),
+body.rendezvous.dark-dashboard .actions .btn:has(i.bi-arrow-counterclockwise),
+body.rendezvous.dark-dashboard .actions .btn:has(i.bi-file-earmark-pdf) {
+    background: #111827 !important;
+    border-radius: 10px   !important;
+    border: #111827  !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,.45) !important;
+    padding: 5px;
+}
+
+/* ===============================
+   DATE PICKER – DARK MODE
+================================ */
+
+/* Champ date */
+body.rendezvous.dark-dashboard input[type="date"] {
+    background-color: #0f1b2d;
+    color: #e6edf5;
+    border: 1px solid #1f2a3d;
+}
+
+/* Icône calendrier */
+body.rendezvous.dark-dashboard input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Supprimer le fond blanc interne (Chrome) */
+body.rendezvous.dark-dashboard input[type="date"]::-webkit-datetime-edit {
+    color: #e6edf5;
+}
+
+/* Firefox */
+body.rendezvous.dark-dashboard input[type="date"] {
+    color-scheme: dark;
+}
+
+/* ==================================================
+   DARK DASHBOARD – INPUTS & SELECTS (RENDEZVOUS)
+================================================== */
+
+body.rendezvous.dark-dashboard .form-control,
+body.rendezvous.dark-dashboard .form-select,
+body.rendezvous.dark-dashboard input,
+body.rendezvous.dark-dashboard select {
+    background-color: #0f1b2d !important;
+    color: #e6edf5 !important;
+    border: 1px solid #1f2a3d !important;
+}
+
+/* Placeholder */
+body.rendezvous.dark-dashboard .form-control::placeholder,
+body.rendezvous.dark-dashboard input::placeholder {
+    color: #9aa8b6 !important;
+}
+
+/* Focus */
+body.rendezvous.dark-dashboard .form-control:focus,
+body.rendezvous.dark-dashboard .form-select:focus {
+    background-color: #0f1b2d !important;
+    color: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 0.15rem rgba(59, 130, 246, 0.35);
+}
+
+/* Select options */
+body.rendezvous.dark-dashboard select option {
+    background-color: #0f1b2d;
+    color: #e6edf5;
+}
+
+/* Champ date */
+body.rendezvous.dark-dashboard input[type="date"] {
+    color-scheme: dark;
+}
+
+/* Icône calendrier */
+body.rendezvous.dark-dashboard input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+/* ==================================================
+   DARK DASHBOARD – INPUTS PLUS GRANDS
+================================================== */
+
+body.rendezvous.dark-dashboard .form-control,
+body.rendezvous.dark-dashboard .form-select {
+    height: 48px;                 /* hauteur globale */
+    padding: 10px 14px;           /* espace intérieur */
+    font-size: 15px;              /* texte plus lisible */
+    border-radius: 10px;          /* arrondi moderne */
+}
+
+/* Input date (souvent plus capricieux) */
+body.rendezvous.dark-dashboard input[type="date"] {
+    height: 48px;
+    padding: 10px 14px;
+    font-size: 15px;
+}
+
+/* Select (flèche mieux centrée) */
+body.rendezvous.dark-dashboard .form-select {
+    padding-right: 38px;
+}
+
+/* ==================================================
+   AGENTS – FILTRES MODE SOMBRE
+================================================== */
+
+body.agents.dark-dashboard .form-control,
+body.agents.dark-dashboard .form-select {
+    background-color: #070d20;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    height: 48px;
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 10px;
+}
+
+/* Placeholder */
+body.agents.dark-dashboard .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* Focus */
+body.agents.dark-dashboard .form-control:focus,
+body.agents.dark-dashboard .form-select:focus {
+    background-color: #070d20;
+    color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+/* Select arrow */
+body.agents.dark-dashboard .form-select {
+    padding-right: 38px;
+}
+
+/* Bouton recherche (icône) */
+body.agents.dark-dashboard button.btn {
+    height: 48px;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.agents.dark-dashboard button.btn i {
+    color: #2f81f7;
+    font-size: 1.6rem;
+    transition: color 0.2s ease;
+}
+
+body.agents.dark-dashboard button.btn:hover i {
+    color: #60a5fa;
+}
+
+/* ==================================================
+   MODE SOMBRE – INPUT & SELECT (AGENTS)
+================================================== */
+
+body.agents.dark-dashboard input.form-control,
+body.agents.dark-dashboard select.form-select {
+    background-color: #070d20 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+
+    height: 50px;
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: 12px;
+}
+
+/* Placeholder */
+body.agents.dark-dashboard input.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Focus */
+body.agents.dark-dashboard input.form-control:focus,
+body.agents.dark-dashboard select.form-select:focus {
+    background-color: #070d20 !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
+}
+
+/* Options du select */
+body.agents.dark-dashboard select.form-select option {
+    background-color: #070d20;
+    color: #ffffff;
+}
+
+/* ==================================================
+   MODE SOMBRE – INPUT & SELECT (SERVICES)
+================================================== */
+
+body.services.dark-dashboard input.form-control,
+body.services.dark-dashboard select.form-select {
+    background-color: #070d20 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+
+    height: 50px;
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: 12px;
+}
+
+/* Placeholder */
+body.services.dark-dashboard input.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Focus */
+body.services.dark-dashboard input.form-control:focus,
+body.services.dark-dashboard select.form-select:focus {
+    background-color: #070d20 !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
+}
+
+/* Options du select */
+body.services.dark-dashboard select.form-select option {
+    background-color: #070d20;
+    color: #ffffff;
+}
+
+/* Bouton recherche (icône loupe) */
+body.services.dark-dashboard button.btn {
+    height: 50px;
+    border-radius: 12px;
+    background: transparent;
+}
+
+body.services.dark-dashboard button.btn i {
+    color: #2f81f7;
+    font-size: 1.4rem;
+}
+
+/* ==================================================
+   MODE SOMBRE – FILTRES DASHBOARD
+================================================== */
+
+/* Select mois / année */
+body.dark-dashboard select.form-select {
+    background-color: #070d20 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+
+    height: 50px;
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: 12px;
+}
+
+/* Focus */
+body.dark-dashboard select.form-select:focus {
+    background-color: #070d20 !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
+}
+
+/* Options */
+body.dark-dashboard select.form-select option {
+    background-color: #070d20;
+    color: #ffffff;
+}
+
+/* Boutons du filtre */
+body.dark-dashboard #statsFilterForm .btn {
+    height: 50px;
+    padding: 0 16px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Icônes */
+body.dark-dashboard #statsFilterForm .btn i {
+    font-size: 1.4rem;
+}
+
+/* Bouton Filtrer */
+body.dark-dashboard #statsFilterForm .btn.btn-primary {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+/* Bouton PDF */
+body.dark-dashboard #statsFilterForm .btn.btn-danger {
+    background-color: #dc2626;
+    border-color: #dc2626;
+}
+
+/* Bouton Excel */
+body.dark-dashboard #statsFilterForm .btn.btn-success {
+    background-color: #16a34a;
+    border-color: #16a34a;
+}
+
+/* ==================================================
+   RENDEZ-VOUS – ANIMATION FILTRES
+================================================== */
+/* Effet focus doux */
+body.rendezvous.dark-dashboard .form-control,
+body.rendezvous.dark-dashboard .form-select {
+    transition: 
+        background-color 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.15s ease;
+}
+
+body.rendezvous.dark-dashboard .form-control:focus,
+body.rendezvous.dark-dashboard .form-select:focus {
+    transform: scale(1.01);
+}
+
+/* Dropdown service animé */
+body.rendezvous .service-dropdown {
+    animation: dropdownFade 0.2s ease forwards;
+    transform-origin: top;
+}
+
+@keyframes dropdownFade {
+    from {
+        opacity: 0;
+        transform: scaleY(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+body.rendezvous .badge.bg-warning {
+    animation: pulseFilter 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulseFilter {
+    from {
+        box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+    to {
+        box-shadow: 0 0 10px rgba(234,179,8,0.6);
+    }
+}
+
+/* ==================================================
+   RENDEZ-VOUS – ANIMATION ICÔNES ACTIONS
+================================================== */
+
+body.rendezvous.dark-dashboard .actions .btn i {
+    transition:
+        transform 0.25s ease,
+        color 0.25s ease,
+        filter 0.25s ease;
+}
+
+/* Hover général */
+body.rendezvous.dark-dashboard .actions .btn:hover i {
+    transform: translateY(-2px) scale(1.05);
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+}
+
+/* Click */
+body.rendezvous.dark-dashboard .actions .btn:active i {
+    transform: scale(0.92);
+}
+
+/* Spécifique Filtrer */
+body.rendezvous.dark-dashboard #applyFiltersBtn:hover i {
+    animation: funnelShake 0.5s ease;
+}
+
+@keyframes funnelShake {
+    0%   { transform: rotate(0); }
+    25%  { transform: rotate(-10deg); }
+    50%  { transform: rotate(10deg); }
+    75%  { transform: rotate(-5deg); }
+    100% { transform: rotate(0); }
+}
+
+/* Réinitialiser */
+body.rendezvous.dark-dashboard a[title="Réinitialiser"]:hover i {
+    animation: rotateReset 0.6s ease;
+}
+
+@keyframes rotateReset {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* PDF */
+body.rendezvous.dark-dashboard a[title="Exporter PDF"]:hover i {
+    animation: pdfBounce 0.4s ease;
+}
+
+@keyframes pdfBounce {
+    0%   { transform: translateY(0); }
+    40%  { transform: translateY(-4px); }
+    100% { transform: translateY(0); }
+}
+
+/* ==================================================
+   RENDEZ-VOUS – MODE CLAIR
+   Taille inputs & selects
+================================================== */
+
+body.rendezvous:not(.dark-dashboard) .form-control,
+body.rendezvous:not(.dark-dashboard) .form-select {
+    height: 48px;
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 10px;
+}
+
+/* Input date (Bootstrap parfois différent) */
+body.rendezvous:not(.dark-dashboard) input[type="date"] {
+    height: 48px;
+}
+
+/* Champ recherche service */
+body.rendezvous:not(.dark-dashboard) #filterServiceSearch {
+    height: 48px;
+}
+
+body:not(.dark-dashboard) .dashboard-filters .form-control,
+body:not(.dark-dashboard) .dashboard-filters .form-select,
+body.dashboard:not(.dark-dashboard) .form-control,
+body.dashboard:not(.dark-dashboard) .form-select {
+    height: 48px;
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 10px;
+}
+
+body.services:not(.dark-dashboard) .form-control,
+body.services:not(.dark-dashboard) .form-select {
+    height: 48px;
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 10px;
+}
+
+body.agents:not(.dark-dashboard) .form-control,
+body.agents:not(.dark-dashboard) .form-select {
+    height: 48px;
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 10px;
+}
+
+/* =================================================
+   MODAL RDV – ONGLET TYPE PATIENT (MODE SOMBRE)
+   Sans modifier les classes Bootstrap
+================================================= */
+
+/* BASE – tous les boutons */
+body.rendezvous.dark-dashboard .patient-type-btn {
+    background-color: #0b1d33 !important; /* bleu sombre */
+    color: #9fb7d6 !important;
+    border: 1px solid #1f3a5f !important;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+}
+
+/* HOVER */
+body.rendezvous.dark-dashboard .patient-type-btn:hover {
+    background-color: #102a46 !important;
+    color: #ffffff !important;
+}
+
+/* ACTIF – onglet sélectionné */
+body.rendezvous.dark-dashboard .patient-type-btn.active {
+    background-color: #2563eb !important; /* 🔵 bleu clair */
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+    transform: scale(1.05);
+}
+
+/* =================================================
+   MODAL RDV – BOUTON CLOSE (MODE SOMBRE)
+================================================= */
+
+body.rendezvous.dark-dashboard .modal-header .btn-close {
+    filter: invert(1);              /* rend l’icône blanche */
+    opacity: 0.8;
+}
+
+/* Hover */
+body.rendezvous.dark-dashboard .modal-header .btn-close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Focus clavier */
+body.rendezvous.dark-dashboard .modal-header .btn-close:focus {
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.6);
+    outline: none;
+}
+
+/* =================================================
+   MODAL RDV – FOOTER MODE SOMBRE
+================================================= */
+
+body.rendezvous.dark-dashboard .modal-footer {
+    background: linear-gradient(
+        180deg,
+        rgba(8, 15, 40, 0.95),
+        rgba(5, 10, 30, 0.98)
+    );
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Boutons dans le footer */
+body.rendezvous.dark-dashboard .modal-footer .btn {
+    box-shadow: none;
+}
+
+/* Bouton Annuler */
+body.rendezvous.dark-dashboard .modal-footer .btn-secondary {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #e5e7eb;
+}
+
+body.rendezvous.dark-dashboard .modal-footer .btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Bouton Enregistrer */
+body.rendezvous.dark-dashboard .modal-footer .btn-primary {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    border: none;
+}
+
+body.rendezvous.dark-dashboard .modal-footer .btn-primary:disabled {
+    background: rgba(37, 99, 235, 0.35);
+    cursor: not-allowed;
+}
+
+/* =================================================
+   INDICATIF TELEPHONE (+221) – MODE SOMBRE RDV
+================================================= */
+
+/* Texte de l'indicatif */
+body.rendezvous.dark-dashboard .iti__selected-dial-code,
+body.rendezvous.dark-dashboard .country-code,
+body.rendezvous.dark-dashboard .dial-code {
+    color: #e5e7eb !important; /* clair */
+    font-weight: 500;
+}
+
+/* Nom du pays / indicatif dans la liste */
+body.rendezvous.dark-dashboard .iti__country-name,
+body.rendezvous.dark-dashboard .iti__dial-code {
+    color: #e5e7eb;
+}
+
+/* Flèche dropdown */
+body.rendezvous.dark-dashboard .iti__arrow {
+    border-top-color: #e5e7eb !important;
+}
+
+/* Fond du bloc indicatif */
+body.rendezvous.dark-dashboard .iti__selected-flag {
+    background-color: rgba(255,255,255,0.05);
+}
+
+/* =====================================================
+   DROPDOWN INDICATIF TELEPHONE – MODE SOMBRE
+===================================================== */
+
+body.rendezvous.dark-dashboard .iti__country-list {
+    background-color: #020617 !important; /* fond sombre */
+    border: 1px solid #1e293b;
+    color: #e5e7eb;
+}
+
+/* Chaque pays */
+body.rendezvous.dark-dashboard .iti__country {
+    color: #e5e7eb;
+}
+
+/* Hover */
+body.rendezvous.dark-dashboard .iti__country:hover,
+body.rendezvous.dark-dashboard .iti__country.iti__highlight {
+    background-color: #0f172a;
+}
+
+/* Indicatif + nom pays */
+body.rendezvous.dark-dashboard .iti__country-name,
+body.rendezvous.dark-dashboard .iti__dial-code {
+    color: #e5e7eb;
+}
+
+/* Scrollbar */
+body.rendezvous.dark-dashboard .iti__country-list::-webkit-scrollbar {
+    width: 6px;
+}
+body.rendezvous.dark-dashboard .iti__country-list::-webkit-scrollbar-thumb {
+    background-color: #334155;
+    border-radius: 4px;
+}
+
+/* =====================================================
+   TELEPHONE – FORCER LE DROPDOWN DES INDICATIFS AU-DESSUS
+===================================================== */
+
+body.rendezvous.dark-dashboard .iti {
+    position: relative;
+}
+
+/* Dropdown pays */
+body.rendezvous.dark-dashboard .iti__country-list {
+    top: auto !important;
+    bottom: calc(100% + 6px) !important; /* OUVERTURE AU-DESSUS */
+    margin-top: 0 !important;
+    margin-bottom: 6px;
+    background-color: #020617 !important;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    color: #e5e7eb;
+    z-index: 1060; /* au-dessus du modal */
+}
+
+/* Items */
+body.rendezvous.dark-dashboard .iti__country {
+    color: #e5e7eb;
+}
+
+body.rendezvous.dark-dashboard .iti__country:hover,
+body.rendezvous.dark-dashboard .iti__country.iti__highlight {
+    background-color: #0f172a;
+}
+
+/* Nom pays + indicatif */
+body.rendezvous.dark-dashboard .iti__country-name,
+body.rendezvous.dark-dashboard .iti__dial-code {
+    color: #e5e7eb;
+}
+
+/* Scroll */
+body.rendezvous.dark-dashboard .iti__country-list::-webkit-scrollbar {
+    width: 6px;
+}
+body.rendezvous.dark-dashboard .iti__country-list::-webkit-scrollbar-thumb {
+    background-color: #334155;
+    border-radius: 4px;
+}
+
+/* =====================================================
+   MODAL CONFIRMATION – MODE SOMBRE
+===================================================== */
+
+body.rendezvous.dark-dashboard #actionModal .modal-content {
+    background: linear-gradient(180deg, #020617, #020617);
+    color: #e5e7eb;
+    border-radius: 14px;
+    border: 1px solid #1e293b;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+}
+
+/* HEADER */
+body.rendezvous.dark-dashboard #actionModal .modal-header {
+    background: transparent;
+    border-bottom: 1px solid #1e293b;
+}
+
+body.rendezvous.dark-dashboard #actionModal .modal-title {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+/* Bouton close */
+body.rendezvous.dark-dashboard #actionModal .btn-close {
+    filter: invert(1);
+    opacity: 0.7;
+}
+
+body.rendezvous.dark-dashboard #actionModal .btn-close:hover {
+    opacity: 1;
+}
+
+/* BODY */
+body.rendezvous.dark-dashboard #actionModal .modal-body {
+    background: transparent;
+    color: #e5e7eb;
+    font-size: 0.95rem;
+}
+
+/* Contenu résumé (patient, service, date…) */
+body.rendezvous.dark-dashboard #actionModal .modal-body strong {
+    color: #93c5fd;
+}
+
+/* FOOTER */
+body.rendezvous.dark-dashboard #actionModal .modal-footer {
+    background: transparent;
+    border-top: 1px solid #1e293b;
+}
+
+/* Boutons */
+body.rendezvous.dark-dashboard #actionModal .btn-secondary {
+    background-color: #1e293b;
+    border-color: #1e293b;
+    color: #e5e7eb;
+}
+
+body.rendezvous.dark-dashboard #actionModal .btn-secondary:hover {
+    background-color: #334155;
+}
+
+body.rendezvous.dark-dashboard #actionModal .btn-primary {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+body.rendezvous.dark-dashboard #actionModal .btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+/* =====================================================
+   MODAL CONFIRMATION = MÊME FOND QUE MODAL AJOUT RDV
+===================================================== */
+
+body.rendezvous.dark-dashboard #actionModal .modal-content {
+    background: var(--bg-card) !important;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+}
+
+/* Header */
+body.rendezvous.dark-dashboard #actionModal .modal-header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Body */
+body.rendezvous.dark-dashboard #actionModal .modal-body {
+    background: transparent;
+    color: var(--text-main);
+}
+
+/* Footer */
+body.rendezvous.dark-dashboard #actionModal .modal-footer {
+    background: transparent;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Bouton close visible en sombre */
+body.rendezvous.dark-dashboard #actionModal .btn-close {
+    filter: invert(1);
+    opacity: 0.75;
+}
+
+body.rendezvous.dark-dashboard #actionModal .btn-close:hover {
+    opacity: 1;
+}
+
+/* =====================================================
+   MODAL CONFIRMATION – FORÇAGE TOTAL MODE SOMBRE
+===================================================== */
+
+/* Fond général du modal */
+body.rendezvous.dark-dashboard #actionModal .modal-content {
+    background: #070d20 !important;
+    color: #e5e7eb !important;
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+/* Header / footer */
+body.rendezvous.dark-dashboard #actionModal .modal-header,
+body.rendezvous.dark-dashboard #actionModal .modal-footer {
+    background: #070d20 !important;
+    border-color: rgba(255,255,255,.08);
+}
+
+/* CONTENU INJECTÉ (le vrai problème) */
+body.rendezvous.dark-dashboard #actionModalBody * {
+    background-color: transparent !important;
+    color: #e5e7eb !important;
+    border-color: rgba(255,255,255,.12) !important;
+}
+
+/* Cas spécifiques Bootstrap */
+body.rendezvous.dark-dashboard #actionModalBody .card,
+body.rendezvous.dark-dashboard #actionModalBody .table,
+body.rendezvous.dark-dashboard #actionModalBody .list-group,
+body.rendezvous.dark-dashboard #actionModalBody .alert {
+    background: #0b132b !important;
+    color: #e5e7eb !important;
+}
+
+/* Séparateurs */
+body.rendezvous.dark-dashboard #actionModalBody hr {
+    border-color: rgba(255,255,255,.12);
+}
+
+/* Texte secondaire */
+body.rendezvous.dark-dashboard #actionModalBody .text-muted {
+    color: #9ca3af !important;
+}
+
+
+
+

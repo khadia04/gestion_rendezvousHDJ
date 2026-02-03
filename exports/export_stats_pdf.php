@@ -1,11 +1,37 @@
 <?php
+session_start();
 date_default_timezone_set('Africa/Dakar');
 
-ob_start();
-
-require_once "../libs/fpdf/fpdf.php";
+require_once "../middlewares/auth.php";
+require_once "../helpers/activity.php";
 require_once "../modele/database.php";
 require_once "../modele/databaseRv.php";
+require_once "../libs/fpdf/fpdf.php";
+
+requireAuth('admin');
+
+/* ===== RÉCUP PARAMÈTRES ===== */
+$mois = isset($_GET['month']) && $_GET['month'] !== ''
+    ? str_pad((int)$_GET['month'], 2, '0', STR_PAD_LEFT)
+    : null;
+
+$annee = isset($_GET['year']) && $_GET['year'] !== ''
+    ? (int)$_GET['year']
+    : date('Y');
+
+/* ===== LOG AVANT TOUT ===== */
+logActivity(
+    $_SESSION['user_id'],
+    "Export PDF statistiques",
+    $mois
+        ? "Export RDV {$mois}/{$annee} en PDF"
+        : "Export RDV année {$annee} en PDF",
+    $_SESSION['role']
+);
+
+/* ===== BUFFER OBLIGATOIRE ===== */
+ob_start();
+
 
 /* =========================
    FONCTION TEXTE UTF-8
@@ -17,11 +43,14 @@ function txt($str) {
 /* =========================
    PARAMÈTRES
 ========================= */
-$mois = (isset($_GET['month']) && (int)$_GET['month'] >= 1 && (int)$_GET['month'] <= 12)
+$mois = isset($_GET['month']) && $_GET['month'] !== ''
     ? str_pad((int)$_GET['month'], 2, '0', STR_PAD_LEFT)
     : null;
 
-$annee = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
+$annee = isset($_GET['year']) && $_GET['year'] !== ''
+    ? (int)$_GET['year']
+    : date('Y');
+
 
 $data = getRdvPerService($mois, $annee);
 
@@ -243,4 +272,6 @@ $pdf->Cell(
    SORTIE
 ========================= */
 ob_end_clean();
-$pdf->Output('I','rapport_rendez_vous_CHNDJ.pdf');
+$pdf->Output('I', 'rapport_rendez_vous_CHNDJ.pdf');
+exit;
+

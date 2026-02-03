@@ -203,60 +203,77 @@ if ($rdvYearPrev > 0) {
 
 
     <!-- FILTRAGE -->
-    <form method="get"  id="statsFilterForm" action="admin.php#stats" class="row g-3 mb-4">
-    <input type="hidden" name="month" value="<?= htmlspecialchars($mois) ?>">
-    <input type="hidden" name="year" value="<?= htmlspecialchars($annee) ?>">
+    <form method="get" id="statsFilterForm" action="admin.php#stats" class="row g-3 align-items-center mb-4">
 
+        <!-- MOIS -->
+        <div class="col-md-4">
+            <select name="month" class="form-select">
+                <option value="">Tous les mois</option>
+                <?php foreach ($monthNames as $num => $name): ?>
+                    <option value="<?= $num ?>" <?= ($mois == $num) ? 'selected' : '' ?>>
+                        <?= $name ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
 
-    <div class="col-md-4">
-        <select name="month" class="form-select">
-            <option value="">Tous les mois</option>
-            <?php foreach ($monthNames as $num => $name): ?>
-                <option value="<?= $num ?>" <?= ($mois == $num) ? 'selected' : '' ?>>
-                    <?= $name ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+        <!-- ANNÉE -->
+        <div class="col-md-3">
+            <select name="year" class="form-select">
+                <?php for ($y = date('Y'); $y >= date('Y') - 5; $y--): ?>
+                    <option value="<?= $y ?>" <?= ($annee == $y) ? 'selected' : '' ?>>
+                        <?= $y ?>
+                    </option>
+                <?php endfor; ?>
+            </select>
+        </div>
+
+        <!-- BOUTONS -->
+        <div class="col-md-5 d-flex gap-2">
+
+            <!-- FILTRER -->
+            <button type="submit" class="btn btn-primary" title="Filtrer">
+                <i class="bi bi-funnel"></i>
+            </button>
+
+            <!-- EXPORT PDF -->
+            <a
+                href="../exports/export_stats_pdf.php?<?= http_build_query([
+                    'month' => $mois,
+                    'year'  => $annee
+                ]) ?>"
+                target="_blank"
+                class="btn btn-danger"
+                title="Exporter en PDF"
+            >
+                <i class="bi bi-file-earmark-pdf"></i>
+            </a>
+
+            <!-- EXPORT EXCEL -->
+            <a
+                href="../exports/export_stats_excel.php?<?= http_build_query([
+                    'month' => $mois,
+                    'year'  => $annee
+                ]) ?>"
+                class="btn btn-success"
+                title="Exporter en Excel"
+            >
+                <i class="bi bi-file-earmark-excel"></i>
+            </a>
+
+        </div>
+    </form>
+    
+    <!-- LOADER -->
+    <div id="loading" class="text-center mt-2" style="display:none;">
+        <div class="spinner-border text-primary spinner-border-sm"></div>
+        <span class="ms-2">Chargement des statistiques…</span>
     </div>
 
-    <div class="col-md-4">
-        <select name="year" class="form-select">
-            <?php for ($y = date('Y'); $y >= date('Y') - 5; $y--): ?>
-                <option value="<?= $y ?>" <?= ($annee == $y) ? 'selected' : '' ?>>
-                    <?= $y ?>
-                </option>
-            <?php endfor; ?>
-        </select>
-    </div>
-
-    <div class="col-md-4">
-        <button type="submit" class="btn btn-primary w-100">Filtrer</button>
-    </div>
-</form>
-
-<div id="loading" class="text-center mt-2" style="display:none;">
-    <div class="spinner-border text-primary spinner-border-sm"></div>
-    <span class="ms-2">Chargement des statistiques…</span>
-</div>
-
-
-<form method="get" action="../exports/export_stats_pdf.php" class="d-inline" target="_blank">
-    <input type="hidden" name="month" value="<?= $mois ?>">
-    <input type="hidden" name="year" value="<?= $annee ?>">
-
-    <button type="submit" class="btn btn-danger">
-        <i class="bi bi-file-earmark-pdf"></i> Export PDF
-    </button>
-</form>
 
 
 
 
-        <a href="../exports/export_stats_excel.php" 
-            class="btn btn-success">
-            <i class="bi bi-file-earmark-excel"></i> Export Excel
-        </a>
-    </div>
 
     <div class="row g-4 mt-2">
         <div class="col-md-6">
@@ -423,15 +440,6 @@ new Chart(document.getElementById("rdvPerMonth"), {
     }
 });
 
-
-// Affichage du loader lors de la soumission du formulaire
-const form = document.getElementById('statsFilterForm');
-const loader = document.getElementById('loading');
-
-form.addEventListener('submit', () => {
-    loader.style.display = 'block';
-});
-
 </script>
 
 <script>
@@ -471,6 +479,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     localStorage.removeItem('dashboardScroll');
   }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const statsForm   = document.getElementById('statsFilterForm');
+    const statsLoader = document.getElementById('loading');
+
+    if (!statsForm || !statsLoader) return;
+
+    statsForm.addEventListener('submit', () => {
+        statsLoader.style.display = 'block';
+    });
+
 });
 </script>
 
