@@ -51,8 +51,8 @@ switch ($page) {
         $title = "Gestion des Rendez-vous"; 
         break;
 
-    case 'stats': 
-        $title = "Statistiques"; 
+    case 'patients': 
+        $title = "Gestion des Patients"; 
         break;
 
     case 'profile': 
@@ -198,13 +198,14 @@ $tel    = $admin['telephone_agent'] ?? '';
                 </a>
             </li>
 
-            <!-- Statistiques -->
+            <!-- Patients -->
             <li>
-                <a href="admin.php?page=stats"
-                   class="<?= ($page == 'stats' ? 'active' : '') ?>">
-                    <i class="bi bi-bar-chart"></i> Statistiques
+                <a href="admin.php?page=patients"
+                class="<?= ($page == 'patients' ? 'active' : '') ?>">
+                    <i class="bi bi-people-fill"></i> Patients
                 </a>
             </li>
+
 
             <!-- Mon Profil -->
             <li>

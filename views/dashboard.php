@@ -178,8 +178,8 @@ if ($rdvYearPrev > 0) {
         </div>
 
         <div class="col-md-3 col-sm-6">
-            <a href="admin.php?page=stats" class="quick-btn">
-                <i class="bi bi-file-earmark-text"></i> Générer un Rapport
+            <a href="admin.php?page=patients" class="quick-btn">
+                <i class="bi bi-search"></i> Rechercher un patient
             </a>
         </div>
 
