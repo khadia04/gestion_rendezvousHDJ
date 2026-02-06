@@ -31,6 +31,25 @@ function searchPatientByPhone(string $phone)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+function searchPatientNoIndexByPhone(string $phone)
+{
+    $db = getConnection();
+    $clean = preg_replace('/\D/', '', $phone);
+
+    if (strlen($clean) < 9) return null;
+
+    $stmt = $db->prepare("
+        SELECT *
+        FROM patientnoindex
+        WHERE RIGHT(REPLACE(REPLACE(telephonePatient,'+',''),' ',''),9)
+              = RIGHT(:phone,9)
+        LIMIT 1
+    ");
+
+    $stmt->execute(['phone' => $clean]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 
 function updatePatient($numero, $prenom, $nom, $telephone) {
     $db = getConnection();
@@ -82,41 +101,40 @@ function getPatientFull(string $numero)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function updatePatientFull(array $data)
+function updatePatientIndexed(array $data)
 {
     $db = getConnection();
-
     $stmt = $db->prepare("
         UPDATE patient SET
             prenomPatient = :prenomPatient,
             nomPatient = :nomPatient,
+            telephonePatient = :telephonePatient,
             sexe = :sexe,
             age = :age,
             email = :email,
             nationalite = :nationalite,
             groupeSanguin = :groupeSanguin,
             identiteOfficielle = :identiteOfficielle,
-            telephonePatient = :telephonePatient,
             adresse = :adresse,
             urgenceNom = :urgenceNom,
             urgenceTelephone = :urgenceTelephone
         WHERE numeroDossierPatient = :numeroDossierPatient
     ");
 
-    return $stmt->execute([
-        'prenomPatient'      => $data['prenomPatient'],
-        'nomPatient'         => $data['nomPatient'],
-        'sexe'               => $data['sexe'],
-        'age'                => $data['age'],
-        'email'              => $data['email'],
-        'nationalite'        => $data['nationalite'],
-        'groupeSanguin'      => $data['groupeSanguin'],
-        'identiteOfficielle' => $data['identiteOfficielle'],
-        'telephonePatient'   => preg_replace('/\D/', '', $data['telephonePatient']),
-        'adresse'            => $data['adresse'],
-        'urgenceNom'         => $data['urgenceNom'],
-        'urgenceTelephone'   => preg_replace('/\D/', '', $data['urgenceTelephone']),
-        'numeroDossierPatient'=> $data['numeroDossierPatient']
-    ]);
+    return $stmt->execute($data);
+}
+
+function updatePatientNoIndex(array $data)
+{
+    $db = getConnection();
+    $stmt = $db->prepare("
+        UPDATE patientnoindex SET
+            prenomPatient = :prenomPatient,
+            nomPatient = :nomPatient,
+            telephonePatient = :telephonePatient
+        WHERE numeroAuto = :numeroAuto
+    ");
+
+    return $stmt->execute($data);
 }
 

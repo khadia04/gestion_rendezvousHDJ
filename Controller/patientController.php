@@ -19,29 +19,43 @@ switch ($action) {
     ========================= */
     case 'search':
 
-        $index = trim($_GET['index'] ?? '');
-        $phone = trim($_GET['phone'] ?? '');
+    $index = trim($_GET['index'] ?? '');
+    $phone = trim($_GET['phone'] ?? '');
 
-        if ($index !== '') {
-            $patient = searchPatientByIndex($index);
-        } elseif ($phone !== '') {
-            $patient = searchPatientByPhone($phone);
-        } else {
-            echo json_encode(['status' => 'error']);
-            exit;
-        }
+    if ($index !== '') {
 
+        $patient = searchPatientByIndex($index);
+
+    } elseif ($phone !== '') {
+
+        // 1️⃣ chercher dans patient (avec index)
+        $patient = searchPatientByPhone($phone);
+
+        // 2️⃣ si rien trouvé → chercher dans patientnoindex
         if (!$patient) {
-            echo json_encode(['status' => 'not_found']);
-            exit;
+            $patient = searchPatientNoIndexByPhone($phone);
         }
 
-        echo json_encode([
-            'status'    => 'success',
-            'patient'   => $patient,
-            'rdvsCount' => countPatientRdvs($patient['numeroDossierPatient'])
-        ]);
+    } else {
+
+        echo json_encode(['status' => 'error']);
         exit;
+    }
+
+    if (!$patient) {
+        echo json_encode(['status' => 'not_found']);
+        exit;
+    }
+
+    $numero = $patient['numeroDossierPatient'] ?? null;
+
+    echo json_encode([
+        'status'    => 'success',
+        'patient'   => $patient,
+        'rdvsCount' => $numero ? countPatientRdvs($numero) : 0
+    ]);
+
+    exit;
 
 
     /* =========================
@@ -71,31 +85,42 @@ switch ($action) {
     /* =========================
        💾 SAVE (UPDATE PATIENT)
     ========================= */
-    case 'save':
+ case 'save':
 
-    if (empty($_POST['numeroDossierPatient'])) {
-        echo json_encode(['status' => 'error']);
-        exit;
-    }
+    if (!empty($_POST['numeroDossierPatient'])) {
 
-    $ok = updatePatientFull([
+    // patient AVEC index
+    $ok = updatePatientIndexed([
         'numeroDossierPatient' => $_POST['numeroDossierPatient'],
-        'prenomPatient'        => $_POST['prenomPatient'] ?? null,
-        'nomPatient'           => $_POST['nomPatient'] ?? null,
-        'sexe'                 => $_POST['sexe'] ?? null,
-        'age'                  => $_POST['age'] ?? null,
-        'email'                => $_POST['email'] ?? null,
-        'nationalite'          => $_POST['nationalite'] ?? null,
-        'groupeSanguin'        => $_POST['groupeSanguin'] ?? null,
-        'identiteOfficielle'   => $_POST['identiteOfficielle'] ?? null,
-        'telephonePatient'     => $_POST['telephonePatient'] ?? null,
-        'adresse'              => $_POST['adresse'] ?? null,
-        'urgenceNom'           => $_POST['urgenceNom'] ?: null,
-        'urgenceTelephone'     => $_POST['urgenceTelephone'] ?: null,
+        'prenomPatient' => $_POST['prenomPatient'],
+        'nomPatient' => $_POST['nomPatient'],
+        'telephonePatient' => $_POST['telephonePatient'],
+        'sexe' => $_POST['sexe'],
+        'age' => $_POST['age'],
+        'email' => $_POST['email'],
+        'nationalite' => $_POST['nationalite'],
+        'groupeSanguin' => $_POST['groupeSanguin'],
+        'identiteOfficielle' => $_POST['identiteOfficielle'],
+        'adresse' => $_POST['adresse'],
+        'urgenceNom' => $_POST['urgenceNom'],
+        'urgenceTelephone' => $_POST['urgenceTelephone'],
     ]);
 
-    echo json_encode(['status' => $ok ? 'success' : 'error']);
-    exit;
+} else {
+
+    // patient SANS index
+    $ok = updatePatientNoIndex([
+        'numeroAuto' => $_POST['numeroAuto'],
+        'prenomPatient' => $_POST['prenomPatient'],
+        'nomPatient' => $_POST['nomPatient'],
+        'telephonePatient' => $_POST['telephonePatient'],
+    ]);
+}
+
+echo json_encode(['status' => $ok ? 'success' : 'error']);
+
+
+
 
 
 }

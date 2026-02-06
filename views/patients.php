@@ -54,6 +54,8 @@
       <form id="patientForm">
         <input type="hidden" name="action" value="save">
         <input type="hidden" name="numeroDossierPatient" id="numeroDossierPatient">
+        <input type="hidden" name="numeroAuto" id="numeroAuto">
+
 
         <div class="modal-body">
 
@@ -189,6 +191,9 @@
         const groupeSanguin = document.getElementById('groupeSanguin');
         const identiteOfficielle = document.getElementById('identiteOfficielle');
 
+        let lastSearch = { type: null, value: null };
+
+
 
     document.getElementById('searchPatientBtn').addEventListener('click', () => {
 
@@ -200,19 +205,27 @@
         let params = new URLSearchParams();
 
         if (indexInput !== '') {
-            params.append('index', indexInput);
-        } 
-        else if (phoneInput !== '') {
-            const cleanPhone = phoneInput.replace(/\D/g, '');
+          params.append('index', indexInput);
 
-            if (cleanPhone.length < 9) {
-                result.innerHTML =
-                    '<div class="alert alert-warning">Le téléphone doit contenir au moins 9 chiffres.</div>';
-                return;
-            }
+          // 🔐 mémoriser la recherche
+          lastSearch = { type: 'index', value: indexInput };
 
-            params.append('phone', cleanPhone);
-        }
+      } 
+      else if (phoneInput !== '') {
+          const cleanPhone = phoneInput.replace(/\D/g, '');
+
+          if (cleanPhone.length < 9) {
+              result.innerHTML =
+                  '<div class="alert alert-warning">Le téléphone doit contenir au moins 9 chiffres.</div>';
+              return;
+          }
+
+          params.append('phone', cleanPhone);
+
+          // 🔐 mémoriser la recherche
+          lastSearch = { type: 'phone', value: cleanPhone };
+      }
+
         else {
             result.innerHTML =
                 '<div class="alert alert-warning">Veuillez remplir un champ.</div>';
@@ -327,6 +340,7 @@ function openEditPatient(params) {
 
       const p = res.patient;
 
+      numeroAuto.value = p.numeroAuto ?? '';
       numeroDossierPatient.value = p.numeroDossierPatient ?? '';
       prenomPatient.value = p.prenomPatient ?? '';
       nomPatient.value = p.nomPatient ?? '';
@@ -375,7 +389,8 @@ document.getElementById('patientForm').addEventListener('submit', e => {
         bootstrap.Modal.getInstance(editPatientModal).hide();
 
         // rafraîchir la carte
-        refreshPatientCard(numero);
+        refreshPatientCard();
+
 
         // alerte après fermeture
         setTimeout(() => {
@@ -435,10 +450,17 @@ function showGlobalAlert(message, type = 'success', duration = 5000) {
   }, duration);
 }
 
-function refreshPatientCard(numero) {
+function refreshPatientCard() {
+  if (!lastSearch.type) return;
+
   const params = new URLSearchParams();
   params.append('action', 'search');
-  params.append('index', numero);
+
+  if (lastSearch.type === 'index') {
+    params.append('index', lastSearch.value);
+  } else if (lastSearch.type === 'phone') {
+    params.append('phone', lastSearch.value);
+  }
 
   fetch('../Controller/patientController.php?' + params.toString())
     .then(r => r.json())
@@ -447,13 +469,16 @@ function refreshPatientCard(numero) {
 
       const p = data.patient;
 
-      document.getElementById('patientResult').innerHTML = `
+      result.innerHTML = `
         <div class="card mb-3">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <h5>${p.prenomPatient} ${p.nomPatient}</h5>
-                <p><strong>Dossier :</strong> ${p.numeroDossierPatient}</p>
+                <p>
+                  <strong>Dossier :</strong>
+                  ${p.numeroDossierPatient ?? '<span class="badge bg-warning text-dark">Non attribué</span>'}
+                </p>
                 <p><strong>Téléphone :</strong> ${formatPhone(p.telephonePatient)}</p>
                 <p class="text-muted">
                   <strong>Total RDV :</strong> ${data.rdvsCount}
@@ -461,7 +486,10 @@ function refreshPatientCard(numero) {
               </div>
 
               <button class="btn btn-outline-primary"
-                onclick="openEditPatient('${p.numeroDossierPatient}')">
+                onclick="openEditPatient({
+                  numero: '${p.numeroDossierPatient ?? ''}',
+                  phone: '${p.telephonePatient}'
+                })">
                 Modifier
               </button>
             </div>
