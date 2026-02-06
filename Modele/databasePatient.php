@@ -12,21 +12,25 @@ function searchPatientByIndex(string $index) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function searchPatientByPhone(string $phone) {
+function searchPatientByPhone(string $phone)
+{
     $db = getConnection();
-    $clean = preg_replace('/[^0-9]/', '', $phone);
+    $clean = preg_replace('/\D/', '', $phone);
 
     if (strlen($clean) < 9) return null;
 
     $stmt = $db->prepare("
-        SELECT * FROM patient
+        SELECT *
+        FROM patient
         WHERE RIGHT(REPLACE(REPLACE(telephonePatient,'+',''),' ',''),9)
               = RIGHT(:phone,9)
         LIMIT 1
     ");
+
     $stmt->execute(['phone' => $clean]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
 
 function updatePatient($numero, $prenom, $nom, $telephone) {
     $db = getConnection();

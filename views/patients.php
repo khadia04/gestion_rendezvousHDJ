@@ -5,6 +5,8 @@
                 id="searchIndex"
                 class="form-control form-control-lg"
                 placeholder="Numéro de dossier"
+                inputmode="numeric"
+                pattern="[0-9]*"
             >
         </div>
 
@@ -14,6 +16,8 @@
                 id="searchPhone"
                 class="form-control form-control-lg"
                 placeholder="Téléphone (avec ou sans indicatif)"
+                inputmode="numeric"
+                pattern="[0-9]*"
             >
         </div>
 
@@ -25,6 +29,14 @@
     </div>
 
     <div id="patientResult"></div>
+
+    <div
+      id="globalAlert"
+      class="alert d-none position-fixed top-0 end-0 m-4 shadow"
+      style="z-index: 2000;"
+      role="alert">
+    </div>
+
 
 
     <!-- ======================
@@ -139,8 +151,6 @@
 
         </div>
 
-        <div id="patientAlert" class="alert d-none" role="alert"></div>
-
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
           <button class="btn btn-primary" type="submit">Enregistrer</button>
@@ -230,7 +240,7 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h5>${p.prenomPatient} ${p.nomPatient}</h5>
-                                    <p><strong>Dossier :</strong> ${p.numeroDossierPatient}</p>
+                                    <p> <strong>Dossier :</strong>  ${p.numeroDossierPatient ?? '<span class="badge bg-warning text-dark">Non attribué</span>'} </p>
                                     <p><strong>Téléphone :</strong> ${formatPhone(p.telephonePatient)}</p>
                                     <p class="text-muted">
                                         <strong>Total RDV :</strong> ${data.rdvsCount}
@@ -238,7 +248,11 @@
                                 </div>
 
                                 <button class="btn btn-outline-primary"
-                                        onclick="openEditPatient('${p.numeroDossierPatient}')">
+                                        onclick="openEditPatient({
+                                          numero: '${p.numeroDossierPatient ?? ''}',
+                                          phone: '${p.telephonePatient}'
+                                        })"
+                                  >
                                     Modifier
                                 </button>
 
@@ -293,8 +307,17 @@
 
 
     // ================= MODAL =================
-function openEditPatient(numero) {
-  fetch('../Controller/patientController.php?action=get&numero=' + numero)
+function openEditPatient(params) {
+  const url = new URL('../Controller/patientController.php', window.location.origin);
+  url.searchParams.append('action', 'get');
+
+  if (params.numero) {
+    url.searchParams.append('numero', params.numero);
+  } else {
+    url.searchParams.append('phone', params.phone);
+  }
+
+  fetch(url)
     .then(r => r.json())
     .then(res => {
       if (res.status !== 'success') {
@@ -320,10 +343,6 @@ function openEditPatient(numero) {
       itiUrgence.setNumber(p.urgenceTelephone ?? '');
 
       new bootstrap.Modal(editPatientModal).show();
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Erreur chargement patient');
     });
 }
 
@@ -331,7 +350,7 @@ function openEditPatient(numero) {
 
 
 
-    document.getElementById('patientForm').addEventListener('submit', e => {
+document.getElementById('patientForm').addEventListener('submit', e => {
   e.preventDefault();
 
   telephonePatient.value = itiPatient.getNumber();
@@ -341,36 +360,47 @@ function openEditPatient(numero) {
       : '';
 
   const data = new FormData(e.target);
-  const alertBox = document.getElementById('patientAlert');
 
   fetch('../Controller/patientController.php', {
     method: 'POST',
     body: data
   })
-  .then(r => r.json())
-  .then(res => {
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === 'success') {
 
-    alertBox.classList.remove('d-none');
+        const numero = numeroDossierPatient.value;
 
-    if (res.status === 'success') {
-      alertBox.className = 'alert alert-success';
-      alertBox.textContent = '✅ Modification enregistrée avec succès';
-
-      // fermer le modal après 1.2s
-      setTimeout(() => {
+        // fermer le modal
         bootstrap.Modal.getInstance(editPatientModal).hide();
-      }, 1200);
 
-    } else {
-      alertBox.className = 'alert alert-danger';
-      alertBox.textContent = '❌ Erreur lors de la modification';
-    }
-  })
-  .catch(() => {
-    alertBox.classList.remove('d-none');
-    alertBox.className = 'alert alert-danger';
-    alertBox.textContent = '❌ Erreur réseau';
-  });
+        // rafraîchir la carte
+        refreshPatientCard(numero);
+
+        // alerte après fermeture
+        setTimeout(() => {
+          showGlobalAlert(
+            '✅ Informations du patient mises à jour',
+            'success',
+            5000
+          );
+        }, 300);
+
+      } else {
+        showGlobalAlert(
+          '❌ Erreur lors de la modification du patient',
+          'danger',
+          5000
+        );
+      }
+    })
+    .catch(() => {
+      showGlobalAlert(
+        '❌ Erreur réseau',
+        'danger',
+        5000
+      );
+    });
 });
 
 
@@ -393,6 +423,63 @@ function openEditPatient(numero) {
         });
     });
 
+function showGlobalAlert(message, type = 'success', duration = 5000) {
+  const alertBox = document.getElementById('globalAlert');
+
+  alertBox.className = `alert alert-${type} position-fixed top-0 end-0 m-4 shadow`;
+  alertBox.textContent = message;
+  alertBox.classList.remove('d-none');
+
+  setTimeout(() => {
+    alertBox.classList.add('d-none');
+  }, duration);
+}
+
+function refreshPatientCard(numero) {
+  const params = new URLSearchParams();
+  params.append('action', 'search');
+  params.append('index', numero);
+
+  fetch('../Controller/patientController.php?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      if (data.status !== 'success') return;
+
+      const p = data.patient;
+
+      document.getElementById('patientResult').innerHTML = `
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h5>${p.prenomPatient} ${p.nomPatient}</h5>
+                <p><strong>Dossier :</strong> ${p.numeroDossierPatient}</p>
+                <p><strong>Téléphone :</strong> ${formatPhone(p.telephonePatient)}</p>
+                <p class="text-muted">
+                  <strong>Total RDV :</strong> ${data.rdvsCount}
+                </p>
+              </div>
+
+              <button class="btn btn-outline-primary"
+                onclick="openEditPatient('${p.numeroDossierPatient}')">
+                Modifier
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+}
+
+function allowOnlyDigits(input) {
+  input.addEventListener('input', () => {
+    input.value = input.value.replace(/\D/g, '');
+  });
+}
+
+// appliquer aux champs
+allowOnlyDigits(document.getElementById('searchIndex'));
+allowOnlyDigits(document.getElementById('searchPhone'));
 
 
 </script>

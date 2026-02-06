@@ -49,20 +49,23 @@ switch ($action) {
     ========================= */
     case 'get':
 
-        $numero = $_GET['numero'] ?? null;
+    $numero = $_GET['numero'] ?? null;
+    $phone  = $_GET['phone'] ?? null;
 
-        if (!$numero) {
-            echo json_encode(['status' => 'error']);
-            exit;
-        }
-
+    if ($numero) {
         $patient = getPatientFull($numero);
-
-        echo json_encode([
-            'status'  => $patient ? 'success' : 'not_found',
-            'patient' => $patient
-        ]);
+    } elseif ($phone) {
+        $patient = searchPatientByPhone($phone);
+    } else {
+        echo json_encode(['status' => 'error']);
         exit;
+    }
+
+    echo json_encode([
+        'status'  => $patient ? 'success' : 'not_found',
+        'patient' => $patient
+    ]);
+    exit;
 
 
     /* =========================
