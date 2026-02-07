@@ -61,16 +61,30 @@ switch ($action) {
     /* =========================
        📄 GET PATIENT (MODAL)
     ========================= */
-    case 'get':
+  case 'get':
 
-    $numero = $_GET['numero'] ?? null;
-    $phone  = $_GET['phone'] ?? null;
+    $numero     = $_GET['numero'] ?? null;
+    $numeroAuto = $_GET['numeroAuto'] ?? null;
+    $phone      = $_GET['phone'] ?? null;
 
     if ($numero) {
+
         $patient = getPatientFull($numero);
+
+    } elseif ($numeroAuto) {
+
+        $patient = getPatientNoIndexByNumeroAuto($numeroAuto);
+
     } elseif ($phone) {
+
         $patient = searchPatientByPhone($phone);
+
+        if (!$patient) {
+            $patient = searchPatientNoIndexByPhone($phone);
+        }
+
     } else {
+
         echo json_encode(['status' => 'error']);
         exit;
     }
@@ -114,7 +128,17 @@ switch ($action) {
         'prenomPatient' => $_POST['prenomPatient'],
         'nomPatient' => $_POST['nomPatient'],
         'telephonePatient' => $_POST['telephonePatient'],
+        'sexe' => $_POST['sexe'],
+        'age' => $_POST['age'],
+        'email' => $_POST['email'],
+        'nationalite' => $_POST['nationalite'],
+        'adresse' => $_POST['adresse'],
+        'groupeSanguin' => $_POST['groupeSanguin'],
+        'identiteOfficielle' => $_POST['identiteOfficielle'],
+        'urgenceNom' => $_POST['urgenceNom'],
+        'urgenceTelephone' => $_POST['urgenceTelephone'],
     ]);
+
 }
 
 echo json_encode(['status' => $ok ? 'success' : 'error']);

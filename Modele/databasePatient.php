@@ -76,6 +76,20 @@ function getPatientRdvs(string $numero) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function getPatientNoIndexByNumeroAuto($numeroAuto)
+{
+    $db = getConnection();
+    $stmt = $db->prepare("
+        SELECT *
+        FROM patientnoindex
+        WHERE numeroAuto = :numeroAuto
+        LIMIT 1
+    ");
+    $stmt->execute(['numeroAuto' => $numeroAuto]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+
 function countPatientRdvs(string $numero): int {
     $db = getConnection();
     $stmt = $db->prepare("
@@ -131,10 +145,20 @@ function updatePatientNoIndex(array $data)
         UPDATE patientnoindex SET
             prenomPatient = :prenomPatient,
             nomPatient = :nomPatient,
-            telephonePatient = :telephonePatient
+            telephonePatient = :telephonePatient,
+            sexe = :sexe,
+            age = :age,
+            email = :email,
+            nationalite = :nationalite,
+            adresse = :adresse,
+            groupeSanguin = :groupeSanguin,
+            identiteOfficielle = :identiteOfficielle,
+            urgenceNom = :urgenceNom,
+            urgenceTelephone = :urgenceTelephone
         WHERE numeroAuto = :numeroAuto
     ");
 
     return $stmt->execute($data);
 }
+
 

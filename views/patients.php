@@ -105,9 +105,20 @@
             </div>
 
             <div class="col-md-4">
-                <label>Groupe sanguin</label>
-                <input type="text" name="groupeSanguin" id="groupeSanguin" class="form-control">
+              <label>Groupe sanguin</label>
+              <select name="groupeSanguin" id="groupeSanguin" class="form-select">
+                <option value="">-- Sélectionner --</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
             </div>
+
 
             <div class="col-md-4">
                 <label>Identité officielle</label>
@@ -177,6 +188,7 @@
         const result     = document.getElementById('patientResult');
         const editPatientModal = document.getElementById('editPatientModal');
         const numeroDossierPatient = document.getElementById('numeroDossierPatient');
+        const numeroAuto = document.getElementById('numeroAuto');
         const prenomPatient = document.getElementById('prenomPatient');
         const nomPatient = document.getElementById('nomPatient');
         const sexe = document.getElementById('sexe');
@@ -253,7 +265,14 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h5>${p.prenomPatient} ${p.nomPatient}</h5>
-                                    <p> <strong>Dossier :</strong>  ${p.numeroDossierPatient ?? '<span class="badge bg-warning text-dark">Non attribué</span>'} </p>
+                                    <p>
+                                      <strong>Dossier :</strong>
+                                      ${
+                                        p.numeroDossierPatient
+                                          ? `<span class="badge bg-primary">${p.numeroDossierPatient}</span>`
+                                          : `<span class="badge bg-warning text-dark" title="Patient non encore enregistré avec un numéro de dossier"> Sans index </span> `
+                                      }
+                                    </p>
                                     <p><strong>Téléphone :</strong> ${formatPhone(p.telephonePatient)}</p>
                                     <p class="text-muted">
                                         <strong>Total RDV :</strong> ${data.rdvsCount}
@@ -261,13 +280,14 @@
                                 </div>
 
                                 <button class="btn btn-outline-primary"
-                                        onclick="openEditPatient({
-                                          numero: '${p.numeroDossierPatient ?? ''}',
-                                          phone: '${p.telephonePatient}'
-                                        })"
-                                  >
-                                    Modifier
+                                  onclick="openEditPatient({
+                                    numero: ${p.numeroDossierPatient ? `'${p.numeroDossierPatient}'` : 'null'},
+                                    phone: '${p.telephonePatient}',
+                                    numeroAuto: ${p.numeroAuto ? `'${p.numeroAuto}'` : 'null'}
+                                  })">
+                                  Modifier
                                 </button>
+
 
                             </div>
                         </div>
@@ -321,18 +341,23 @@
 
     // ================= MODAL =================
 function openEditPatient(params) {
-  const url = new URL('../Controller/patientController.php', window.location.origin);
-  url.searchParams.append('action', 'get');
+
+  let query = new URLSearchParams();
+  query.append('action', 'get');
 
   if (params.numero) {
-    url.searchParams.append('numero', params.numero);
+    query.append('numero', params.numero);
+  } else if (params.numeroAuto) {
+    query.append('numeroAuto', params.numeroAuto);
   } else {
-    url.searchParams.append('phone', params.phone);
+    query.append('phone', params.phone);
   }
 
-  fetch(url)
+  fetch('../Controller/patientController.php?' + query.toString())
     .then(r => r.json())
     .then(res => {
+      console.log('GET PATIENT →', res);
+
       if (res.status !== 'success') {
         alert('Patient introuvable');
         return;
@@ -346,22 +371,16 @@ function openEditPatient(params) {
       nomPatient.value = p.nomPatient ?? '';
       sexe.value = p.sexe ?? '';
       age.value = p.age ?? '';
-      email.value = p.email ?? '';
-      nationalite.value = p.nationalite ?? '';
-      groupeSanguin.value = p.groupeSanguin ?? '';
-      identiteOfficielle.value = p.identiteOfficielle ?? '';
-      adresse.value = p.adresse ?? '';
 
       itiPatient.setNumber(p.telephonePatient ?? '');
-      urgenceNom.value = p.urgenceNom ?? '';
-      itiUrgence.setNumber(p.urgenceTelephone ?? '');
 
       new bootstrap.Modal(editPatientModal).show();
+    })
+    .catch(err => {
+      console.error('Erreur fetch get patient', err);
+      alert('Erreur réseau');
     });
 }
-
-
-
 
 
 document.getElementById('patientForm').addEventListener('submit', e => {
