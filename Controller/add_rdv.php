@@ -40,7 +40,6 @@ try {
 
     /* =========================
        NETTOYAGE SÉCURITÉ
-       (chiffres uniquement)
     ========================= */
     if (isset($_POST['numeroDossierPatient'])) {
         $_POST['numeroDossierPatient'] = preg_replace('/\D+/', '', $_POST['numeroDossierPatient']);
@@ -55,7 +54,7 @@ try {
     }
 
     /* =========================
-       SÉCURITÉ : SERVICE AGENT
+       SÉCURITÉ SERVICE AGENT
     ========================= */
     $role     = $_SESSION['role'] ?? '';
     $username = $_SESSION['username'] ?? '';
@@ -63,10 +62,9 @@ try {
     if ($role === 'agent') {
 
         $checkService = $db->prepare("
-            SELECT 1
-            FROM agent_service
+            SELECT 1 FROM agent_service
             WHERE agent_username = ?
-              AND codeService = ?
+            AND codeService = ?
             LIMIT 1
         ");
         $checkService->execute([$username, $codeService]);
@@ -97,7 +95,7 @@ try {
 
         $patientExiste = $check->fetch();
 
-        /* 🟡 Patient avec index mais nouveau sur la plateforme */
+        /* 🟡 Nouveau patient avec index */
         if (!$patientExiste && $isNewIndex === '1') {
 
             $prenom    = trim($_POST['prenomComplet'] ?? '');
@@ -183,7 +181,7 @@ try {
             throw new Exception("Nom, prénom et téléphone obligatoires.");
         }
 
-        // Insertion patientnoindex
+        // Insert patientnoindex
         $stmt = $db->prepare("
             INSERT INTO patientnoindex (
                 prenomPatient,
@@ -222,13 +220,17 @@ try {
             $_POST['urgenceTelephone'] ?? null
         ]);
 
-        // Historique
+        $patientNoIndexId = $db->lastInsertId();
+
+        // Historique noindex
         $hist = $db->prepare("
             INSERT INTO rendezvs_history
-            (numeroDossierPatient, codeService, dateDemande, dateRvServ, typePatient, telephonePatient, sourceTable)
-            VALUES (NULL, ?, ?, ?, 'noindex', ?, 'patientnoindex')
+            (patientnoindex_id, codeService, dateDemande, dateRvServ, typePatient, telephonePatient, sourceTable)
+            VALUES (?, ?, ?, ?, 'noindex', ?, 'patientnoindex')
         ");
+
         $hist->execute([
+            $patientNoIndexId,
             $codeService,
             $dateDemande,
             $dateRvServ,
@@ -237,12 +239,13 @@ try {
     }
 
     /* =========================
-       LOG & COMMIT
+       LOG
     ========================= */
     $log = $db->prepare("
         INSERT INTO agent_logs (agent_username, action, details)
         VALUES (?, ?, ?)
     ");
+
     $log->execute([
         $_SESSION['username'],
         'CREATION_RDV',
@@ -257,22 +260,15 @@ try {
     ]);
     exit;
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
 
     if (isset($db) && $db->inTransaction()) {
         $db->rollBack();
     }
 
-    $message = $e->getMessage();
-
-    // Erreur index unique
-    if ($e instanceof PDOException && $e->getCode() === '23000') {
-        $message = "Ce numéro de dossier est déjà attribué à un patient.";
-    }
-
     echo json_encode([
         'status' => 'error',
-        'message' => $message
+        'message' => $e->getMessage()
     ]);
     exit;
 }

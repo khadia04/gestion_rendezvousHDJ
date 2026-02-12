@@ -367,13 +367,24 @@ function openEditPatient(params) {
 
       numeroAuto.value = p.numeroAuto ?? '';
       numeroDossierPatient.value = p.numeroDossierPatient ?? '';
+
       prenomPatient.value = p.prenomPatient ?? '';
-      nomPatient.value = p.nomPatient ?? '';
-      sexe.value = p.sexe ?? '';
-      age.value = p.age ?? '';
+      nomPatient.value    = p.nomPatient ?? '';
+      sexe.value          = p.sexe ?? '';
+      dateNaissance.value = p.dateNaissance ?? '';
+      age.value           = p.age ?? '';
+
+      email.value = p.email ?? p.emailPatient ?? '';
+      nationalite.value  = p.nationalite ?? '';
+      groupeSanguin.value = p.groupeSanguin ?? p.groupe_sanguin ?? '';
+      identiteOfficielle.value = p.identiteOfficielle ?? '';
+      adresse.value      = p.adresse ?? '';
+      urgenceNom.value   = p.urgenceNom ?? '';
 
       itiPatient.setNumber(p.telephonePatient ?? '');
+      itiUrgence.setNumber(p.urgenceTelephone ?? '');
 
+      
       new bootstrap.Modal(editPatientModal).show();
     })
     .catch(err => {

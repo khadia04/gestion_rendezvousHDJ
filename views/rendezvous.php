@@ -807,6 +807,10 @@ let currentPatientName  = '';
 let currentPatientPhone = '';
 
 
+let skipReloadAfterSuccess = false;
+
+
+
 /* =========================
    INTL TEL INPUT
 ========================= */
@@ -922,7 +926,8 @@ function openNewIndexPatient() {
 
     // 1. état logique
     document.getElementById('isNewIndex').value = '1';
-    patientTypeInput.value = 'index';
+    document.querySelector('[data-value="index"]').click();
+
 
     // 2. état visuel des boutons (sans click)
     document.querySelectorAll('.patient-type-btn').forEach(b => {
@@ -1029,13 +1034,30 @@ function loadCalendar() {
                 day.textContent = date.split('-')[2];
 
                 // ✅ Tooltip : nombre de RDV pris
-                if (typeof info.count !== 'undefined') {
-                    day.setAttribute(
-                        'title',
-                        `${info.count} rendez-vous déjà pris`
-                    );
+                // TOOLTIP SELON STATUT
+                let tooltipText = '';
+
+                if (info.status === 'ferie') {
+                    tooltipText = 'Jour férié';
+                }
+                else if (info.status === 'disabled') {
+                    tooltipText = 'Service indisponible';
+                }
+                else if (info.status === 'plein') {
+                    tooltipText = 'Complet';
+                }
+                else if (info.status === 'moyen') {
+                    tooltipText = `${info.count ?? 0} rendez-vous - disponibilité moyenne`;
+                }
+                else if (info.status === 'disponible') {
+                    tooltipText = `${info.count ?? 0} rendez-vous pris`;
+                }
+
+                if (tooltipText) {
+                    day.setAttribute('title', tooltipText);
                     day.setAttribute('data-bs-toggle', 'tooltip');
                 }
+
 
                 // ✅ Sélection possible uniquement si dispo
                 if (info.status === 'disponible' || info.status === 'moyen') {
@@ -1270,18 +1292,45 @@ saveBtn.onclick = () => {
         .toLocaleDateString('fr-FR');
 
     if (type === 'index') {
-    recapHtml += `
-        <li class="list-group-item">
-            <strong>Patient :</strong> ${currentPatientName || '—'}
-        </li>
-        <li class="list-group-item">
-            <strong>Dossier :</strong> ${patientInput.value}
-        </li>
-        <li class="list-group-item">
-            <strong>Téléphone :</strong> ${currentPatientPhone || '—'}
-        </li>
-    `;
+
+        // 🔥 si nouveau patient index → lire les champs du formulaire
+        if (document.getElementById('isNewIndex').value === '1') {
+
+            const prenom = document.querySelector('[name="prenomComplet"]')?.value || '';
+            const nom    = document.querySelector('[name="nom"]')?.value || '';
+            const fullname = `${prenom} ${nom}`.trim() || '—';
+
+            const tel = phoneHidden.value || '—';
+
+            recapHtml += `
+                <li class="list-group-item">
+                    <strong>Patient :</strong> ${fullname}
+                </li>
+                <li class="list-group-item">
+                    <strong>Dossier :</strong> ${patientInput.value}
+                </li>
+                <li class="list-group-item">
+                    <strong>Téléphone :</strong> ${tel}
+                </li>
+            `;
+
+        } else {
+
+            // ✅ patient index existant
+            recapHtml += `
+                <li class="list-group-item">
+                    <strong>Patient :</strong> ${currentPatientName || '—'}
+                </li>
+                <li class="list-group-item">
+                    <strong>Dossier :</strong> ${patientInput.value}
+                </li>
+                <li class="list-group-item">
+                    <strong>Téléphone :</strong> ${currentPatientPhone || '—'}
+                </li>
+            `;
+        }
     }
+
     else {
         recapHtml += `
             <li class="list-group-item"><strong>Patient :</strong>
@@ -1296,7 +1345,7 @@ saveBtn.onclick = () => {
         recapHtml += `
             <li class="list-group-item">
                 <strong>Téléphone :</strong>
-                ${document.querySelector('[name="telephonePatient"]').value || '—'}
+                ${phoneHidden.value || '—'}
             </li>
         `;
     }
@@ -1319,17 +1368,110 @@ saveBtn.onclick = () => {
             })
             .then(r => r.json())
             .then(r => {
+
                 if (r.status === 'success') {
-                    location.reload();
+
+                    const recap = document.getElementById('successRecap');
+                    recap.innerHTML = recapHtml;
+
+                    // fermer modal ajout
+                    bootstrap.Modal.getInstance(
+                        document.getElementById('addRdvModal')
+                    ).hide();
+
+                    // ouvrir modal succès
+                    new bootstrap.Modal(
+                        document.getElementById('successModal')
+                    ).show();
+
                 } else {
                     showMessage("Erreur", r.message, "danger");
                 }
             })
+
             .finally(() => isSubmitting = false);
         }
     );
 
 };
+
+
+document.getElementById('successModal')
+.addEventListener('hidden.bs.modal', () => {
+
+    if (!skipReloadAfterSuccess) {
+        location.reload();
+    }
+
+    skipReloadAfterSuccess = false;
+});
+
+
+/* =========================
+   NOUVEAU RDV APRÈS SUCCÈS avec reset FORMULAIRE RV
+========================= */
+document.getElementById('btnNewRdv').onclick = () => {
+
+    // 🔥 RESET ÉTAT PATIENT COMPLET (TRÈS IMPORTANT)
+    currentPatientName  = '';
+    currentPatientPhone = '';
+
+    document.getElementById('isNewIndex').value = '0';
+    patientTypeInput.value = 'index';
+
+    // remettre onglet index actif visuellement
+    document.querySelectorAll('.patient-type-btn').forEach(b=>{
+        b.classList.remove('active');
+    });
+    document.querySelector('[data-value="index"]').classList.add('active');
+
+    // reset sections
+    showSection(indexFields);
+    hideSection(noIndexFields);
+
+    patientInput.readOnly = false;
+    patientInput.disabled = false;
+    patientInput.classList.remove('bg-light');
+
+
+    skipReloadAfterSuccess = true;
+
+    bootstrap.Modal.getInstance(
+        document.getElementById('successModal')
+    ).hide();
+
+    const form = document.querySelector('#addRdvModal form');
+    form.reset();
+
+   
+
+    // 🔥 vider feedback vert
+    patientFeedback.innerHTML = '';
+
+    // 🔥 vider recherche téléphone
+    phoneSearchInput.value = '';
+
+    // 🔥 reset intl tel input
+    iti.setNumber('');
+    itiUrgence.setNumber('');
+    phoneHidden.value = '';
+    urgencePhoneHidden.value = '';
+
+    // 🔥 reset service + calendrier
+    serviceSearch.value = '';
+    hiddenService.value = '';
+    calendarWrapper.classList.add('d-none');
+    selectedDateInput.value = '';
+
+    updateSaveButton();
+
+    new bootstrap.Modal(
+        document.getElementById('addRdvModal')
+    ).show();
+};
+
+
+
 
 
 /* =========================
