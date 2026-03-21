@@ -1,13 +1,11 @@
 <?php
+require_once '../middlewares/auth.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    session_unset();
-    session_destroy();
-    header("Location: ../login.php?session=expired");
-    exit;
-}
+// Vérifier si connecté
+requireAuth();
 
-
+// Vérifier les rôles autorisés
+requireRole(['super_admin', 'admin', 'medecin', 'agent']);
 // Gestion de l'inactivité
 // if (isset($_SESSION['lastAction'], $_SESSION['timeframe'])) {
 //    if ((time() - $_SESSION['lastAction']) > $_SESSION['timeframe']) {
@@ -27,12 +25,6 @@ require_once "../modele/databaseTools.php";
 require_once "../modele/databaseRv.php";
 
 
-
-// Vérifier rôle admin
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../index.php");
-    exit;
-}
 
 // Déterminer la page demandée
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
@@ -102,7 +94,10 @@ $nom    = $admin['nom_agent'] ?? '';
 $email  = $admin['email'] ?? '';
 $tel    = $admin['telephone_agent'] ?? '';
 
+
+
 ?>
+
 
 
 <!DOCTYPE html>
@@ -161,39 +156,44 @@ $tel    = $admin['telephone_agent'] ?? '';
     <aside class="sidebar">
         <div class="sidebar-header">
             <img src="../assets/img/logo.png" class="sidebar-logo">
-            <h4>ADMIN</h4>
+            <h4><?= strtoupper($_SESSION['role']) ?></h4>
         </div>
 
         <ul class="sidebar-menu">
 
             <!-- Tableau de bord -->
-            <li>
-                <a href="admin.php?page=dashboard" 
-                   class="<?= ($page == 'dashboard' ? 'active' : '') ?>">
-                    <i class="bi bi-speedometer2"></i> Tableau de bord
-                </a>
-            </li>
+            <?php if ($_SESSION['role'] === 'super_admin'): ?>
+                <li>
+                    <a href="admin.php?page=dashboard">
+                        <i class="bi bi-speedometer2"></i> Tableau de bord
+                    </a>
+                </li>
+            <?php endif; ?>
 
             <!-- Agents -->
-            <li>
-                <a href="admin.php?page=agents"
-                   class="<?= ($page == 'agents' ? 'active' : '') ?>">
-                    <i class="bi bi-people"></i> Agents
-                </a>
-            </li>
+            <?php if ($_SESSION['role'] === 'super_admin'): ?>
+                <li>
+                    <a href="admin.php?page=agents"
+                    class="<?= ($page == 'agents' ? 'active' : '') ?>">
+                        <i class="bi bi-people"></i> Agents
+                    </a>
+                </li>
+            <?php endif; ?>
 
             <!-- Services -->
-            <li>
-                <a href="admin.php?page=services"
-                   class="<?= ($page == 'services' ? 'active' : '') ?>">
-                    <i class="bi bi-hospital"></i> Services
-                </a>
-            </li>
+            <?php if (in_array($_SESSION['role'], ['super_admin','admin'])): ?>
+                <li>
+                    <a href="admin.php?page=services"
+                    class="<?= ($page == 'services' ? 'active' : '') ?>">
+                        <i class="bi bi-hospital"></i> Services
+                    </a>
+                </li>
+            <?php endif; ?>
 
             <!-- Rendez-vous -->
             <li>
                 <a href="admin.php?page=rendezvous"
-                   class="<?= ($page == 'rendezvous' ? 'active' : '') ?>">
+                class="<?= ($page == 'rendezvous' ? 'active' : '') ?>">
                     <i class="bi bi-calendar-check"></i> Rendez-vous
                 </a>
             </li>
@@ -210,7 +210,7 @@ $tel    = $admin['telephone_agent'] ?? '';
             <!-- Mon Profil -->
             <li>
                 <a href="admin.php?page=profile"
-                   class="<?= ($page == 'profile' ? 'active' : '') ?>">
+                class="<?= ($page == 'profile' ? 'active' : '') ?>">
                     <i class="bi bi-person-circle"></i> Mon profil
                 </a>
             </li>
@@ -256,7 +256,7 @@ $tel    = $admin['telephone_agent'] ?? '';
                     <span class="topbar-name">
                         <?= htmlspecialchars($prenom . ' ' . $nom) ?>
                     </span>
-                    <small class="topbar-role">Administrateur</small>
+                    <small class="topbar-role"><?= ucfirst($_SESSION['role']) ?></small>
                 </div>
 
             </div>
@@ -339,6 +339,11 @@ document.addEventListener('click', (e) => {
         menu.classList.remove('show');
     }
 });
+
+function canAccess($roles) {
+    return in_array($_SESSION['role'], $roles);
+}
+
 </script>
 
 

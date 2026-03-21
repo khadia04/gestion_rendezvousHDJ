@@ -4,9 +4,10 @@ require_once '../middlewares/auth.php';
 require_once '../middlewares/csrf.php';
 require_once '../modele/databaseAgent.php';
 require_once __DIR__ . '/../modele/database.php';
-require_once __DIR__ . '/../helpers/activity.php';
+require_once '../helpers/activity.php';
 
-requireAuth('admin');
+requireRole(['super_admin']);
+requireAuth('super_admin');
 
 if (
     isset($_POST['ajax']) &&
@@ -87,6 +88,14 @@ if (isset($_POST['add_agent'])) {
     $email     = trim($_POST['email']);
     $role      = $_POST['role'];
 
+    $allowedRoles = ['admin', 'medecin', 'agent'];
+
+    if (!in_array($role, $allowedRoles)) {
+        $_SESSION['error'] = "Rôle invalide.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
     if ($role === 'agent' && empty($_POST['services'])) {
         $_SESSION['error'] = "Un agent doit avoir au moins un service.";
         
@@ -96,6 +105,111 @@ if (isset($_POST['add_agent'])) {
 
     if (!preg_match('/^\+221(70|71|75|76|77|78|33)[0-9]{7}$/', $telephone)) {
     $_SESSION['error'] = "Numéro de téléphone sénégalais invalide.";
+
+    if (isset($_POST['add_agent'])) {
+
+    $prenom    = trim($_POST['prenom_agent']);
+    $nom       = trim($_POST['nom_agent']);
+    $telephone = !empty($_POST['telephone_agent_full'])
+        ? $_POST['telephone_agent_full']
+        : ($_POST['telephone_agent'] ?? null);
+
+    $username  = trim($_POST['username']);
+    $email     = trim($_POST['email']);
+    $role      = $_POST['role'];
+
+    //  rôles autorisés
+    $allowedRoles = ['admin', 'medecin', 'agent'];
+
+    if (!in_array($role, $allowedRoles)) {
+        $_SESSION['error'] = "Rôle invalide.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    //  validation téléphone
+    if (!preg_match('/^\+221(70|71|75|76|77|78|33)[0-9]{7}$/', $telephone)) {
+        $_SESSION['error'] = "Numéro de téléphone sénégalais invalide.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    //  username unique
+    $exists = executeSQL(
+        "SELECT COUNT(*) as total FROM agent WHERE username = ?",
+        [$username]
+    )->fetch();
+
+    if ($exists['total'] > 0) {
+        $_SESSION['error'] = "Ce username existe déjà.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    //  email unique
+    $emailExists = executeSQL(
+        "SELECT COUNT(*) as total FROM agent WHERE email = ?",
+        [$email]
+    )->fetch();
+
+    if ($emailExists['total'] > 0) {
+        $_SESSION['error'] = "Cet email est déjà utilisé.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    //  service obligatoire pour agent
+    if ($role === 'agent' && empty($_POST['services'])) {
+        $_SESSION['error'] = "Un agent doit avoir au moins un service.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    //  mot de passe
+    $password = password_hash('123456', PASSWORD_DEFAULT);
+
+    //  INSERT sécurisé
+    try {
+        prepare_executeSQL(
+            "INSERT INTO agent 
+            (prenom_agent, nom_agent, telephone_agent, username, email, role, password, status)
+            VALUES 
+            (:prenom, :nom, :tel, :username, :email, :role, :password, 1)",
+            [
+                'prenom'   => $prenom,
+                'nom'      => $nom,
+                'tel'      => $telephone,
+                'username' => $username,
+                'email'    => $email,
+                'role'     => $role,
+                'password' => $password
+            ]
+        );
+
+    } catch (PDOException $e) {
+        $_SESSION['error'] = "Erreur : utilisateur déjà existant.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    //  services pour agent
+    if ($role === 'agent') {
+        foreach ($_POST['services'] as $codeService) {
+            prepare_executeSQL(
+                "INSERT INTO agent_service (agent_username, codeService)
+                 VALUES (:username, :codeService)",
+                [
+                    'username'    => $username,
+                    'codeService' => $codeService
+                ]
+            );
+        }
+    }
+
+    $_SESSION['success'] = "Utilisateur ajouté avec succès";
+    header("Location: admin.php?page=agents");
+    exit;
+}
     
 }
 
@@ -130,11 +244,11 @@ if (isset($_POST['add_agent'])) {
     }
 
     logActivity(
-        $_SESSION['user_id'],
-        "Ajout d’un agent",
-        "Agent {$prenom} {$nom} ajouté (rôle : {$role})",
-        $_SESSION['role']
-    );
+    $_SESSION['user_id'],
+    "Création d’un agent",
+    "Création agent : " . $username,
+    $_SESSION['role']
+);
 
     $_SESSION['success'] = "Agent ajouté avec succès";
     
@@ -203,58 +317,98 @@ if (isset($_POST['edit_agent'])) {
     }
 
     logActivity(
-        $_SESSION['user_id'],
-        "Modification d’un agent",
-        "Agent {$prenom} {$nom} modifié (rôle : {$role})",
-        $_SESSION['role']
-    );
+    $_SESSION['user_id'],
+    "Modification d’un agent",
+    "Modification agent : " . $username,
+    $_SESSION['role']
+);
 
     $_SESSION['success'] = "Agent modifié avec succès";
     
 }
 
-/* =========================
+/* ========================= 
    ACTIVATION
 ========================= */
-if (isset($_POST['activate_agent'], $_POST['username'])) {
+if (isset($_POST['activate_agent'], $_POST['username'], $_POST['role'])) {
 
-    toggleAgentStatus($_POST['username'], 1);
+    if ($_SESSION['role'] !== 'super_admin') {
+        $_SESSION['error'] = "Action non autorisée.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
 
-    logActivity(
-        $_SESSION['user_id'],
-        "Activation d’un agent",
-        "Agent activé : ".$_POST['username'],
-        $_SESSION['role']
-    );
+    try {
 
-    $_SESSION['success'] = "Agent activé avec succès";
-   
+        toggleAgentStatus($_POST['username'], 1);
+
+        logActivity(
+            $_SESSION['user_id'],
+            "Activation utilisateur",
+            "Utilisateur activé : " . $_POST['username'],
+            $_SESSION['role']
+        );
+
+        $_SESSION['success'] = "Utilisateur activé avec succès";
+
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Erreur lors de l’activation.";
+    }
+
+    header("Location: admin.php?page=agents");
+    exit;
 }
 
-/* =========================
+/* ========================= 
    DÉSACTIVATION
 ========================= */
 if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
-    if ($_POST['username'] === $_SESSION['username']) {
+    //  Vérifier que c'est un super admin
+    if ($_SESSION['role'] !== 'super_admin') {
+        $_SESSION['error'] = "Action non autorisée.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    $username = $_POST['username'];
+    $role     = $_POST['role'];
+
+    //  Empêcher de se désactiver soi-même
+    if ($username === $_SESSION['username']) {
         $_SESSION['error'] = "Vous ne pouvez pas vous désactiver.";
-    } elseif ($_POST['role'] === 'admin') {
-        $_SESSION['error'] = "Impossible de désactiver un administrateur.";
-    } else {
+        header("Location: admin.php?page=agents");
+        exit;
+    }
 
-        toggleAgentStatus($_POST['username'], 0);
+    //  Empêcher de désactiver un super admin
+    if ($role === 'super_admin') {
+        $_SESSION['error'] = "Impossible de désactiver un super admin.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
 
+    //  Désactivation
+    try {
+
+        toggleAgentStatus($username, 0);
+
+        //  Log activité
         logActivity(
             $_SESSION['user_id'],
-            "Désactivation d’un agent",
-            "Agent désactivé : ".$_POST['username'],
+            "Désactivation utilisateur",
+            "Utilisateur désactivé : " . $username,
             $_SESSION['role']
         );
 
-        $_SESSION['success'] = "Agent désactivé avec succès";
+        $_SESSION['success'] = "Utilisateur désactivé avec succès";
+
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Erreur lors de la désactivation.";
     }
 
-    
+    header("Location: admin.php?page=agents");
+    exit;
 }
 
 ?>
@@ -353,7 +507,7 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
           <td><?= htmlspecialchars($agent['telephone_agent']) ?></td>
 
           <td>
-              <span class="badge bg-info"><?= $agent['role'] ?></span>
+              <span class="badge bg-info"><?= ucfirst($agent['role']) ?></span>
           </td>
 
           <td>
@@ -511,8 +665,9 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
               <label class="form-label " >Rôle</label>
               <select name="role" class="form-select" required  >
                 <option value="" selected disabled>— Choisir le rôle —</option>
-                <option value="agent">Agent</option>
                 <option value="admin">Admin</option>
+                <option value="agent">Agent</option>
+                <option value="medecin">Medecin</option>
               </select>
             </div>
 
@@ -951,6 +1106,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+
   //  Validation élégante à la soumission
   form.addEventListener('submit', function (e) {
     const role = roleSelect.value;
@@ -1156,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return iti;
   }
 
-  // 🔥 Initialisation ADD & EDIT
+  //  Initialisation ADD & EDIT
   const itiAdd  = initPhone('telephone_agent_add');
   const itiEdit = initPhone('telephone_agent_edit');
 

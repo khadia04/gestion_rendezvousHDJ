@@ -26,8 +26,7 @@ function requireAuth(?string $role = null): void
 
     if ($role !== null && $_SESSION['role'] !== $role) {
         http_response_code(403);
-        echo "Accès interdit";
-        exit;
+        die(" Accès interdit");
     }
 
     // Expiration session (30 min)
@@ -37,7 +36,6 @@ function requireAuth(?string $role = null): void
         isset($_SESSION['last_activity']) &&
         (time() - $_SESSION['last_activity']) > $timeout
     ) {
-        session_unset();
         session_destroy();
         header("Location: /rendezvous/index.php?session=expired");
         exit;
@@ -45,3 +43,22 @@ function requireAuth(?string $role = null): void
 
     $_SESSION['last_activity'] = time();
 }
+
+
+function requireRole(array $roles): void
+{
+    if (!isset($_SESSION['user_id'], $_SESSION['role'])) {
+        header("Location: /rendezvous/index.php?session=expired");
+        exit;
+    }
+
+    $userRole = trim(strtolower($_SESSION['role']));
+    $roles = array_map(fn($r) => strtolower(trim($r)), $roles);
+
+
+    if (!in_array($userRole, $roles)) {
+        http_response_code(403);
+        die("⛔ Accès refusé");
+    }
+}
+

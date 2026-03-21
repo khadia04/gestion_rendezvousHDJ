@@ -2,9 +2,10 @@
 require_once '../middlewares/auth.php';
 require_once '../middlewares/csrf.php';
 require_once '../modele/database.php';
-require_once __DIR__ . '/../helpers/activity.php';
+require_once '../helpers/activity.php';
 
 
+requireRole(['super_admin', 'admin']);
 requireAuth('admin');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -90,12 +91,14 @@ if (isset($_POST['add_service'])) {
         }
 
         $db->commit();
+        
+        /* LOG ACTIVITÉ */
         logActivity(
-    $_SESSION['user_id'],
-    "Modification d’un service",
-    "Service modifié : " . $designService,
-    $_SESSION['role']
-);
+            $_SESSION['user_id'],
+            "Création de service",
+            "Création service $designService ($codeService)",
+            $_SESSION['role']
+        );
 
   /* MESSAGE UNIQUEMENT */
 $_SESSION['success'] = "Service ajouté avec succès";
@@ -150,13 +153,12 @@ if (isset($_POST['update_service'])) {
 
        $db->commit();
 
-/* LOG ACTIVITÉ */
-logActivity(
-    $_SESSION['user_id'],
-    "Modification d’un service",
-    "Service modifié : " . $designService,
-    $_SESSION['role']
-);
+      logActivity(
+          $_SESSION['user_id'],
+          "Modification de service",
+          "Modification service $designService ($codeService)",
+          $_SESSION['role']
+      );
 
 $_SESSION['success'] = "Service modifié avec succès";
 

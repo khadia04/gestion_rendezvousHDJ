@@ -65,13 +65,28 @@ function updatePatient($numero, $prenom, $nom, $telephone) {
 
 function getPatientRdvs(string $numero) {
     $db = getConnection();
+
     $stmt = $db->prepare("
-        SELECT r.idRv, r.dateRvServ, s.designService
+        SELECT 
+            r.idRv,
+            r.codeService,
+            r.dateRvServ,
+            s.designService,
+
+            DATEDIFF(r.dateRvServ, CURDATE()) AS diff_jours,
+
+            CASE
+                WHEN r.dateRvServ = CURDATE() THEN 'programme_du_jour'
+                WHEN r.dateRvServ < CURDATE() THEN 'depasse'
+                ELSE 'en_attente'
+            END AS statut
+
         FROM rendezvs r
         JOIN service s ON s.codeService = r.codeService
         WHERE r.numeroDossierPatient = :numero
         ORDER BY r.dateRvServ DESC
     ");
+
     $stmt->execute(['numero' => $numero]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -160,5 +175,4 @@ function updatePatientNoIndex(array $data)
 
     return $stmt->execute($data);
 }
-
 

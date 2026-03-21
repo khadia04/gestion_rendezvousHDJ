@@ -2808,10 +2808,7 @@ button:disabled:hover,
     box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.25);
 }
 
-/* Succès */
-.form-control.is-valid {
-    border-color: #198754;
-}
+
 
 /* Erreur */
 .form-control.is-invalid {
@@ -2901,10 +2898,6 @@ body.dark-dashboard  .form-control.is-invalid {
     box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.25);
 }
 
-body.dark-dashboard  .form-control.is-valid {
-    border-color: #51cf66;
-    box-shadow: 0 0 0 2px rgba(81, 207, 102, 0.25);
-}
 
 .tab-pane {
   animation: fadeSlide 0.25s ease-in-out;
@@ -3353,9 +3346,9 @@ input.form-control {
    intl-tel-input – MODAL SOMBRE
 =========================== */
 
-/* Input téléphone dans le modal agent */
+/* Champ téléphone agent */
 .agent-modal .iti input {
-  color: #ffffff !important;
+  color: #0f172a !important;   /* texte visible */
 }
 
 /* Indicatif +221 */
@@ -4706,5 +4699,421 @@ body.rendezvous.dark-dashboard #actionModalBody .text-muted {
 }
 
 
+.rdv-disabled {
+   pointer-events: none;   /* empêche le curseur pointer */
+   cursor: default !important;
+}
 
+/* RDV dépassé - style professionnel */
+.rdv-expired {
+   background-color: #f8f9fa !important;
+   color: #9aa0a6;
+   opacity: 0.75;
+   pointer-events: none;      /* bloque toute interaction */
+   cursor: default !important;
+}
+
+/* Supprime l'effet hover Bootstrap */
+.table-hover tbody tr.rdv-expired:hover {
+   background-color: #f8f9fa !important;
+}
+
+.action-icon {
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.action-icon:hover {
+  background-color: #0d6efd;
+  color: white;
+  transform: scale(1.1);
+}
+
+.patient-card {
+  border-radius: 16px;
+  transition: 0.3s ease;
+}
+
+.patient-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.info-pill {
+  background: #f8f9fa;
+  padding: 8px 14px;
+  border-radius: 30px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.btn-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+/* Animation fade + slide */
+.fade-in {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeSlideIn 0.4s ease forwards;
+}
+
+@keyframes fadeSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-body label {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+/* ===== MODE SOMBRE MODALS ===== */
+
+body.dark-mode .modal-content {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+body.dark-mode .modal-header {
+    border-bottom: 1px solid #334155;
+}
+
+body.dark-mode .modal-footer {
+    border-top: 1px solid #334155;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-color: #334155;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: #94a3b8;
+}
+
+body.dark-mode label {
+    color: #cbd5f5;
+}
+
+body.dark-mode .table {
+    color: #e2e8f0;
+}
+
+body.dark-mode .table thead {
+    border-color: #334155;
+}
+
+body.dark-mode .btn-close {
+    filter: invert(1);
+}
+
+/* MODE SOMBRE PATIENTS */
+body.patients.dark.dark-dashboard .patient-card .info-pill{
+    color:#e5e7eb !important;
+}
+
+body.patients.dark.dark-dashboard .patient-card .info-pill strong{
+    color:#e5e7eb !important;
+}
+
+body.patients.dark.dark-dashboard .patient-card .info-pill span:not(.badge){
+    color:#e5e7eb !important;
+}
+
+/* icônes */
+body.patients.dark.dark-dashboard .patient-card .info-pill i{
+    color:#60a5fa !important;
+}
+
+body.patients.dark.dark-dashboard .info-pill{
+    background:rgba(255,255,255,0.05);
+    padding:6px 14px;
+    border-radius:20px;
+}
+
+/* ===============================
+   MODAL HISTORIQUE RDV - DARK
+================================ */
+
+body.patients.dark.dark-dashboard .modal-content{
+    background:#0f172a;
+    color:#e5e7eb;
+    border:1px solid #1f2937;
+}
+
+/* Header modal */
+body.patients.dark.dark-dashboard .modal-header{
+    border-bottom:1px solid #1f2937;
+}
+
+/* Titre */
+body.patients.dark.dark-dashboard .modal-title{
+    color:#f9fafb;
+}
+
+/* bouton fermer */
+body.patients.dark.dark-dashboard .btn-close{
+    filter:invert(1);
+}
+
+/* table */
+body.patients.dark.dark-dashboard .modal table{
+    color:#e5e7eb;
+}
+
+/* header table */
+body.patients.dark.dark-dashboard .modal thead{
+    background:#111827;
+}
+
+/* lignes */
+body.patients.dark.dark-dashboard .modal tbody tr{
+    border-bottom:1px solid #1f2937;
+}
+
+/* hover */
+body.patients.dark.dark-dashboard .modal tbody tr:hover{
+    background:#1f2937;
+}
+
+body.patients.dark.dark-dashboard .modal .btn-primary{
+    background:#2563eb;
+    border:none;
+}
+
+body.patients.dark.dark-dashboard .modal .btn-primary:hover{
+    background:#1d4ed8;
+}
+
+/* ===========================
+   MODAL HISTORIQUE RDV DARK
+=========================== */
+
+/* table */
+body.patients.dark.dark-dashboard .modal table{
+    background:#0f172a !important;
+    color:#e5e7eb !important;
+}
+
+/* header table */
+body.patients.dark.dark-dashboard .modal thead{
+    background:#1e293b !important;
+    color:#f1f5f9 !important;
+}
+
+/* lignes */
+body.patients.dark.dark-dashboard .modal tbody tr{
+    background:#0f172a !important;
+    border-bottom:1px solid #1f2937;
+}
+
+/* hover lignes */
+body.patients.dark.dark-dashboard .modal tbody tr:hover{
+    background:#1e293b !important;
+}
+
+/* cellules */
+body.patients.dark.dark-dashboard .modal td,
+body.patients.dark.dark-dashboard .modal th{
+    color:#e5e7eb !important;
+}
+
+.modal table{
+border-collapse:separate;
+border-spacing:0;
+}
+
+/* ===========================
+   MODAL HISTORIQUE RDV DARK
+=========================== */
+
+/* fond global du modal */
+body.patients.dark.dark-dashboard #patientRdvsModal .modal-content{
+    background:#0f172a;
+    color:#e5e7eb;
+}
+
+/* body du modal */
+body.patients.dark.dark-dashboard #patientRdvsModal .modal-body{
+    background:#0f172a;
+}
+
+/* table */
+body.patients.dark.dark-dashboard #patientRdvsModal table{
+    background:#0f172a;
+    color:#e5e7eb;
+}
+
+/* header table */
+body.patients.dark.dark-dashboard #patientRdvsModal thead{
+    background:#1e293b;
+}
+
+/* lignes */
+body.patients.dark.dark-dashboard #patientRdvsModal tbody tr{
+    background:#0f172a;
+    border-bottom:1px solid #1f2937;
+}
+
+/* hover */
+body.patients.dark.dark-dashboard #patientRdvsModal tbody tr:hover{
+    background:#1e293b;
+}
+
+/* texte */
+body.patients.dark.dark-dashboard #patientRdvsModal td,
+body.patients.dark.dark-dashboard #patientRdvsModal th{
+    color:#e5e7eb;
+}
+
+#patientRdvsModal ::-webkit-scrollbar{
+    width:8px;
+}
+
+#patientRdvsModal ::-webkit-scrollbar-thumb{
+    background:#334155;
+    border-radius:6px;
+}
+
+/* table historique RDV dark */
+body.patients.dark.dark-dashboard #patientRdvsModal .table{
+    background-color: transparent !important;
+    color:#e5e7eb;
+}
+
+/* cellules */
+body.patients.dark.dark-dashboard #patientRdvsModal .table td,
+body.patients.dark.dark-dashboard #patientRdvsModal .table th{
+    background-color: transparent !important;
+    color:#e5e7eb;
+}
+
+body.patients.dark.dark-dashboard #patientRdvsModal .table-hover tbody tr:hover{
+    background:#1e293b !important;
+}
+
+body.patients.dark.dark-dashboard #patientRdvsModal .table{
+    --bs-table-bg: transparent;
+    --bs-table-color: #e5e7eb;
+}
+
+/* ===========================
+   MODAL EDIT PATIENT DARK
+=========================== */
+
+/* background champs */
+body.patients.dark.dark-dashboard #editPatientModal .form-control,
+body.patients.dark.dark-dashboard #editPatientModal .form-select{
+    background:#0f172a;
+    color:#e5e7eb;
+    border:1px solid #334155;
+}
+
+/* placeholder */
+body.patients.dark.dark-dashboard #editPatientModal .form-control::placeholder{
+    color:#94a3b8;
+}
+
+/* focus */
+body.patients.dark.dark-dashboard #editPatientModal .form-control:focus,
+body.patients.dark.dark-dashboard #editPatientModal .form-select:focus{
+    background:#0f172a;
+    color:#e5e7eb;
+    border-color:#3b82f6;
+    box-shadow:0 0 0 0.2rem rgba(59,130,246,0.25);
+}
+
+/* labels */
+body.patients.dark.dark-dashboard #editPatientModal label{
+    color:#cbd5f1;
+}
+
+/* sections titres */
+body.patients.dark.dark-dashboard #editPatientModal h6{
+    color:#e2e8f0;
+}
+
+body.patients.dark.dark-dashboard #editPatientModal .iti input{
+    background:#0f172a;
+    color:#e5e7eb;
+    border:1px solid #334155;
+}
+
+/* ===========================
+   MODAL EDIT PATIENT DARK
+=========================== */
+
+body.patients.dark.dark-dashboard #editPatientModal input,
+body.patients.dark.dark-dashboard #editPatientModal .form-control,
+body.patients.dark.dark-dashboard #editPatientModal .form-select{
+    background:#0f172a !important;
+    color:#e5e7eb !important;
+    border:1px solid #334155 !important;
+}
+
+/* placeholder */
+body.patients.dark.dark-dashboard #editPatientModal input::placeholder{
+    color:#94a3b8;
+}
+
+/* focus */
+body.patients.dark.dark-dashboard #editPatientModal input:focus,
+body.patients.dark.dark-dashboard #editPatientModal .form-select:focus{
+    background:#0f172a !important;
+    color:#e5e7eb !important;
+    border-color:#3b82f6 !important;
+    box-shadow:0 0 0 0.2rem rgba(59,130,246,0.25);
+}
+
+/* séparateurs sections */
+body.patients.dark.dark-dashboard #editPatientModal hr{
+    border-color:#1f2937;
+    margin:25px 0;
+}
+
+/* labels modernes */
+body.patients.dark.dark-dashboard #editPatientModal label{
+    font-size:13px;
+    font-weight:600;
+    color:#94a3b8;
+    margin-bottom:4px;
+}
+
+body.patients.dark.dark-dashboard #editPatientModal .modal-footer{
+    background:#0f172a;
+    border-top:1px solid #1f2937;
+    padding:16px 24px;
+}
+
+/* uniformiser hauteur inputs et selects */
+body.patients.dark.dark-dashboard #editPatientModal .form-control,
+body.patients.dark.dark-dashboard #editPatientModal .form-select{
+    height:44px;
+    border-radius:12px;
+}
+body.patients.dark.dark-dashboard #editPatientModal .form-select{
+    padding-left:12px;
+}
+
+#editPatientModal .modal-footer{
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+}
 

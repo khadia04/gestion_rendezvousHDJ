@@ -1,6 +1,9 @@
 <?php
 require_once '../Modele/databasePatient.php';
+require_once '../helpers/activity.php';
 header('Content-Type: application/json');
+
+
 
 $action = $_REQUEST['action'] ?? null;
 
@@ -15,7 +18,7 @@ if (!$action) {
 switch ($action) {
 
     /* =========================
-       🔍 RECHERCHE PATIENT
+     RECHERCHE PATIENT
     ========================= */
     case 'search':
 
@@ -28,10 +31,10 @@ switch ($action) {
 
     } elseif ($phone !== '') {
 
-        // 1️⃣ chercher dans patient (avec index)
+        //  chercher dans patient (avec index)
         $patient = searchPatientByPhone($phone);
 
-        // 2️⃣ si rien trouvé → chercher dans patientnoindex
+        //  si rien trouvé → chercher dans patientnoindex
         if (!$patient) {
             $patient = searchPatientNoIndexByPhone($phone);
         }
@@ -59,7 +62,7 @@ switch ($action) {
 
 
     /* =========================
-       📄 GET PATIENT (MODAL)
+        GET PATIENT (MODAL)
     ========================= */
   case 'get':
 
@@ -97,11 +100,11 @@ switch ($action) {
 
 
     /* =========================
-       💾 SAVE (UPDATE PATIENT)
+        SAVE (UPDATE PATIENT)
     ========================= */
- case 'save':
+case 'save':
 
-    if (!empty($_POST['numeroDossierPatient'])) {
+if (!empty($_POST['numeroDossierPatient'])) {
 
     // patient AVEC index
     $ok = updatePatientIndexed([
@@ -119,6 +122,8 @@ switch ($action) {
         'urgenceNom' => $_POST['urgenceNom'],
         'urgenceTelephone' => $_POST['urgenceTelephone'],
     ]);
+
+    $patientRef = $_POST['numeroDossierPatient'];
 
 } else {
 
@@ -139,12 +144,44 @@ switch ($action) {
         'urgenceTelephone' => $_POST['urgenceTelephone'],
     ]);
 
+    $patientRef = $_POST['numeroAuto'];
+}
+
+/* LOG ACTIVITÉ */
+if ($ok) {
+    logActivity(
+        $_SESSION['user_id'],
+        "MODIFICATION_PATIENT",
+        "Modification informations patient : $patientRef",
+        $_SESSION['role']
+    );
 }
 
 echo json_encode(['status' => $ok ? 'success' : 'error']);
+exit;
 
+/* =========================
+   GET RDVS PATIENT
+========================= */
+case 'getRdvs':
 
+    $numero = $_GET['numero'] ?? null;
 
+    if (!$numero) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Numero patient manquant'
+        ]);
+        exit;
+    }
+
+    $rdvs = getPatientRdvs($numero);
+
+    echo json_encode([
+        'status' => 'success',
+        'rdvs'   => $rdvs
+    ]);
+    exit;
 
 
 }

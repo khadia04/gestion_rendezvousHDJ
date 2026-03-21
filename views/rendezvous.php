@@ -3,6 +3,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+
+requireRole(['super_admin', 'admin', 'medecin', 'agent']);
+
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
@@ -368,10 +371,13 @@ if ($periode === 'jour') {
 
 <form method="POST">
     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-
+    
+    <input type="hidden" name="idRv" id="idRv">
 
 <div class="modal-header">
-    <h5 class="modal-title"><i class="bi bi-calendar-plus"></i> Ajouter un rendez-vous</h5>
+    <h5 class="modal-title" id="rdvModalTitle">
+        <i class="bi bi-calendar-plus"></i> Ajouter un rendez-vous
+    </h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 
@@ -664,6 +670,9 @@ if ($periode === 'jour') {
 
         <!-- Légende -->
         <div class="calendar-legend mt-3">
+            <div id="calendarSuggestions" class="mt-3 d-none">
+                <div id="suggestionsList" class="d-flex flex-wrap gap-2 mt-2"></div>
+            </div>
             <span><i class="dot disponible"></i> Disponible</span>
             <span><i class="dot moyen"></i> Disponibilité moyenne</span>
             <span><i class="dot plein"></i> Complet</span>
@@ -980,112 +989,131 @@ serviceSearch.addEventListener('input', () => {
     serviceDropdown.classList.toggle('d-none', found === 0);
 });
 
-serviceDropdown.querySelectorAll('.service-item').forEach(item => {
-    item.onclick = () => {
-        serviceSearch.value = item.querySelector('strong').innerText;
-        hiddenService.value = item.dataset.code;
+serviceDropdown.addEventListener('mousedown', (e) => {
 
-        serviceDropdown.classList.add('d-none');
-        calendarWrapper.classList.remove('d-none');
+    const item = e.target.closest('.service-item');
+    if (!item) return;
 
-        selectedDateInput.value = '';
-        updateSaveButton();
-        loadCalendar();
-        enableModalScroll();
-    };
+    e.stopPropagation();
+
+    serviceSearch.value = item.querySelector('strong').innerText;
+    hiddenService.value = item.dataset.code;
+
+    serviceDropdown.classList.add('d-none');
+    calendarWrapper.classList.remove('d-none');
+
+    selectedDateInput.value = '';
+    updateSaveButton();
+
+    loadCalendar();
+    enableModalScroll();
+
 });
-
-document.addEventListener('click', e => {
-    if (!e.target.closest('.position-relative')) {
-        serviceDropdown.classList.add('d-none');
-    }
-});
-
 /* =========================
    CALENDRIER
 ========================= */
-function loadCalendar() {
+function loadCalendar(selectedDateToSelect = null) {
+
     if (!hiddenService.value) return;
 
     const year  = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
 
     fetch(`../Controller/calendar_data.php?service=${hiddenService.value}&year=${year}&month=${month}`)
-        .then(r => r.json())
-        .then(data => {
+    .then(r => r.json())
+    .then(data => {
 
-            calendar.innerHTML = '';
-            calendarTitle.innerText = currentDate.toLocaleDateString('fr-FR', {
-                month: 'long',
-                year: 'numeric'
-            });
+        calendar.innerHTML = '';
 
-            // Décalage du premier jour (lundi = 0)
-            const firstDay = new Date(year, month - 1, 1);
-            const offset = (firstDay.getDay() + 6) % 7;
+        calendarTitle.innerText = currentDate.toLocaleDateString('fr-FR', {
+            month: 'long',
+            year: 'numeric'
+        });
 
-            for (let i = 0; i < offset; i++) {
-                calendar.appendChild(document.createElement('div'));
+        const firstDay = new Date(year, month - 1, 1);
+        const offset = (firstDay.getDay() + 6) % 7;
+
+        // espaces avant le premier jour
+        for (let i = 0; i < offset; i++) {
+            calendar.appendChild(document.createElement('div'));
+        }
+
+        Object.entries(data).forEach(([date, info]) => {
+
+            const day = document.createElement('div');
+            day.className = `calendar-day ${info.status}`;
+            day.textContent = date.split('-')[2];
+
+            /* TOOLTIP */
+            let tooltipText = '';
+
+            if (info.status === 'ferie') {
+                tooltipText = 'Jour férié';
+            }
+            else if (info.status === 'disabled') {
+                tooltipText = 'Service indisponible';
+            }
+            else if (info.status === 'plein') {
+                tooltipText = 'Complet';
+            }
+            else if (info.status === 'moyen') {
+                tooltipText = `${info.count ?? 0} rendez-vous - disponibilité moyenne`;
+            }
+            
+            else if (info.status === 'disponible') {
+                tooltipText = `${info.count ?? 0} rendez-vous pris`;
+            }
+            if (tooltipText) {
+                day.setAttribute('title', tooltipText);
+                day.setAttribute('data-bs-toggle', 'tooltip');
             }
 
-            Object.entries(data).forEach(([date, info]) => {
-                const day = document.createElement('div');
-                day.className = `calendar-day ${info.status}`;
-                day.textContent = date.split('-')[2];
+            /* CLICK JOUR */
 
-                // ✅ Tooltip : nombre de RDV pris
-                // TOOLTIP SELON STATUT
-                let tooltipText = '';
+            if (info.status === 'disponible' || info.status === 'moyen') {
 
-                if (info.status === 'ferie') {
-                    tooltipText = 'Jour férié';
-                }
-                else if (info.status === 'disabled') {
-                    tooltipText = 'Service indisponible';
-                }
-                else if (info.status === 'plein') {
-                    tooltipText = 'Complet';
-                }
-                else if (info.status === 'moyen') {
-                    tooltipText = `${info.count ?? 0} rendez-vous - disponibilité moyenne`;
-                }
-                else if (info.status === 'disponible') {
-                    tooltipText = `${info.count ?? 0} rendez-vous pris`;
-                }
+                day.onclick = () => {
 
-                if (tooltipText) {
-                    day.setAttribute('title', tooltipText);
-                    day.setAttribute('data-bs-toggle', 'tooltip');
-                }
+                    document
+                        .querySelectorAll('.calendar-day.selected')
+                        .forEach(d => d.classList.remove('selected'));
 
+                    day.classList.add('selected');
 
-                // ✅ Sélection possible uniquement si dispo
-                if (info.status === 'disponible' || info.status === 'moyen') {
-                    day.addEventListener('click', () => {
-                        document
-                            .querySelectorAll('.calendar-day.selected')
-                            .forEach(d => d.classList.remove('selected'));
+                    selectedDateInput.value = date;
 
-                        day.classList.add('selected');
-                        selectedDateInput.value = date;
-                        updateSaveButton();
-                    });
-                }
+                    updateSaveButton();
+                };
+            }
 
-                calendar.appendChild(day);
-            });
+            calendar.appendChild(day);
 
-            // 🔥 Activer les tooltips Bootstrap
-            document
-                .querySelectorAll('[data-bs-toggle="tooltip"]')
-                .forEach(el => new bootstrap.Tooltip(el));
-        })
-        .catch(err => {
-            console.error('Erreur chargement calendrier:', err);
+            if (selectedDateToSelect && date === selectedDateToSelect) {
+
+                day.classList.add('selected');
+
+                selectedDateInput.value = date;
+
+                updateSaveButton();
+            }
+
         });
+
+        
+        /* TOOLTIP BOOTSTRAP */
+
+        document
+            .querySelectorAll('[data-bs-toggle="tooltip"]')
+            .forEach(el => new bootstrap.Tooltip(el));
+
+    })
+    .catch(err => {
+
+        console.error('Erreur chargement calendrier:', err);
+
+    });
+
 }
-
-
 
 
 document.getElementById('prevMonth').onclick = () => {
@@ -1400,7 +1428,7 @@ document.getElementById('successModal')
 .addEventListener('hidden.bs.modal', () => {
 
     if (!skipReloadAfterSuccess) {
-        location.reload();
+        window.location.href = '?page=rendezvous';
     }
 
     skipReloadAfterSuccess = false;
@@ -1443,21 +1471,27 @@ document.getElementById('btnNewRdv').onclick = () => {
     const form = document.querySelector('#addRdvModal form');
     form.reset();
 
-   
+    document.getElementById('btnSave').innerHTML =
+    '<i class="bi bi-check-circle"></i> Enregistrer le RDV';
 
-    // 🔥 vider feedback vert
+    document.getElementById('rdvModalTitle').innerHTML =
+    '<i class="bi bi-calendar-plus"></i> Ajouter un rendez-vous';
+
+    document.getElementById('idRv').value = '';
+   
+    // vider feedback vert
     patientFeedback.innerHTML = '';
 
-    // 🔥 vider recherche téléphone
+    // vider recherche téléphone
     phoneSearchInput.value = '';
 
-    // 🔥 reset intl tel input
+    // reset intl tel input
     iti.setNumber('');
     itiUrgence.setNumber('');
     phoneHidden.value = '';
     urgencePhoneHidden.value = '';
 
-    // 🔥 reset service + calendrier
+    // reset service + calendrier
     serviceSearch.value = '';
     hiddenService.value = '';
     calendarWrapper.classList.add('d-none');
@@ -1571,9 +1605,14 @@ filterServiceDropdown.querySelectorAll('.service-item').forEach(item => {
 });
 
 document.addEventListener('click', e => {
-    if (!e.target.closest('.position-relative')) {
-        filterServiceDropdown.classList.add('d-none');
+
+    if (!e.target.closest('#serviceSearch') &&
+        !e.target.closest('#serviceDropdown')) {
+
+        serviceDropdown.classList.add('d-none');
+
     }
+
 });
 
 patientInput.addEventListener('input', () => {
@@ -1717,6 +1756,60 @@ function openNewIndexPatientWithData(data) {
     `;
 }
 
+document.addEventListener('DOMContentLoaded', () => {
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const idRv = urlParams.get('idRv');
+
+    if (urlParams.get('edit') === '1') {
+
+        const dossier = urlParams.get('dossier');
+        const service = urlParams.get('service');
+        const date    = urlParams.get('date');
+
+        document.getElementById('idRv').value = idRv;
+
+        const modalEl = document.getElementById('addRdvModal');
+        const modal   = new bootstrap.Modal(modalEl);
+
+        modal.show();
+
+        modalEl.addEventListener('shown.bs.modal', function handler() {
+
+            modalEl.removeEventListener('shown.bs.modal', handler);
+
+            //  changer titre
+            document.getElementById('rdvModalTitle').innerHTML =
+                `<i class="bi bi-pencil-square"></i> Modifier le rendez-vous`;
+
+            //  changer bouton save
+            document.getElementById('btnSave').innerHTML =
+                '<i class="bi bi-pencil-square"></i> Modifier le RDV';
+
+            //  forcer mode index
+            document.querySelector('[data-value="index"]').click();
+
+            //  injecter dossier
+            patientInput.value = dossier;
+            patientInput.dispatchEvent(new Event('blur'));
+
+            //  Sélection service sans click
+            const serviceItem = document.querySelector(
+                '#serviceDropdown .service-item[data-code="' + service + '"]'
+            );
+
+            if (serviceItem) {
+                serviceSearch.value = serviceItem.querySelector('strong').innerText;
+                hiddenService.value = service;
+                serviceDropdown.classList.add('d-none');
+                calendarWrapper.classList.remove('d-none');
+            }
+
+            // 🔹 Charger calendrier AVEC la date
+            currentDate = new Date(date);
+            loadCalendar(date);
+        });
+     }
+});
 </script>
 

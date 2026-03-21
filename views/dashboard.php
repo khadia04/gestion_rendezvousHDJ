@@ -1,4 +1,8 @@
 <?php
+
+requireRole(['super_admin']);
+
+
 // =========================
   // ÉTAPE 1 : RÉCUPÉRATION DONNÉES
 

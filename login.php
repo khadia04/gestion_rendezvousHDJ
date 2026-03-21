@@ -1,3 +1,11 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -65,6 +73,8 @@
 
 
         <form action="/rendezvous/Controller/Ctrlerlogin.php" method="post">
+            <!-- TOKEN CSRF -->
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
             <!-- USERNAME -->
             <div class="mb-3" style="padding-bottom: 10px;">

@@ -5,7 +5,8 @@ require_once '../middlewares/csrf.php';
 require_once '../modele/database.php';
 require_once '../helpers/activity.php';
 
-requireAuth('admin');
+requireAuth();
+requireRole(['super_admin', 'admin', 'medecin', 'agent']);
 
 /* =========================
    TRAITEMENT SERVICES (POST)

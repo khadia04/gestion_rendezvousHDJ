@@ -7,6 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once '../Modele/database.php';
 require_once '../Modele/databaseAgent.php';
+require_once '../helpers/activity.php';
 
 try {
 
@@ -32,6 +33,7 @@ try {
 
     $codeService = $_POST['codeService'] ?? '';
     $dateRvServ  = $_POST['dateRvServ'] ?? '';
+    $idRv = $_POST['idRv'] ?? null;
     $dateDemande = date('Y-m-d');
 
     if (!$patientType || !$codeService || !$dateRvServ) {
@@ -95,7 +97,7 @@ try {
 
         $patientExiste = $check->fetch();
 
-        /* 🟡 Nouveau patient avec index */
+        /* Nouveau patient avec index */
         if (!$patientExiste && $isNewIndex === '1') {
 
             $prenom    = trim($_POST['prenomComplet'] ?? '');
@@ -141,18 +143,87 @@ try {
             ]);
         }
 
-        // RDV
-        $stmt = $db->prepare("
-            INSERT INTO rendezvs
-            (numeroDossierPatient, codeService, dateDemande, dateRvServ)
-            VALUES (?, ?, ?, ?)
+        // Vérifier si un RDV existe déjà pour ce patient
+        $checkDuplicate = $db->prepare("
+            SELECT idRv
+            FROM rendezvs
+            WHERE numeroDossierPatient = ?
+            AND codeService = ?
+            AND dateRvServ = ?
         ");
-        $stmt->execute([
+
+        $checkDuplicate->execute([
             $numeroDossier,
             $codeService,
-            $dateDemande,
             $dateRvServ
         ]);
+
+        $existing = $checkDuplicate->fetch();
+
+        if ($existing && (!$idRv || $existing['idRv'] != $idRv)) {
+            throw new Exception("Ce patient a déjà un rendez-vous dans ce service à cette date.");
+        }
+
+
+        // RDV (création ou modification)
+
+        if ($idRv) {
+
+            // vérifier existence RDV
+            $checkRdv = $db->prepare("
+                SELECT idRv
+                FROM rendezvs
+                WHERE idRv = ?
+            ");
+            $checkRdv->execute([$idRv]);
+
+            if (!$checkRdv->fetch()) {
+                throw new Exception("Rendez-vous introuvable.");
+            }
+
+            // modification RDV existant
+            $stmt = $db->prepare("
+                UPDATE rendezvs
+                SET codeService = ?, dateRvServ = ?
+                WHERE idRv = ?
+            ");
+
+            $stmt->execute([
+                $codeService,
+                $dateRvServ,
+                $idRv
+            ]);
+
+            logActivity(
+                $_SESSION['user_id'] ?? 0,
+                "Modification de RDV",
+                "Modification RDV ID $idRv service $codeService date $dateRvServ",
+                $_SESSION['role'] ?? null
+            );
+
+        } else {
+
+            // nouveau RDV
+            $stmt = $db->prepare("
+                INSERT INTO rendezvs
+                (numeroDossierPatient, codeService, dateDemande, dateRvServ)
+                VALUES (?, ?, ?, ?)
+            ");
+
+            $stmt->execute([
+                $numeroDossier,
+                $codeService,
+                $dateDemande,
+                $dateRvServ
+            ]);
+
+            logActivity(
+                $_SESSION['user_id'] ?? 0,
+                "Creation de RDV",
+                "Création RDV patient $numeroDossier service $codeService date $dateRvServ",
+                $_SESSION['role'] ?? null
+            );
+        }
 
         // Historique
         $hist = $db->prepare("
@@ -246,9 +317,11 @@ try {
         VALUES (?, ?, ?)
     ");
 
+    $actionType = $idRv ? 'MODIFICATION_RDV' : 'CREATION_RDV';
+
     $log->execute([
         $_SESSION['username'],
-        'CREATION_RDV',
+        $actionType,
         "Service: $codeService | Date: $dateRvServ"
     ]);
 

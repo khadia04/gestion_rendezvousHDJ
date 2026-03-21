@@ -110,18 +110,21 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+
 /* =========================
    REDIRECTION PAR RÔLE
 ========================= */
-if ($_SESSION['role'] === 'admin') {
-    header("Location: /rendezvous/views/admin.php");
-    exit;
-}
 
-if ($_SESSION['role'] === 'agent') {
-    header("Location: /rendezvous/views/agents.php");
-    exit;
+if ($user['role'] === 'super_admin') {
+    header("Location: ../views/admin.php?page=dashboard");
+} elseif ($user['role'] === 'admin') {
+    header("Location: ../views/admin.php?page=services");
+} elseif ($user['role'] === 'medecin' || $user['role'] === 'agent') {
+    header("Location: ../views/admin.php?page=rendezvous");
+} else {
+    header("Location: ../index.php");
 }
+exit;
 
 /* =========================
    FALLBACK SÉCURITÉ
