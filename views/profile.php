@@ -92,6 +92,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 }
 
 /* =========================================================
+   RÉCUPÉRATION DES DONNÉES pour reset obligatoire de mot de passe
+========================================================= */
+
+if (isset($_POST['change_password'])) {
+
+    $new = $_POST['new_password'];
+    $confirm = $_POST['confirm_password'];
+
+    if ($new !== $confirm) {
+        $_SESSION['error'] = "Les mots de passe ne correspondent pas";
+    } else {
+
+        $hash = password_hash($new, PASSWORD_DEFAULT);
+
+        prepare_executeSQL(
+            "UPDATE agent 
+             SET password = ?, must_change_password = 0 
+             WHERE id = ?",
+            [$hash, $_SESSION['user_id']]
+        );
+
+        $_SESSION['success'] = "Mot de passe mis à jour";
+    }
+
+    header("Location: admin.php?page=profile");
+    exit;
+}
+/* =========================================================
    PAGINATION ACTIVITÉS
 ========================================================= */
 $perPage = 10;
@@ -397,6 +425,12 @@ foreach ($activities as $act) {
             SÉCURITÉ
         ====================== -->
         <div class="tab-pane fade show" id="security" role="tabpanel">
+
+            /* ===============================
+                FORCER CHANGEMENT MOT DE PASSE
+            ================================ */
+            <input type="password" name="new_password" required>
+            <input type="password" name="confirm_password" required>
 
             <h4 class="mb-4">Sécurité du compte</h4>
 

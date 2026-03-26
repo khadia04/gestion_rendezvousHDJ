@@ -53,21 +53,6 @@ if ((int)$user['failed_attempts'] >= 30) {
     exit;
 }
 
-/* =========================
-   VÉRIFICATION MOT DE PASSE
-========================= */
-if (!password_verify($password, $user['password'])) {
-
-    $db->prepare("
-        UPDATE agent
-        SET failed_attempts = failed_attempts + 1
-        WHERE id = ?
-    ")->execute([$user['id']]);
-
-    $_SESSION['error'] = "Email ou mot de passe incorrect";
-    header("Location: ../index.php");
-    exit;
-}
 
 /* =========================
    LOGIN OK
@@ -92,6 +77,26 @@ $_SESSION['last_user_id'] = (int) $user['id'];
 
 $_SESSION['toast'] = "Connexion réussie";
 $_SESSION['toast_type'] = "success";
+
+
+/* ===============================
+   OBLIGER CHANGEMENT MOT DE PASSE
+================================ */
+if (password_verify($password, $user['password'])) {
+
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['role'] = $user['role'];
+    $_SESSION['username'] = $user['username'];
+
+    //  OBLIGER RESET
+    if ($user['must_change_password'] == 1) {
+        header("Location: ../views/admin.php?page=profile&tab=security&force=1");
+        exit;
+    }
+
+    header("Location: ../views/admin.php");
+    exit;
+}
 
 /* =========================
    LOG CONNEXION
@@ -118,11 +123,11 @@ if (empty($_SESSION['csrf_token'])) {
 if ($user['role'] === 'super_admin') {
     header("Location: ../views/admin.php?page=dashboard");
 } elseif ($user['role'] === 'admin') {
-    header("Location: ../views/admin.php?page=services");
+    header("Location: ../views/admin.php?page=accueil");
 } elseif ($user['role'] === 'medecin' || $user['role'] === 'agent') {
-    header("Location: ../views/admin.php?page=rendezvous");
+    header("Location: ../views/admin.php?page=accueil");
 } else {
-    header("Location: ../index.php");
+    header("Location: ../views/admin.php?page=accueil");
 }
 exit;
 

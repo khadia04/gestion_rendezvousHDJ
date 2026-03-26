@@ -95,6 +95,14 @@ $email  = $admin['email'] ?? '';
 $tel    = $admin['telephone_agent'] ?? '';
 
 
+// Forcer changement mot de passe
+if (
+    ($_SESSION['must_change_password'] ?? 0) == 1 &&
+    ($_GET['page'] ?? '') !== 'profile'
+) {
+    header("Location: admin.php?page=profile&tab=security&force=1");
+    exit;
+}
 
 ?>
 
@@ -118,7 +126,7 @@ $tel    = $admin['telephone_agent'] ?? '';
 
 
     <!-- CSS Admin -->
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="/rendezvous/assets/css/admin.css">
     <link href="../assets/img/logo.png" rel="icon" />
 
     <!-- Chart.js -->
@@ -244,6 +252,12 @@ $tel    = $admin['telephone_agent'] ?? '';
             </div>
 
             <h2><?= $title ?></h2>
+
+            <div class="topbar-left d-flex align-items-center gap-3">
+
+                <a href="admin.php?page=accueil" class="btn btn-light btn-sm">Accueil</a>
+
+            </div>
 
             <div class="profile-trigger" id="profileMenuBtn">
                 <img

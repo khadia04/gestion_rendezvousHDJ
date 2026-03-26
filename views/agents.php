@@ -9,6 +9,18 @@ require_once '../helpers/activity.php';
 requireRole(['super_admin']);
 requireAuth('super_admin');
 
+  
+function formatRole($role) {
+    return match($role) {
+        'super_admin' => 'Super admin',
+        'admin' => 'Admin',
+        'medecin' => 'Médecin',
+        'agent' => 'Agent',
+        default => ucfirst($role)
+    };
+}
+
+
 if (
     isset($_POST['ajax']) &&
     $_POST['ajax'] === 'save_services'
@@ -81,36 +93,6 @@ if (isset($_POST['add_agent'])) {
     $prenom    = trim($_POST['prenom_agent']);
     $nom       = trim($_POST['nom_agent']);
     $telephone = !empty($_POST['telephone_agent_full'])
-    ? $_POST['telephone_agent_full']
-    : ($_POST['telephone_agent'] ?? null);
-
-    $username  = trim($_POST['username']);
-    $email     = trim($_POST['email']);
-    $role      = $_POST['role'];
-
-    $allowedRoles = ['admin', 'medecin', 'agent'];
-
-    if (!in_array($role, $allowedRoles)) {
-        $_SESSION['error'] = "Rôle invalide.";
-        header("Location: admin.php?page=agents");
-        exit;
-    }
-
-    if ($role === 'agent' && empty($_POST['services'])) {
-        $_SESSION['error'] = "Un agent doit avoir au moins un service.";
-        
-    }
-
-    $password = password_hash('123456', PASSWORD_DEFAULT);
-
-    if (!preg_match('/^\+221(70|71|75|76|77|78|33)[0-9]{7}$/', $telephone)) {
-    $_SESSION['error'] = "Numéro de téléphone sénégalais invalide.";
-
-    if (isset($_POST['add_agent'])) {
-
-    $prenom    = trim($_POST['prenom_agent']);
-    $nom       = trim($_POST['nom_agent']);
-    $telephone = !empty($_POST['telephone_agent_full'])
         ? $_POST['telephone_agent_full']
         : ($_POST['telephone_agent'] ?? null);
 
@@ -118,7 +100,6 @@ if (isset($_POST['add_agent'])) {
     $email     = trim($_POST['email']);
     $role      = $_POST['role'];
 
-    //  rôles autorisés
     $allowedRoles = ['admin', 'medecin', 'agent'];
 
     if (!in_array($role, $allowedRoles)) {
@@ -127,48 +108,47 @@ if (isset($_POST['add_agent'])) {
         exit;
     }
 
-    //  validation téléphone
+    // téléphone
     if (!preg_match('/^\+221(70|71|75|76|77|78|33)[0-9]{7}$/', $telephone)) {
-        $_SESSION['error'] = "Numéro de téléphone sénégalais invalide.";
+        $_SESSION['error'] = "Numéro invalide.";
         header("Location: admin.php?page=agents");
         exit;
     }
 
-    //  username unique
-    $exists = executeSQL(
-        "SELECT COUNT(*) as total FROM agent WHERE username = ?",
-        [$username]
+    // username unique
+    $exists = prepare_executeSQL(
+        "SELECT COUNT(*) as total FROM agent WHERE username = :username",
+        ['username' => $username]
     )->fetch();
 
     if ($exists['total'] > 0) {
-        $_SESSION['error'] = "Ce username existe déjà.";
+        $_SESSION['error'] = "Username déjà utilisé.";
         header("Location: admin.php?page=agents");
         exit;
     }
 
-    //  email unique
-    $emailExists = executeSQL(
-        "SELECT COUNT(*) as total FROM agent WHERE email = ?",
-        [$email]
+    // email unique
+    $emailExists = prepare_executeSQL(
+        "SELECT COUNT(*) as total FROM agent WHERE email = :email",
+        ['email' => $email]
     )->fetch();
 
     if ($emailExists['total'] > 0) {
-        $_SESSION['error'] = "Cet email est déjà utilisé.";
+        $_SESSION['error'] = "Email déjà utilisé.";
         header("Location: admin.php?page=agents");
         exit;
     }
 
-    //  service obligatoire pour agent
+    // service obligatoire
     if ($role === 'agent' && empty($_POST['services'])) {
         $_SESSION['error'] = "Un agent doit avoir au moins un service.";
         header("Location: admin.php?page=agents");
         exit;
     }
 
-    //  mot de passe
+    // mot de passe par défaut
     $password = password_hash('123456', PASSWORD_DEFAULT);
 
-    //  INSERT sécurisé
     try {
         prepare_executeSQL(
             "INSERT INTO agent 
@@ -186,74 +166,37 @@ if (isset($_POST['add_agent'])) {
             ]
         );
 
+        // services
+        if ($role === 'agent') {
+            foreach ($_POST['services'] as $codeService) {
+                prepare_executeSQL(
+                    "INSERT INTO agent_service (agent_username, codeService)
+                     VALUES (:username, :codeService)",
+                    [
+                        'username'    => $username,
+                        'codeService' => $codeService
+                    ]
+                );
+            }
+        }
+
+        // LOG (IMPORTANT)
+        logActivity(
+            $_SESSION['user_id'],
+            "Création utilisateur",
+            "Création d’un $role : $username",
+            $_SESSION['role']
+        );
+
+        $_SESSION['success'] = ucfirst($role) . " ajouté avec succès";
+
     } catch (PDOException $e) {
         $_SESSION['error'] = "Erreur : utilisateur déjà existant.";
-        header("Location: admin.php?page=agents");
-        exit;
     }
 
-    //  services pour agent
-    if ($role === 'agent') {
-        foreach ($_POST['services'] as $codeService) {
-            prepare_executeSQL(
-                "INSERT INTO agent_service (agent_username, codeService)
-                 VALUES (:username, :codeService)",
-                [
-                    'username'    => $username,
-                    'codeService' => $codeService
-                ]
-            );
-        }
-    }
-
-    $_SESSION['success'] = "Utilisateur ajouté avec succès";
-    header("Location: admin.php?page=agents");
+    echo "<script>window.location.href='admin.php?page=agents';</script>";
     exit;
 }
-    
-}
-
-
-    prepare_executeSQL(
-        "INSERT INTO agent 
-        (prenom_agent, nom_agent, telephone_agent, username, email, role, password, status)
-        VALUES 
-        (:prenom, :nom, :tel, :username, :email, :role, :password, 1)",
-        [
-            'prenom'   => $prenom,
-            'nom'      => $nom,
-            'tel'      => $telephone,
-            'username' => $username,
-            'email'    => $email,
-            'role'     => $role,
-            'password' => $password
-        ]
-    );
-
-    if ($role === 'agent') {
-        foreach ($_POST['services'] as $codeService) {
-            prepare_executeSQL(
-                "INSERT INTO agent_service (agent_username, codeService)
-                 VALUES (:username, :codeService)",
-                [
-                    'username'    => $username,
-                    'codeService' => $codeService
-                ]
-            );
-        }
-    }
-
-    logActivity(
-    $_SESSION['user_id'],
-    "Création d’un agent",
-    "Création agent : " . $username,
-    $_SESSION['role']
-);
-
-    $_SESSION['success'] = "Agent ajouté avec succès";
-    
-}
-
 /* =========================
    MODIFICATION AGENT
 ========================= */
@@ -458,10 +401,28 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
         <!-- SELECT ROLE -->
         <div class="col-md-3" >
-            <select name="role" class="form-select" >
-                <option value="">Tous les rôles</option>
-                <option value="admin" <?= ($_GET['role'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
-                <option value="agent" <?= ($_GET['role'] ?? '') === 'agent' ? 'selected' : '' ?>>Agent</option>
+            <select name="role" class="form-select">
+              <option value="">Tous les rôles</option>
+
+              <option value="super_admin"
+                <?= ($_GET['role'] ?? '') === 'super_admin' ? 'selected' : '' ?>>
+                Super admin
+              </option>
+
+              <option value="admin"
+                <?= ($_GET['role'] ?? '') === 'admin' ? 'selected' : '' ?>>
+                Admin
+              </option>
+
+              <option value="medecin"
+                <?= ($_GET['role'] ?? '') === 'medecin' ? 'selected' : '' ?>>
+                Médecin
+              </option>
+
+              <option value="agent"
+                <?= ($_GET['role'] ?? '') === 'agent' ? 'selected' : '' ?>>
+                Agent
+              </option>
             </select>
         </div>
 
@@ -507,7 +468,7 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
           <td><?= htmlspecialchars($agent['telephone_agent']) ?></td>
 
           <td>
-              <span class="badge bg-info"><?= ucfirst($agent['role']) ?></span>
+              <span class="badge bg-info"><?= formatRole($agent['role']) ?></span>
           </td>
 
           <td>
@@ -517,22 +478,22 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
           </td>
 
           <td class="text-center">
-          <?php if ($agent['role'] === 'admin'): ?>
-            <span class="badge bg-success" title="Accès à tous les services">
-              Tous
-            </span>
-          <?php elseif ($agentServiceCount[$agent['username']] === 0): ?>
-            <span class="badge bg-secondary" title="Aucun service attribué">
-              0
-            </span>
-          <?php else: ?>
-            <span class="badge bg-primary">
-              <?= $agentServiceCount[$agent['username']] ?>
-            </span>
-          <?php endif; ?>
-        </td>
+            <?php if (in_array($agent['role'], ['admin', 'super_admin', 'medecin'])): ?>
+              <span class="badge bg-success" title="Accès à tous les services">
+                Tous
+              </span>
 
+            <?php elseif ($agentServiceCount[$agent['username']] === 0): ?>
+              <span class="badge bg-secondary" title="Aucun service attribué">
+                0
+              </span>
 
+            <?php else: ?>
+              <span class="badge bg-primary">
+                <?= $agentServiceCount[$agent['username']] ?>
+              </span>
+            <?php endif; ?>
+          </td>
 
           <td><?= date('d/m/Y', strtotime($agent['created_at'])) ?></td>
 
@@ -564,7 +525,7 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
                 <i class="bi bi-person-check"></i>
               </button>
 
-              <?php elseif ($agent['role'] === 'agent'): ?>
+              <?php elseif ($agent['role'] !== 'super_admin'): ?>
               <button
                 type="button"
                 class="btn btn-danger btn-sm"
@@ -957,8 +918,16 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
         <div class="modal-header">
           <h5 class="modal-title text-danger">
-            <i class="bi bi-person-x"></i> Désactiver l’agent
+            <i class="bi bi-person-x"></i> 
+            <button 
+              data-username="<?= $agent['username'] ?>"
+              data-role="<?= $agent['role'] ?>"
+              data-bs-toggle="modal"
+              data-bs-target="#confirmDeactivateModal">
+              Désactiver
+            </button>
           </h5>
+          
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
@@ -1337,6 +1306,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
+
+
 </script>
 
 

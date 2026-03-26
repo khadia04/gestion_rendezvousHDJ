@@ -62,3 +62,43 @@ function requireRole(array $roles): void
     }
 }
 
+function requirePermission($permission)
+{
+    $role = $_SESSION['role'] ?? null;
+
+    $permissions = [
+        'super_admin' => ['*'],
+
+        'admin' => [
+            'services',
+            'rendezvous',
+            'patients',
+            'profile'
+        ],
+
+        'medecin' => [
+            'rendezvous',
+            'patients',
+            'profile'
+        ],
+
+        'agent' => [
+            'rendezvous',
+            'patients',
+            'profile'
+        ]
+    ];
+
+    if (!$role || !isset($permissions[$role])) {
+        header("HTTP/1.1 403 Forbidden");
+        exit("Accès interdit");
+    }
+
+    if (
+        !in_array('*', $permissions[$role]) &&
+        !in_array($permission, $permissions[$role])
+    ) {
+        header("HTTP/1.1 403 Forbidden");
+        exit("Accès refusé");
+    }
+}
