@@ -147,10 +147,11 @@ WHERE 1=1
 
 $params = [];
 
-if ($role === 'admin') {
-    $sql .= " AND (al.user_id = :uid OR al.role = 'agent')";
-    $params['uid'] = $userId;
-} else {
+if ($role === 'super_admin') {
+    //  voit tout → rien à ajouter
+}
+else {
+    //  voit seulement ses logs
     $sql .= " AND al.user_id = :uid";
     $params['uid'] = $userId;
 }
@@ -164,9 +165,30 @@ if (!empty($_GET['q'])) {
     $params['q'] = '%' . trim($_GET['q']) . '%';
 }
 
+//  Filtres date
+
+$countSql = "
+SELECT COUNT(*)
+FROM activity_logs al
+INNER JOIN agent a ON a.id = al.user_id
+WHERE 1=1
+";
+
+if ($role !== 'super_admin') {
+    $countSql .= " AND al.user_id = :uid";
+}
+
+if (!empty($_GET['q'])) {
+    $countSql .= " AND (
+        a.nom_agent LIKE :q
+        OR a.prenom_agent LIKE :q
+        OR al.action LIKE :q
+    )";
+}
+
 if (!empty($_GET['date_from'])) {
     $sql .= " AND al.created_at >= :date_from";
-    $params['date_from'] = $_GET['date_from'] . ' 00:00:00';
+    $params['date_from'] = $_GET['date_from'];
 }
 
 if (!empty($_GET['date_to'])) {
@@ -174,15 +196,10 @@ if (!empty($_GET['date_to'])) {
     $params['date_to'] = $_GET['date_to'] . ' 23:59:59';
 }
 
-/* =========================================================
-   COUNT (pagination)
-========================================================= */
-$countSql = "
-SELECT COUNT(*)
-FROM activity_logs al
-INNER JOIN agent a ON a.id = al.user_id
-WHERE 1=1
-" . substr($sql, strpos($sql, 'AND'));
+if (!empty($_GET['filter_role'])) {
+    $countSql .= " AND al.role = :filter_role";
+    $params['filter_role'] = $_GET['filter_role'];
+}
 
 $countStmt = $db->prepare($countSql);
 $countStmt->execute($params);
@@ -529,70 +546,63 @@ foreach ($activities as $act) {
             <h4 class="mb-4">Historique des activités</h4>
 
             <!-- FILTRES -->
-            <form method="get" action="admin.php#activity" class="row g-3 mb-4">
+            <form method="get" action="admin.php#activity" 
+                class="d-flex flex-wrap align-items-end gap-2 mb-3">
 
                 <input type="hidden" name="page" value="profile">
 
                 <!-- Recherche -->
-                <div class="col-md-3">
-                    <label for="q">Recherche</label>
+                <div style="min-width:180px;">
                     <input
-                        id="q"
                         name="q"
                         type="text"
-                        class="form-control"
-                        placeholder="Nom, prénom ou action"
+                        class="form-control form-control-sm"
+                        placeholder="🔍 Rechercher..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
                     >
                 </div>
 
-                <!-- Date début -->
-                <div class="col-md-2">
-                    <label>Date début</label>
-                    <input
-                        type="date"
-                        name="date_from"
-                        class="form-control"
-                        value="<?= $_GET['date_from'] ?? '' ?>"
-                    >
+                <!-- Rôle -->
+                <?php if ($_SESSION['role'] === 'super_admin'): ?>
+                <div style="min-width:140px;">
+                    <select name="filter_role" class="form-select form-select-sm">
+                        <option value="">Tous rôles</option>
+                        <option value="admin" <?= ($_GET['filter_role'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
+                        <option value="agent" <?= ($_GET['filter_role'] ?? '') === 'agent' ? 'selected' : '' ?>>Agent</option>
+                        <option value="medecin" <?= ($_GET['filter_role'] ?? '') === 'medecin' ? 'selected' : '' ?>>Médecin</option>
+                        <option value="super_admin" <?= ($_GET['filter_role'] ?? '') === 'super_admin' ? 'selected' : '' ?>>Super Admin</option>
+                    </select>
+                </div>
+                <?php endif; ?>
+
+                <!-- Dates -->
+                <div>
+                    <input type="date" name="date_from" class="form-control form-control-sm"
+                        value="<?= $_GET['date_from'] ?? '' ?>">
                 </div>
 
-                <!-- Date fin -->
-                <div class="col-md-2">
-                    <label>Date fin</label>
-                    <input
-                        type="date"
-                        name="date_to"
-                        class="form-control"
-                        value="<?= $_GET['date_to'] ?? '' ?>"
-                    >
+                <div>
+                    <input type="date" name="date_to" class="form-control form-control-sm"
+                        value="<?= $_GET['date_to'] ?? '' ?>">
                 </div>
 
                 <!-- Actions -->
-                <div class="col-md-3 d-flex gap-3 align-items-end">
-
-                    <button class="icon-action primary" title="Filtrer">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-primary" title="Filtrer">
                         <i class="bi bi-funnel"></i>
                     </button>
 
-                    <a
-                        href="admin.php?page=profile#activity"
-                        class="icon-action"
-                        title="Réinitialiser"
-                    >
+                    <a href="admin.php?page=profile#activity" class="btn btn-sm btn-light">
                         <i class="bi bi-arrow-clockwise"></i>
                     </a>
 
-                    <a
-                        href="../exports/activities_pdf.php?<?= http_build_query($_GET) ?>"
-                        target="_blank"
-                        class="icon-action danger"
-                        title="Exporter en PDF"
-                    >
+                    <a href="../exports/activities_pdf.php?<?= http_build_query($_GET) ?>"
+                    target="_blank"
+                    class="btn btn-sm btn-danger">
                         <i class="bi bi-file-earmark-pdf"></i>
                     </a>
-
                 </div>
+
             </form>
 
             <!-- CONTENU ACTIVITÉS -->
@@ -628,7 +638,16 @@ foreach ($activities as $act) {
                             <div>
                                 <div class="activity-title">
                                 <?= htmlspecialchars($act['action']) ?>
-                                <span class="badge <?= $act['role'] === 'admin' ? 'bg-primary' : 'bg-secondary' ?> ms-2">
+                                <?php
+                                    $roleClass = match($act['role']) {
+                                        'super_admin' => 'bg-dark',
+                                        'admin' => 'bg-primary',
+                                        'agent' => 'bg-success',
+                                        'medecin' => 'bg-info',
+                                        default => 'bg-secondary'
+                                    };
+                                    ?>
+                                <span class="badge <?= $roleClass ?> ms-2">
                                     <?= ucfirst($act['role']) ?>
                                 </span>
                                 </div>

@@ -6,7 +6,7 @@ require_once '../modele/database.php';
 require_once '../helpers/activity.php';
 require_once '../libs/fpdf/fpdf.php';
 
-requireAuth('admin');
+requireAuth('super_admin' , 'admin');
 
 $db = getConnection();
 

@@ -325,22 +325,45 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
     }
 
     //  Empêcher de désactiver un super admin
-    if ($role === 'super_admin') {
-        $_SESSION['error'] = "Impossible de désactiver un super admin.";
+    //  Empêcher auto désactivation
+    if ($username === $_SESSION['username']) {
+
+        logActivity(
+            $_SESSION['user_id'],
+            "Tentative interdite",
+            "Tentative de désactivation de soi-même",
+            $_SESSION['role']
+        );
+
+        $_SESSION['error'] = "Vous ne pouvez pas vous désactiver";
         header("Location: admin.php?page=agents");
         exit;
     }
 
-    //  Désactivation
+    //  Empêcher désactivation super admin
+    if ($role === 'super_admin') {
+
+        logActivity(
+            $_SESSION['user_id'],
+            "Tentative interdite",
+            "Tentative de désactivation d’un super admin : $username",
+            $_SESSION['role']
+        );
+
+        $_SESSION['error'] = "Impossible de désactiver un super admin";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    //  CAS NORMAL
     try {
 
         toggleAgentStatus($username, 0);
 
-        //  Log activité
         logActivity(
             $_SESSION['user_id'],
             "Désactivation utilisateur",
-            "Utilisateur désactivé : " . $username,
+            "Utilisateur $username désactivé par " . $_SESSION['username'],
             $_SESSION['role']
         );
 
@@ -349,7 +372,6 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
     } catch (Exception $e) {
         $_SESSION['error'] = "Erreur lors de la désactivation.";
     }
-
     header("Location: admin.php?page=agents");
     exit;
 }

@@ -6,7 +6,7 @@ require_once "../helpers/activity.php";
 require_once "../modele/database.php";
 require_once "../modele/databaseRv.php";
 
-requireAuth('admin');
+requireAuth('super_admin');
 
 // LOG AVANT headers
 logActivity(

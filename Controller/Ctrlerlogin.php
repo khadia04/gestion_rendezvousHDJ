@@ -86,27 +86,30 @@ if (password_verify($password, $user['password'])) {
 
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['role'] = $user['role'];
-    $_SESSION['username'] = $user['username'];
+    $_SESSION['username'] = $user['email'];
+
+    /* =========================
+    LOG CONNEXION
+    ========================= */
+    logActivity(
+        $_SESSION['user_id'],
+        'Connexion',
+        'Connexion au tableau de bord',
+        $_SESSION['role']
+    );
 
     //  OBLIGER RESET
     if ($user['must_change_password'] == 1) {
         header("Location: ../views/admin.php?page=profile&tab=security&force=1");
         exit;
-    }
+    } 
 
-    header("Location: ../views/admin.php");
+
+    header("Location: ../views/admin.php?page=accueil");
     exit;
 }
 
-/* =========================
-   LOG CONNEXION
-========================= */
-logActivity(
-    $_SESSION['user_id'],
-    'Connexion',
-    'Connexion au tableau de bord',
-    $_SESSION['role']
-);
+
 
 /* =========================
    CSRF TOKEN
@@ -116,24 +119,4 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 
-/* =========================
-   REDIRECTION PAR RÔLE
-========================= */
 
-if ($user['role'] === 'super_admin') {
-    header("Location: ../views/admin.php?page=dashboard");
-} elseif ($user['role'] === 'admin') {
-    header("Location: ../views/admin.php?page=accueil");
-} elseif ($user['role'] === 'medecin' || $user['role'] === 'agent') {
-    header("Location: ../views/admin.php?page=accueil");
-} else {
-    header("Location: ../views/admin.php?page=accueil");
-}
-exit;
-
-/* =========================
-   FALLBACK SÉCURITÉ
-========================= */
-session_destroy();
-header("Location: ../index.php");
-exit;

@@ -8,7 +8,7 @@ require_once "../modele/database.php";
 require_once "../modele/databaseRv.php";
 require_once "../libs/fpdf/fpdf.php";
 
-requireAuth('admin');
+requireAuth('super_admin');
 
 /* ===== RÉCUP PARAMÈTRES ===== */
 $mois = isset($_GET['month']) && $_GET['month'] !== ''

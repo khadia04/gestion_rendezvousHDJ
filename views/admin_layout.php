@@ -251,7 +251,9 @@ if (
                 <i id="dashboardThemeIcon" class="bi bi-sun-fill"></i>
             </div>
 
-            <h2><?= $title ?></h2>
+            <?php if ($page === 'accueil'): ?>
+                <h2>Bienvenue</h2>
+            <?php endif; ?>
 
             <div class="d-flex align-items-center gap-3">
 

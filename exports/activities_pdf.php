@@ -6,7 +6,7 @@ require_once '../modele/database.php';
 require_once __DIR__ . '/../helpers/activity.php';
 require_once '../libs/fpdf/fpdf.php';
 
-requireAuth('admin');
+requireAuth('super_admin' , 'admin' , 'agent', 'medecin');
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

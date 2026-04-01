@@ -5585,3 +5585,17 @@ body.patients.dark.dark-dashboard #editPatientModal .form-select{
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
+
+form input,
+form select {
+    height: 34px !important;
+    font-size: 13px;
+}
+
+form select  {
+     border-radius: 12px;
+}
+form .btn {
+    height: 34px;
+    padding: 0 10px;
+}

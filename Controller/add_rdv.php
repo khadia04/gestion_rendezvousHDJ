@@ -72,6 +72,14 @@ try {
         $checkService->execute([$username, $codeService]);
 
         if (!$checkService->fetch()) {
+
+            logActivity(
+                $_SESSION['user_id'],
+                "Accès refusé",
+                "Tentative accès service non autorisé: $codeService par " . $_SESSION['username'],
+                $_SESSION['role']
+            );
+
             throw new Exception("Service non autorisé pour cet agent.");
         }
     }
@@ -102,6 +110,7 @@ try {
 
             $prenom    = trim($_POST['prenomComplet'] ?? '');
             $nom       = trim($_POST['nom'] ?? '');
+            $patientName = $prenom . ' ' . $nom;
             $telephone = trim($_POST['telephonePatient'] ?? '');
 
             if (!$prenom || !$nom || !$telephone) {
@@ -161,7 +170,15 @@ try {
         $existing = $checkDuplicate->fetch();
 
         if ($existing && (!$idRv || $existing['idRv'] != $idRv)) {
-            throw new Exception("Ce patient a déjà un rendez-vous dans ce service à cette date.");
+
+            logActivity(
+                $_SESSION['user_id'],
+                "Tentative doublon RDV",
+                "Patient $numeroDossier a tenté de créer un doublon sur $codeService le $dateRvServ",
+                $_SESSION['role']
+            );
+
+            throw new Exception("Ce patient a déjà un rendez-vous...");
         }
 
 
@@ -196,8 +213,8 @@ try {
 
             logActivity(
                 $_SESSION['user_id'] ?? 0,
-                "Modification de RDV",
-                "Modification RDV ID $idRv service $codeService date $dateRvServ",
+                "Modification RDV",
+                "RDV modifié | ID: $idRv | Service: $codeService | Date: $dateRvServ | Par: " . $_SESSION['username'],
                 $_SESSION['role'] ?? null
             );
 
@@ -217,10 +234,23 @@ try {
                 $dateRvServ
             ]);
 
+            $getPatient = $db->prepare("
+                SELECT prenomPatient, nomPatient 
+                FROM patient 
+                WHERE numeroDossierPatient=?
+            ");
+            $getPatient->execute([$numeroDossier]);
+            $p = $getPatient->fetch();
+
+            $patientName = $p 
+                ? trim($p['prenomPatient'].' '.$p['nomPatient'])
+                : $numeroDossier;
+            $typePatient = ($patientType === 'index') ? 'Index' : 'Sans index';
+
             logActivity(
                 $_SESSION['user_id'] ?? 0,
-                "Creation de RDV",
-                "Création RDV patient $numeroDossier service $codeService date $dateRvServ",
+                "Création RDV",
+                "RDV créé | Patient: $patientName (#$numeroDossier) | Type: $typePatient | Service: $codeService | Date: $dateRvServ | Agent: ".$_SESSION['username']." | Role: ".$_SESSION['role'],
                 $_SESSION['role'] ?? null
             );
         }
@@ -246,6 +276,7 @@ try {
 
         $prenom    = trim($_POST['prenomComplet'] ?? '');
         $nom       = trim($_POST['nom'] ?? '');
+        $patientName = $prenom . ' ' . $nom;
         $telephone = trim($_POST['telephonePatient'] ?? '');
 
         if (!$prenom || !$nom || !$telephone) {
@@ -322,7 +353,7 @@ try {
     $log->execute([
         $_SESSION['username'],
         $actionType,
-        "Service: $codeService | Date: $dateRvServ"
+        "Agent: ".$_SESSION['username']." | Role: ".$_SESSION['role']." | Service: $codeService | Date: $dateRvServ"
     ]);
 
     $db->commit();
@@ -343,5 +374,12 @@ try {
         'status' => 'error',
         'message' => $e->getMessage()
     ]);
+
+    logActivity(
+        $_SESSION['user_id'] ?? 0,
+        "Erreur RDV",
+        $e->getMessage(),
+        $_SESSION['role'] ?? null
+    );
     exit;
 }
