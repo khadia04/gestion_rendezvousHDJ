@@ -5122,6 +5122,32 @@ body.patients.dark.dark-dashboard #editPatientModal .form-select{
 
 }
 
+.topbar {
+    padding: 10px 20px;
+}
+
+.topbar h2 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.topbar .btn-light {
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    color: #3b82f6;
+    gap: 6px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.topbar .btn-light:hover {
+    background: #f1f5f9;
+    transform: translateY(-1px);
+}
+
 /* ===========================
    style accueil
 =========================== */
@@ -5207,7 +5233,7 @@ body.patients.dark.dark-dashboard #editPatientModal .form-select{
 
 /* IMAGE */
 .carousel-pro img {
-    height: 300px;
+    height: 360px;
     object-fit: cover;
 }
 
@@ -5457,4 +5483,105 @@ body.patients.dark.dark-dashboard #editPatientModal .form-select{
 
 .modal-body::-webkit-scrollbar-track {
     background: transparent;
+}
+
+#serviceContainer .col-md-4 {
+    transition: 0.3s ease;
+}
+
+.proverbe-box h5 {
+    letter-spacing: 2px;
+    font-size: 16px;
+}
+
+.proverbe-box {
+    background: linear-gradient(135deg, #eef5ff, #ffffff);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    animation: fadeIn 1s ease;
+}
+
+.proverbe-box p {
+    margin-top: 5px;
+    font-size: 13px;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+.proverbe-box h5 {
+    letter-spacing: 2px;
+    font-size: 18px;
+    position: relative;
+}
+
+.proverbe-box h5::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #0d6efd;
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+.search-input {
+    height: 60px;
+    border-radius: 50px !important;
+    padding-left: 25px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    transition: 0.3s;
+}
+
+.search-input::placeholder {
+    color: #999;
+    font-size: 14px;
+}
+
+.search-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 10px rgba(13,110,253,0.2);
+}
+
+.service-card-image {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card-image:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.fade-up.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.btn-gradient {
+    background: linear-gradient(135deg, #0d6efd, #4facfe);
+    color: white;
+    border-radius: 30px;
+    padding: 12px 30px;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-gradient:hover {
+    transform: scale(1.05);
+}
+
+#statsFilterForm {
+    background: #f8fafc;
+    padding: 12px 15px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }

@@ -6,7 +6,7 @@ require_once '../helpers/activity.php';
 
 
 requireRole(['super_admin', 'admin']);
-requireAuth('admin');
+requireAuth('super_admin','admin');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrfToken();

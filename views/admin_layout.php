@@ -253,63 +253,62 @@ if (
 
             <h2><?= $title ?></h2>
 
-            <div class="topbar-left d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3">
 
-                <a href="admin.php?page=accueil" class="btn btn-light btn-sm">Accueil</a>
-
-            </div>
-
-            <div class="profile-trigger" id="profileMenuBtn">
-                <img
-                    src="<?= $avatar ?>"
-                    class="topbar-avatar profile-preview"
-                    alt="Avatar"
-                >
-
-                <div class="topbar-user">
-                    <span class="topbar-name">
-                        <?= htmlspecialchars($prenom . ' ' . $nom) ?>
-                    </span>
-                    <small class="topbar-role"><?= ucfirst($_SESSION['role']) ?></small>
-                </div>
-
-            </div>
-
-            <div class="profile-dropdown" id="profileDropdown">
-
-                <!-- HEADER -->
-                <div class="profile-header">
-                    <img src="<?= $avatar ?>" class="dropdown-avatar profile-preview">
-
-                    <div class="profile-info">
-                        <div class="profile-hello">
-                            Bonjour <strong><?= htmlspecialchars($prenom) ?></strong> 👋
-                        </div>
-                        <div class="profile-email">
-                            <?= htmlspecialchars($email) ?>
-                        </div>
-                    </div>
-                </div>
-
-                <hr>
-
-                <!-- ACTIONS -->
-                <a href="admin.php?page=profile" class="dropdown-item">
-                    <i class="bi bi-gear"></i>
-                    <span>Gérer votre compte</span>
+                <a href="admin.php?page=accueil" class="btn btn-light btn-sm">
+                    <i class="bi bi-house"></i> Accueil
                 </a>
 
-                <form method="POST" action="logout.php">
-                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                    <button type="submit" class="dropdown-item logout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Se déconnecter</span>
-                    </button>
-                </form>
+                <div class="profile-trigger" id="profileMenuBtn">
+                    <img
+                        src="<?= $avatar ?>"
+                        class="topbar-avatar profile-preview"
+                        alt="Avatar"
+                    >
 
+                    <div class="topbar-user">
+                        <span class="topbar-name">
+                            <?= htmlspecialchars($prenom . ' ' . $nom) ?>
+                        </span>
+                        <small class="topbar-role"><?= ucfirst($_SESSION['role']) ?></small>
+                    </div>
+
+                </div>
+
+                <div class="profile-dropdown" id="profileDropdown">
+
+                    <!-- HEADER -->
+                    <div class="profile-header">
+                        <img src="<?= $avatar ?>" class="dropdown-avatar profile-preview">
+
+                        <div class="profile-info">
+                            <div class="profile-hello">
+                                Bonjour <strong><?= htmlspecialchars($prenom) ?></strong> 👋
+                            </div>
+                            <div class="profile-email">
+                                <?= htmlspecialchars($email) ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- ACTIONS -->
+                    <a href="admin.php?page=profile" class="dropdown-item">
+                        <i class="bi bi-gear"></i>
+                        <span>Gérer votre compte</span>
+                    </a>
+
+                    <form method="POST" action="logout.php">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <button type="submit" class="dropdown-item logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Se déconnecter</span>
+                        </button>
+                    </form>
+
+                </div>
             </div>
-
-
 
         </header>
 

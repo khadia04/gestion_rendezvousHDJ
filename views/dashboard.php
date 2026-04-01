@@ -16,7 +16,7 @@ $annee = isset($_GET['year'])
 
 $rdvPerMonth   = getRdvPerMonth($mois, $annee);
 
-$isAdmin  = ($_SESSION['role'] === 'admin');
+$isAdmin  = in_array($_SESSION['role'], ['admin', 'super_admin']);
 $username = $_SESSION['username'];
 
 if ($isAdmin) {
@@ -70,7 +70,7 @@ if (!empty($rdvPerMonth)) {
 
 // =========================
   // ÉTAPE 2 : CALCUL VARIATION
-$moisActuel = $mois ?? date('n');
+$moisActuel = !empty($mois) ? $mois : date('n');
 $anneeActuelle = $annee;
 
 $moisPrecedent = $moisActuel - 1;
@@ -113,6 +113,7 @@ if ($rdvYearPrev > 0) {
 
 
 <div class="dashboard-overview">
+
 
     <!-- TITRE -->
     <h3 class="mb-4">Tableau de Bord</h3>
@@ -206,62 +207,51 @@ if ($rdvYearPrev > 0) {
     </p>
 
 
-    <!-- FILTRAGE -->
-    <form method="get" id="statsFilterForm" action="admin.php#stats" class="row g-3 align-items-center mb-4">
+    <form method="get" id="statsFilterForm" action="admin.php#stats" 
+        class="d-flex align-items-center gap-3 flex-wrap">
+
+        <input type="hidden" name="page" value="dashboard">
 
         <!-- MOIS -->
-        <div class="col-md-4">
-            <select name="month" class="form-select">
-                <option value="">Tous les mois</option>
-                <?php foreach ($monthNames as $num => $name): ?>
-                    <option value="<?= $num ?>" <?= ($mois == $num) ? 'selected' : '' ?>>
-                        <?= $name ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+        <select name="month" class="form-select" style="max-width: 200px;">
+            <option value="">Tous les mois</option>
+            <?php foreach ($monthNames as $num => $name): ?>
+                <option value="<?= $num ?>" <?= ($mois == $num) ? 'selected' : '' ?>>
+                    <?= $name ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
 
         <!-- ANNÉE -->
-        <div class="col-md-3">
-            <select name="year" class="form-select">
-                <?php for ($y = date('Y'); $y >= date('Y') - 5; $y--): ?>
-                    <option value="<?= $y ?>" <?= ($annee == $y) ? 'selected' : '' ?>>
-                        <?= $y ?>
-                    </option>
-                <?php endfor; ?>
-            </select>
-        </div>
+        <select name="year" class="form-select" style="max-width: 150px;">
+            <?php for ($y = date('Y'); $y >= date('Y') - 5; $y--): ?>
+                <option value="<?= $y ?>" <?= ($annee == $y) ? 'selected' : '' ?>>
+                    <?= $y ?>
+                </option>
+            <?php endfor; ?>
+        </select>
 
         <!-- BOUTONS -->
-        <div class="col-md-5 d-flex gap-2">
+        <div class="d-flex gap-2">
 
             <!-- FILTRER -->
-            <button type="submit" class="btn btn-primary" title="Filtrer">
+            <button type="submit" class="btn btn-primary">
                 <i class="bi bi-funnel"></i>
             </button>
 
-            <!-- EXPORT PDF -->
-            <a
-                href="../exports/export_stats_pdf.php?<?= http_build_query([
-                    'month' => $mois,
-                    'year'  => $annee
-                ]) ?>"
-                target="_blank"
-                class="btn btn-danger"
-                title="Exporter en PDF"
-            >
+            <!-- PDF -->
+            <a href="../exports/export_stats_pdf.php?<?= http_build_query([
+                'month' => $mois,
+                'year'  => $annee
+            ]) ?>" target="_blank" class="btn btn-danger">
                 <i class="bi bi-file-earmark-pdf"></i>
             </a>
 
-            <!-- EXPORT EXCEL -->
-            <a
-                href="../exports/export_stats_excel.php?<?= http_build_query([
-                    'month' => $mois,
-                    'year'  => $annee
-                ]) ?>"
-                class="btn btn-success"
-                title="Exporter en Excel"
-            >
+            <!-- EXCEL -->
+            <a href="../exports/export_stats_excel.php?<?= http_build_query([
+                'month' => $mois,
+                'year'  => $annee
+            ]) ?>" class="btn btn-success">
                 <i class="bi bi-file-earmark-excel"></i>
             </a>
 
@@ -280,6 +270,8 @@ if ($rdvYearPrev > 0) {
 
 
     <div class="row g-4 mt-2">
+
+ 
         <div class="col-md-6">
             <div class="chart-card">
                 <h6 class="mb-3 ">Rendez-vous par mois</h6>
