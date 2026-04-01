@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : jeu. 26 mars 2026 à 16:25
+-- Généré le : jeu. 02 avr. 2026 à 01:24
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -191,7 +191,21 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `description`, `ip_addre
 (146, 5, 'Création utilisateur', 'Création d’un medecin : medecin1', '127.0.0.1', NULL, 'super_admin', '2026-03-24 12:12:17'),
 (147, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 837, 'super_admin', '2026-03-24 12:24:38'),
 (148, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 9018, 'super_admin', '2026-03-24 14:54:59'),
-(149, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 612, 'admin', '2026-03-24 15:05:15');
+(149, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 612, 'admin', '2026-03-24 15:05:15'),
+(150, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 48, 'super_admin', '2026-03-30 09:45:01'),
+(151, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 25, 'admin', '2026-03-30 10:28:18'),
+(152, 5, 'Export PDF statistiques', 'Export RDV année 2026 en PDF', '127.0.0.1', NULL, 'super_admin', '2026-04-01 14:07:27'),
+(153, 5, 'Export Excel statistiques', 'Export des statistiques RDV en Excel', '127.0.0.1', NULL, 'super_admin', '2026-04-01 14:07:48'),
+(154, 5, 'Export PDF statistiques', 'Export RDV 03/2026 en PDF', '127.0.0.1', NULL, 'super_admin', '2026-04-01 14:08:32'),
+(155, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 582, 'super_admin', '2026-04-01 16:28:11'),
+(156, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 9, 'admin', '2026-04-01 16:28:24'),
+(157, 5, 'Export PDF', 'Export de l’historique des activités', '127.0.0.1', NULL, 'super_admin', '2026-04-01 16:30:19'),
+(158, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 574, 'super_admin', '2026-04-01 21:02:06'),
+(159, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-01 21:58:03'),
+(160, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 1956, 'super_admin', '2026-04-01 22:30:39'),
+(161, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-01 22:30:43'),
+(162, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-01 22:30:46'),
+(163, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-01 22:31:07');
 
 -- --------------------------------------------------------
 
@@ -85740,48 +85754,49 @@ INSERT INTO `rendezvs_history` (`idHistory`, `idRv`, `numeroDossierPatient`, `pa
 CREATE TABLE `service` (
   `codeService` varchar(6) NOT NULL,
   `designService` varchar(30) NOT NULL,
-  `image` varchar(255) DEFAULT NULL
+  `image` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `service`
 --
 
-INSERT INTO `service` (`codeService`, `designService`, `image`) VALUES
-('ana', 'ANAPATH', NULL),
-('andr', 'ANDROLOGIE', NULL),
-('card', 'CARDIOLOGIE', NULL),
-('cha_v', 'CHAMP VISUEL', NULL),
-('chir', 'CHIRURGIE GÉNÉRALE', NULL),
-('cur', 'CURIE', NULL),
-('dern', 'DERMATOLOGIE', NULL),
-('diet', 'DIETETIQUE', NULL),
-('doul', 'DOULEUR', NULL),
-('enbo', 'ENDOSCOPIE-BLOC', NULL),
-('ett_ad', 'ETT (ADULTE)', NULL),
-('ett_en', 'ETT (ENFANT)', NULL),
-('fogd', 'ENDOSCOPIE DIGESTIVE', NULL),
-('gas', 'GASTRO', NULL),
-('gassr', 'GASTRO SOIR', NULL),
-('hem', 'HEMATOLOGIE', NULL),
-('kadia', 'KADIA', NULL),
-('minf', 'MALADIE INFECTIEUSE', NULL),
-('neph', 'NEPHROLOGIE', NULL),
-('neur', 'NEUROLOGIE', NULL),
-('oncmed', 'ONCO-MÉDICALE', NULL),
-('onco', 'ONCOLOGIE', NULL),
-('opht', 'OPHTALMOLOGIE', NULL),
-('opthsr', 'OPHTALMOLOGIE SOIR', NULL),
-('orl', 'ORL', NULL),
-('orth', 'ORTHOPÉDIE', NULL),
-('pach', 'PACHYMÉTRIE', NULL),
-('ped', 'PEDIATRIE', NULL),
-('pneu', 'PNEUMOLOGIE', NULL),
-('rhum', 'RHUMATOLOGIE', NULL),
-('tens', 'TENS', NULL),
-('testt', 'TESTT', NULL),
-('uro', 'UROLOGIE', NULL),
-('urosr', 'UROLOGIE SOIR', NULL);
+INSERT INTO `service` (`codeService`, `designService`, `image`, `description`) VALUES
+('ana', 'ANAPATH', 'anapath.jpg', 'Analyse anatomopathologique des tissus pour diagnostiquer les maladies et anomalies cellulaires.'),
+('andr', 'ANDROLOGIE', 'andrologie.jpg', 'Prise en charge des troubles de l’appareil reproducteur masculin et de la fertilité.'),
+('card', 'CARDIOLOGIE', 'cardiologie.jpg', 'Consultation spécialisée pour les maladies du cœur et du système cardiovasculaire.'),
+('cha_v', 'CHAMP VISUEL', 'champ-visuel.jpg', 'Examen permettant d’évaluer la vision périphérique et détecter certaines pathologies oculaires.'),
+('chir', 'CHIRURGIE GÉNÉRALE', 'chirurgie-generale.jpg', 'Prise en charge chirurgicale des pathologies abdominales et générales.'),
+('cur', 'CURIE', 'curie.jpg', 'Service spécialisé en oncologie et traitement des cancers.'),
+('dern', 'DERMATOLOGIE', 'dermatologie.jpg', 'Diagnostic et traitement des maladies de la peau, des cheveux et des ongles.'),
+('diet', 'DIETETIQUE', 'dietetique.jpg', 'Suivi nutritionnel et conseils alimentaires adaptés aux besoins du patient.'),
+('doul', 'DOULEUR', 'douleur.jpg', 'Prise en charge des douleurs aiguës et chroniques avec approche spécialisée.'),
+('enbo', 'ENDOSCOPIE-BLOC', 'endoscopie-bloc.jpg', 'Service médical spécialisé avec prise en charge adaptée aux patients.'),
+('ett_ad', 'ETT (ADULTE)', 'ett-adulte.jpg', 'Échocardiographie transthoracique pour l’exploration cardiaque chez l’adulte.'),
+('ett_en', 'ETT (ENFANT)', 'ett-enfant.jpg', 'Échocardiographie adaptée à l’exploration cardiaque chez l’enfant.'),
+('fogd', 'ENDOSCOPIE DIGESTIVE', 'endoscopie-digestive.jpg', 'Examen permettant d’explorer le système digestif et détecter des anomalies.'),
+('gas', 'GASTRO', 'gastro.jpg', 'Prise en charge des maladies du système digestif.'),
+('gassr', 'GASTRO SOIR', 'gastro-soir.jpg', 'Consultations digestives en horaires de soirée pour plus de flexibilité.'),
+('hem', 'HEMATOLOGIE', 'hematologie.jpg', 'Diagnostic et traitement des maladies du sang.'),
+('kadia', 'KADIA', 'kadia.jpg', 'Consultation spécialisée selon les protocoles médicaux du service Kadia.'),
+('minf', 'MALADIE INFECTIEUSE', 'maladie-infectieuse.jpg', 'Prise en charge des infections et maladies transmissibles.'),
+('neph', 'NEPHROLOGIE', 'nephrologie.jpg', 'Suivi des maladies rénales et troubles du rein.'),
+('neur', 'NEUROLOGIE', 'neurologie.jpg', 'Diagnostic et traitement des maladies du système nerveux.'),
+('oncmed', 'ONCO-MÉDICALE', 'onco-medicale.jpg', 'Service médical spécialisé avec prise en charge adaptée aux patients.'),
+('onco', 'ONCOLOGIE', 'oncologie.jpg', 'Prise en charge globale des patients atteints de cancer.'),
+('opht', 'OPHTALMOLOGIE', 'ophtalmologie.jpg', 'Diagnostic et traitement des troubles de la vision et des yeux.'),
+('opthsr', 'OPHTALMOLOGIE SOIR', 'ophtalmologie-soir.jpg', 'Consultations ophtalmologiques en horaires de soirée.'),
+('orl', 'ORL', 'orl.jpg', 'Traitement des maladies de l’oreille, du nez et de la gorge.'),
+('orth', 'ORTHOPÉDIE', 'orthopedie.jpg', 'Prise en charge des troubles des os, articulations et muscles.'),
+('pach', 'PACHYMÉTRIE', 'pachymetrie.jpg', 'Mesure de l’épaisseur de la cornée pour le suivi oculaire.'),
+('ped', 'PEDIATRIE', 'pediatrie.jpg', 'Suivi médical des nourrissons, enfants et adolescents.'),
+('pneu', 'PNEUMOLOGIE', 'pneumologie.jpg', 'Diagnostic et traitement des maladies respiratoires.'),
+('rhum', 'RHUMATOLOGIE', 'rhumatologie.jpg', 'Prise en charge des maladies des articulations et des rhumatismes.'),
+('tens', 'TENS', 'tens.jpg', 'Traitement de la douleur par stimulation électrique transcutanée.'),
+('testt', 'TESTT', 'testt.jpg', 'Service de test et de validation médicale.'),
+('uro', 'UROLOGIE', 'urologie.jpg', 'Traitement des troubles urinaires et génitaux.'),
+('urosr', 'UROLOGIE SOIR', 'urologie-soir.jpg', 'Consultations urologiques en horaires de soirée.');
 
 -- --------------------------------------------------------
 
@@ -85979,7 +85994,7 @@ ALTER TABLE `task`
 -- AUTO_INCREMENT pour la table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=150;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=164;
 
 --
 -- AUTO_INCREMENT pour la table `agent`
