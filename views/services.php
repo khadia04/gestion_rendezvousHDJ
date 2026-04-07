@@ -278,7 +278,7 @@ $stmtJours = $db->prepare("
     <h4 class="mb-0">Liste des services</h4>
 
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addServiceModal">
-        <i class="bi bi-plus-circle"></i> Ajouter un service
+        <i class="bi bi-plus-circle" style="color: #f8f9fa;"></i> Ajouter un service
     </button>
 </div>
 

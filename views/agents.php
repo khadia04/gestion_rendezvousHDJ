@@ -1,5 +1,5 @@
 <?php
-
+ob_start();
 require_once '../middlewares/auth.php';
 require_once '../middlewares/csrf.php';
 require_once '../modele/databaseAgent.php';
@@ -8,6 +8,107 @@ require_once '../helpers/activity.php';
 
 requireRole(['super_admin']);
 requireAuth('super_admin');
+
+
+/* ========================= 
+   ACTIVATION
+========================= */
+if (isset($_POST['activate_agent'], $_POST['username'])) {
+
+    if ($_SESSION['role'] !== 'super_admin') {
+        $_SESSION['error'] = "Action non autorisée.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    try {
+
+        toggleAgentStatus($_POST['username'], 1);
+
+        logActivity(
+            $_SESSION['user_id'],
+            "Activation utilisateur",
+            "Utilisateur activé : " . $_POST['username'],
+            $_SESSION['role']
+        );
+
+        $_SESSION['success'] = "Utilisateur activé avec succès";
+
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Erreur lors de l’activation.";
+    }
+
+    header("Location: admin.php?page=agents");
+    exit;
+}
+
+
+/* ========================= 
+   DÉSACTIVATION
+========================= */
+if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
+
+    //  Vérifier que c'est un super admin
+    if ($_SESSION['role'] !== 'super_admin') {
+        $_SESSION['error'] = "Action non autorisée.";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    $username = $_POST['username'];
+    $role     = $_POST['role'];
+
+    //  Empêcher de désactiver un super admin
+    //  Empêcher auto désactivation
+    if ($username === $_SESSION['username']) {
+
+        logActivity(
+            $_SESSION['user_id'],
+            "Tentative interdite",
+            "Tentative de désactivation de soi-même",
+            $_SESSION['role']
+        );
+
+        $_SESSION['error'] = "Vous ne pouvez pas vous désactiver";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    //  Empêcher désactivation super admin
+    if ($role === 'super_admin') {
+
+        logActivity(
+            $_SESSION['user_id'],
+            "Tentative interdite",
+            "Tentative de désactivation d’un super admin : $username",
+            $_SESSION['role']
+        );
+
+        $_SESSION['error'] = "Impossible de désactiver un super admin";
+        header("Location: admin.php?page=agents");
+        exit;
+    }
+
+    //  CAS NORMAL
+    try {
+
+        toggleAgentStatus($username, 0);
+
+        logActivity(
+            $_SESSION['user_id'],
+            "Désactivation utilisateur",
+            "Utilisateur $username désactivé par " . $_SESSION['username'],
+            $_SESSION['role']
+        );
+
+        $_SESSION['success'] = "Utilisateur désactivé avec succès";
+
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Erreur lors de la désactivation.";
+    }
+    header("Location: admin.php?page=agents");
+    exit;
+}
 
   
 function formatRole($role) {
@@ -194,7 +295,7 @@ if (isset($_POST['add_agent'])) {
         $_SESSION['error'] = "Erreur : utilisateur déjà existant.";
     }
 
-    echo "<script>window.location.href='admin.php?page=agents';</script>";
+    header("Location: admin.php?page=agents");
     exit;
 }
 /* =========================
@@ -267,114 +368,14 @@ if (isset($_POST['edit_agent'])) {
 );
 
     $_SESSION['success'] = "Agent modifié avec succès";
+    header("Location: admin.php?page=agents");
+  exit;
     
 }
 
-/* ========================= 
-   ACTIVATION
-========================= */
-if (isset($_POST['activate_agent'], $_POST['username'], $_POST['role'])) {
 
-    if ($_SESSION['role'] !== 'super_admin') {
-        $_SESSION['error'] = "Action non autorisée.";
-        header("Location: admin.php?page=agents");
-        exit;
-    }
 
-    try {
 
-        toggleAgentStatus($_POST['username'], 1);
-
-        logActivity(
-            $_SESSION['user_id'],
-            "Activation utilisateur",
-            "Utilisateur activé : " . $_POST['username'],
-            $_SESSION['role']
-        );
-
-        $_SESSION['success'] = "Utilisateur activé avec succès";
-
-    } catch (Exception $e) {
-        $_SESSION['error'] = "Erreur lors de l’activation.";
-    }
-
-    header("Location: admin.php?page=agents");
-    exit;
-}
-
-/* ========================= 
-   DÉSACTIVATION
-========================= */
-if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
-
-    //  Vérifier que c'est un super admin
-    if ($_SESSION['role'] !== 'super_admin') {
-        $_SESSION['error'] = "Action non autorisée.";
-        header("Location: admin.php?page=agents");
-        exit;
-    }
-
-    $username = $_POST['username'];
-    $role     = $_POST['role'];
-
-    //  Empêcher de se désactiver soi-même
-    if ($username === $_SESSION['username']) {
-        $_SESSION['error'] = "Vous ne pouvez pas vous désactiver.";
-        header("Location: admin.php?page=agents");
-        exit;
-    }
-
-    //  Empêcher de désactiver un super admin
-    //  Empêcher auto désactivation
-    if ($username === $_SESSION['username']) {
-
-        logActivity(
-            $_SESSION['user_id'],
-            "Tentative interdite",
-            "Tentative de désactivation de soi-même",
-            $_SESSION['role']
-        );
-
-        $_SESSION['error'] = "Vous ne pouvez pas vous désactiver";
-        header("Location: admin.php?page=agents");
-        exit;
-    }
-
-    //  Empêcher désactivation super admin
-    if ($role === 'super_admin') {
-
-        logActivity(
-            $_SESSION['user_id'],
-            "Tentative interdite",
-            "Tentative de désactivation d’un super admin : $username",
-            $_SESSION['role']
-        );
-
-        $_SESSION['error'] = "Impossible de désactiver un super admin";
-        header("Location: admin.php?page=agents");
-        exit;
-    }
-
-    //  CAS NORMAL
-    try {
-
-        toggleAgentStatus($username, 0);
-
-        logActivity(
-            $_SESSION['user_id'],
-            "Désactivation utilisateur",
-            "Utilisateur $username désactivé par " . $_SESSION['username'],
-            $_SESSION['role']
-        );
-
-        $_SESSION['success'] = "Utilisateur désactivé avec succès";
-
-    } catch (Exception $e) {
-        $_SESSION['error'] = "Erreur lors de la désactivation.";
-    }
-    header("Location: admin.php?page=agents");
-    exit;
-}
 
 ?>
 
@@ -383,26 +384,35 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
     <div class="container-fluid" >
         <h3 class="mb-4">Gestion des agents</h3>
 
-        <?php if (!empty($_SESSION['success'])): ?>
-        <div class="alert alert-success alert-dismissible fade show">
-        <i class="bi bi-check-circle"></i>
-        <?= $_SESSION['success']; unset($_SESSION['success']); ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <?php endif; ?>
 
-<?php if (!empty($_SESSION['error'])): ?>
-    <div class="alert alert-danger alert-dismissible fade show">
-        <i class="bi bi-exclamation-triangle"></i>
-        <?= $_SESSION['error']; unset($_SESSION['error']); ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+    <!-- 🔥 ALERT MODERNE -->
+    <div>
+        <?php if (!empty($_SESSION['success'])): ?>
+            <div class="custom-alert success">
+                <i class="bi bi-check-circle-fill"></i>
+                <span><?= htmlspecialchars($_SESSION['success']) ?></span>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+
+        <?php if (!empty($_SESSION['error'])): ?>
+            <div class="custom-alert error">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span><?= htmlspecialchars($_SESSION['error']) ?></span>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
     </div>
-<?php endif; ?>
-    <div class="d-flex justify-content-end mb-3">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAgentModal">
-            <i class="bi bi-person-plus"></i> Ajouter un agent
-        </button>
-    </div>
+
+    <!-- BOUTON -->
+    
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAgentModal">
+      <i class="bi bi-person-plus" style="color: #f8f9fa;"></i> Ajouter un agent
+    </button>
+
+</div>
 <form method="GET" action="admin.php" style="margin: 10px;">
     
     <!-- garder la page agents -->
@@ -802,8 +812,9 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
             <div class="col-md-6">
               <label class="form-label">Rôle</label>
               <select name="role" class="form-select">
-                <option value="agent">Agent</option>
                 <option value="admin">Admin</option>
+                <option value="agent">Agent</option>
+                <option value="medecin">Medecin</option>
               </select>
             </div>
 
@@ -940,14 +951,7 @@ if (isset($_POST['deactivate_agent'], $_POST['username'], $_POST['role'])) {
 
         <div class="modal-header">
           <h5 class="modal-title text-danger">
-            <i class="bi bi-person-x"></i> 
-            <button 
-              data-username="<?= $agent['username'] ?>"
-              data-role="<?= $agent['role'] ?>"
-              data-bs-toggle="modal"
-              data-bs-target="#confirmDeactivateModal">
-              Désactiver
-            </button>
+          <i class="bi bi-person-x"></i> Désactiver l’utilisateur
           </h5>
           
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -985,9 +989,10 @@ const deactivateModal = document.getElementById('confirmDeactivateModal');
 
 if (activateModal) {
   activateModal.addEventListener('show.bs.modal', e => {
-    document.getElementById('activateUsername').value =
-      e.relatedTarget.dataset.username;
-  });
+  document.getElementById('activateUsername').value =
+    e.relatedTarget.dataset.username;
+
+});
 }
 
 if (deactivateModal) {
@@ -1033,8 +1038,7 @@ if (editModal) {
     // Services
     const username = button.getAttribute('data-username');
     const servicesBox = document.getElementById('edit-services-container');
-    const checkboxes = servicesBox.querySelectorAll('.edit-service-checkbox');
-
+    const checkboxes = servicesBox.querySelectorAll('.service-checkbox');
     // reset
     checkboxes.forEach(cb => cb.checked = false);
 
@@ -1072,8 +1076,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const form = modal.querySelector('form');
   const roleSelect = modal.querySelector('select[name="role"]');
-  const servicesBox = document.getElementById('services-container');
-  const servicesError = document.getElementById('services-error');
+  const servicesBox = document.getElementById('add-services-container');
+  const servicesError = servicesBox.querySelector('.services-error');
 
   if (!form || !roleSelect || !servicesBox || !servicesError) return;
 
@@ -1254,60 +1258,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const validIcon = input.parentElement.querySelector('.phone-valid-icon');
 
-    const iti = window.intlTelInput(input, {
+    const itiInstance = window.intlTelInput(input, {
       initialCountry: "sn",
-      separateDialCode: true,
-      nationalMode: true,
+      separateDialCode: false,
+      nationalMode: false,
       autoPlaceholder: "polite",
-      utilsScript:
-        "https://cdn.jsdelivr.net/npm/intl-tel-input@18.3.5/build/js/utils.js",
+      utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.3.5/build/js/utils.js",
     });
 
     function isValidSenegalNumber(fullNumber) {
-      // Nettoyage
       const num = fullNumber.replace(/\s+/g, '');
 
-      // +221XXXXXXXXX
       if (!num.startsWith('+221')) return false;
 
-      const local = num.substring(4); // après +221
+      const local = num.substring(4);
 
       if (local.length !== 9) return false;
 
       const prefix = local.substring(0, 2);
 
-      const validPrefixes = [
-        '70','71','75','76','77','78','33'
-      ];
+      const validPrefixes = ['70','71','75','76','77','78','33'];
 
       return validPrefixes.includes(prefix);
     }
 
     function validate() {
-      const fullNumber = iti.getNumber();
+      const fullNumber = itiInstance.getNumber();
 
       if (isValidSenegalNumber(fullNumber)) {
         input.classList.remove('is-invalid');
         input.classList.add('is-valid');
-        validIcon.classList.remove('d-none');
+        validIcon?.classList.remove('d-none');
       } else {
         input.classList.remove('is-valid');
         input.classList.add('is-invalid');
-        validIcon.classList.add('d-none');
+        validIcon?.classList.add('d-none');
       }
     }
 
     input.addEventListener('input', validate);
     input.addEventListener('blur', validate);
 
-    return iti;
+    return itiInstance;
   }
 
-  //  Initialisation ADD & EDIT
+  // INIT
   const itiAdd  = initPhone('telephone_agent_add');
   const itiEdit = initPhone('telephone_agent_edit');
 
-  // Sauvegarde du numéro complet à la soumission
+  // SUBMIT FORM
   document.querySelectorAll('form').forEach(form => {
     form.addEventListener('submit', e => {
       const input = form.querySelector('[type="tel"]');
@@ -1315,6 +1314,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!input || !hidden) return;
 
       const iti = input.id.includes('add') ? itiAdd : itiEdit;
+
+      if (!iti) return;
+
       const fullNumber = iti.getNumber();
 
       if (!fullNumber) {
@@ -1327,10 +1329,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-});
+  
 
+});
 
 
 </script>
 
+<script>
+setTimeout(() => {
+    document.querySelectorAll('.custom-alert').forEach(el => {
+        el.style.opacity = "0";
+        el.style.transform = "translateX(-20px)";
+    });
+}, 3000);
+</script>
 
+
+<?php ob_end_flush(); ?>

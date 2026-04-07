@@ -363,6 +363,7 @@ body {
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     transition: 0.3s ease;
 }
@@ -3464,6 +3465,7 @@ input.form-control {
 /* Texte bien aligné */
 .day-switch span {
   line-height: 1;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -5394,7 +5396,9 @@ body.patients.dark.dark-dashboard #editPatientModal .form-select{
 }
 
 .overlay-hover {
+    -webkit-backdrop-filter: blur(3px);
     backdrop-filter: blur(3px);
+    
 }
 
 .stat-card {
@@ -5599,3 +5603,395 @@ form .btn {
     height: 34px;
     padding: 0 10px;
 }
+
+
+body.accueil.dark-dashboard .proverbe-box {
+    background: linear-gradient(145deg, #1e1e2f, #121222);
+    color: #f1f1f1;
+}
+
+body.accueil.dark-dashboard .modal-content {
+    background: #1e1e2f;
+    color: #f1f1f1;
+}
+
+/* CLOSE BUTTON DARK */
+body.accueil.dark-dashboard .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+    background-color: rgba(255,255,255,0.08);
+    border-radius: 50%;
+    padding: 8px;
+    transition: all 0.3s ease;
+}
+
+body.accueil.dark-dashboard .btn-close:hover {
+    opacity: 1;
+    background-color: #0d6efd;
+    transform: rotate(90deg);
+}
+
+body.accueil:not(.dark-dashboard) .btn-close {
+    background-color: rgba(0,0,0,0.05);
+    border-radius: 50%;
+    padding: 8px;
+}
+
+@media (max-width: 768px) {
+    .proverbe-box {
+        padding: 20px;
+        border-radius: 15px;
+    }
+
+    .proverbe-box h5 {
+        font-size: 16px;
+    }
+
+    .proverbe-box p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    .modal-content {
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-card {
+        margin-bottom: 15px;
+    }
+}
+
+/* BOUTON ACCUEIL DARK */
+body.dark-dashboard .topbar .btn {
+    background: #1e1e2f;
+    color: #f1f1f1;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+body.dark-dashboard .topbar .btn:hover {
+    background: #0d6efd;
+    color: #fff;
+}
+
+
+
+@media (max-width: 768px) {
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 15px;
+    }
+
+    /* titre */
+    .topbar h2 {
+        font-size: 16px;
+        margin: 0;
+    }
+
+    /* bloc gauche */
+    .topbar > div:first-child {
+        gap: 8px;
+    }
+
+    /* bloc droite */
+    .topbar .ms-auto {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* bouton accueil */
+    .accueil-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .accueil-btn i {
+        margin-right: 0;
+    }
+
+    /* cacher texte accueil si trop petit */
+    .accueil-btn span {
+        display: none;
+    }
+
+    /* avatar */
+    .topbar-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    /* cacher nom utilisateur */
+    .topbar-user {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .topbar h2 {
+        display: none;
+    }
+}
+
+/* FORM FILTRE DASHBOARD */
+body.dark-dashboard #statsFilterForm {
+    background: #1e1e2f;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+/* SELECT */
+body.dark-dashboard #statsFilterForm .form-select {
+    background-color: #121222;
+    color: #f1f1f1;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* option dropdown */
+body.dark-dashboard #statsFilterForm .form-select option {
+    background: #121222;
+    color: #fff;
+}
+
+/* focus */
+body.dark-dashboard #statsFilterForm .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+}
+
+/* SELECT DASHBOARD */
+#statsFilterForm .form-select {
+    min-width: 150px;
+    height: 45px;
+    border-radius: 12px;
+    font-size: 14px;
+    padding: 0 10px;
+}
+
+@media (max-width: 768px) {
+    #statsFilterForm {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #statsFilterForm .form-select {
+        width: 100%;
+    }
+}
+
+body.dark-dashboard #statsFilterForm {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* BOUTONS FILTRE DASHBOARD */
+#statsFilterForm .btn {
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 10px;
+}
+
+/* ICÔNES */
+#statsFilterForm .btn i {
+    font-size: 20px;
+}
+
+body.dark-dashboard #statsFilterForm .btn {
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 10px;
+}
+
+body.dark-dashboard #statsFilterForm .btn i {
+    font-size: 20px;
+}
+
+#statsFilterForm .btn {
+    flex-shrink: 0;
+}
+
+#statsFilterForm .btn {
+    transition: all 0.25s ease;
+}
+
+#statsFilterForm .btn:hover {
+    transform: scale(1.05);
+}
+
+/* DARK MODE - bouton ajouter agent */
+body.dark-dashboard.agents .btn-primary i {
+    color: #ffffff;
+}
+
+body.dark-dashboard.agents select .form-select,
+body.dark-dashboard.agents input.form-control {
+    height: 55px;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 14px;
+}
+
+.dark-dashboard.agents select .form-select,
+.dark-dashboard.agents input.form-control {
+    height: 55px;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 14px;
+}
+
+/* =========================
+   AGENTS - SELECT STYLE
+========================= */
+body.dark-dashboard.agents .form-select,
+body.dark-dashboard.agents .form-control {
+    height: 45px !important;
+    border-radius: 10px !important;
+    padding: 0 12px !important;
+    font-size: 14px !important;
+
+    background: #1e1e2f !important;
+    color: #f1f1f1 !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+/* =========================
+   AGENTS - SELECT GLOBAL
+========================= */
+body.agents .form-select {
+    height: 45px !important;
+    padding: 0 12px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+}
+
+/* =========================
+   DARK MODE
+========================= */
+body.dark-dashboard.agents .form-select {
+    background-color: #1e1e2f !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+body.agents .form-control {
+    height: 45px !important;
+}
+
+.phone-wrapper {
+    position: relative;
+}
+
+.iti {
+    width: 100%;
+}
+
+.iti input {
+    padding-left: 90px !important;
+}
+
+.iti__flag-container {
+    z-index: 5;
+}
+
+.phone-valid-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* ===== ALERT MODERNE ===== */
+.custom-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px 16px;
+    border-radius: 10px;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    animation: slideFade 0.4s ease;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* SUCCESS */
+.custom-alert.success {
+    background: #ecfdf5;
+    color: #059669;
+    border-left: 4px solid #10b981;
+}
+
+/* ERROR */
+.custom-alert.error {
+    background: #fef2f2;
+    color: #dc2626;
+    border-left: 4px solid #ef4444;
+}
+
+/* ICON */
+.custom-alert i {
+    font-size: 18px;
+}
+
+/* ANIMATION */
+@keyframes slideFade {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+body.services .content-wrapper .form-select {
+    height: 45px !important;
+    font-size: 14px !important;
+    border-radius: 10px !important;
+    padding: 0 14px !important;
+}
+
+body.services.dark:not(.dark-dashboard) .content-wrapper .form-select {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border: 1px solid #d1d5db !important;
+}
+
+.services-header h4 {
+    font-size: 20px;
+}
+
+.alert-modern {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.alert-modern.success {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+

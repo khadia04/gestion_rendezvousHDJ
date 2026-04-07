@@ -236,7 +236,7 @@ if ($rdvYearPrev > 0) {
 
             <!-- FILTRER -->
             <button type="submit" class="btn btn-primary">
-                <i class="bi bi-funnel"></i>
+                <i class="bi bi-funnel" title="Filtrer"></i>
             </button>
 
             <!-- PDF -->
@@ -244,7 +244,7 @@ if ($rdvYearPrev > 0) {
                 'month' => $mois,
                 'year'  => $annee
             ]) ?>" target="_blank" class="btn btn-danger">
-                <i class="bi bi-file-earmark-pdf"></i>
+                <i class="bi bi-file-earmark-pdf" title="Export en PDF"></i>
             </a>
 
             <!-- EXCEL -->
@@ -252,7 +252,7 @@ if ($rdvYearPrev > 0) {
                 'month' => $mois,
                 'year'  => $annee
             ]) ?>" class="btn btn-success">
-                <i class="bi bi-file-earmark-excel"></i>
+                <i class="bi bi-file-earmark-excel" title="Export en Excel"></i>
             </a>
 
         </div>
