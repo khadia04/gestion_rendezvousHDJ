@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once '../middlewares/auth.php';
 
 // Vérifier si connecté
@@ -138,22 +139,6 @@ if (
     <main class="main-content">
        
 
-<?php if (!empty($_SESSION['success'])): ?>
-    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
-        <?= htmlspecialchars($_SESSION['success']) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <?php unset($_SESSION['success']); ?>
-<?php endif; ?>
-
-<?php if (!empty($_SESSION['error'])): ?>
-    <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
-        <?= htmlspecialchars($_SESSION['error']) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <?php unset($_SESSION['error']); ?>
-<?php endif; ?>
-
 
 <div class="dashboard-container">
 
@@ -247,13 +232,12 @@ if (
 
         <!-- TOPBAR -->
         <header class="topbar">
+            
             <div class="theme-toggle-dashboard" onclick="toggleDashboardTheme()">
                 <i id="dashboardThemeIcon" class="bi bi-sun-fill"></i>
             </div>
 
-            <?php if ($page === 'accueil'): ?>
                 <h2>Bienvenue</h2>
-            <?php endif; ?>
 
             <div class="d-flex align-items-center gap-3">
 
@@ -363,4 +347,5 @@ function canAccess($roles) {
 
 
 </body>
+<?php ob_end_flush(); ?>
 </html>

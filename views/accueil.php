@@ -170,7 +170,7 @@ if (in_array($role, ['agent', 'medecin'])) {
     $nomImage = slugifyService($service['designService']);
 ?>
 
-<div class="col-md-4">
+<div class="col-lg-4 col-md-6 col-12">
     <div class="service-card-image">
 
         <img src="/rendezvous/assets/img/services/<?= htmlspecialchars($service['image'] ?? 'default.jpg') ?>">
