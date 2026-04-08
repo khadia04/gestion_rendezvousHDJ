@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : jeu. 02 avr. 2026 à 01:24
+-- Généré le : mer. 08 avr. 2026 à 19:09
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -205,7 +205,85 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `description`, `ip_addre
 (160, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 1956, 'super_admin', '2026-04-01 22:30:39'),
 (161, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-01 22:30:43'),
 (162, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-01 22:30:46'),
-(163, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-01 22:31:07');
+(163, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-01 22:31:07'),
+(164, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-07 10:16:41'),
+(165, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-07 14:34:28'),
+(166, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-07 15:36:13'),
+(167, 5, 'Modification d’un agent', 'Modification agent : medecin1', '127.0.0.1', NULL, 'super_admin', '2026-04-07 16:10:12'),
+(168, 5, 'Modification d’un agent', 'Modification agent : medecin1', '127.0.0.1', NULL, 'super_admin', '2026-04-07 16:16:55'),
+(169, 5, 'Modification d’un agent', 'Modification agent : medecin1', '127.0.0.1', NULL, 'super_admin', '2026-04-07 16:26:01'),
+(170, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-08 09:21:17'),
+(171, 5, 'Création utilisateur', 'Création d’un medecin : uik', '127.0.0.1', NULL, 'super_admin', '2026-04-08 09:25:16'),
+(172, 5, 'Création utilisateur', 'Création d’un medecin : dtyu', '127.0.0.1', NULL, 'super_admin', '2026-04-08 09:41:00'),
+(173, 5, 'Création utilisateur', 'Création d’un medecin : retz', '127.0.0.1', NULL, 'super_admin', '2026-04-08 09:51:16'),
+(174, 5, 'Création RDV', 'RDV créé | Patient: MARIEME  SALL (#00) | Type: Index | Service: ana | Date: 2026-04-08 | Agent: khardiata004@gmail.com | Role: super_admin', '127.0.0.1', NULL, 'super_admin', '2026-04-08 10:36:25'),
+(175, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 4571, 'super_admin', '2026-04-08 10:37:28'),
+(176, 30, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'admin', '2026-04-08 10:37:34'),
+(177, 30, 'Mise à jour du profil', 'Modification des informations personnelles', '127.0.0.1', NULL, 'admin', '2026-04-08 10:38:34'),
+(178, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 533, 'admin', '2026-04-08 10:46:27'),
+(179, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-08 10:46:31'),
+(180, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 22, 'super_admin', '2026-04-08 10:46:53'),
+(181, 30, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'admin', '2026-04-08 10:46:59'),
+(182, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 233, 'admin', '2026-04-08 10:50:52'),
+(183, 31, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'medecin', '2026-04-08 10:51:09'),
+(184, 31, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 47, 'medecin', '2026-04-08 10:51:55'),
+(185, 31, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'medecin', '2026-04-08 10:52:04'),
+(186, 31, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 4, 'medecin', '2026-04-08 10:52:08'),
+(187, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-08 10:53:18'),
+(188, 5, 'Modification d’un agent', 'Modification agent : medecin1', '127.0.0.1', NULL, 'super_admin', '2026-04-08 10:53:35'),
+(189, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 42, 'super_admin', '2026-04-08 10:53:59'),
+(190, 31, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'medecin', '2026-04-08 10:54:04'),
+(191, 31, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 149, 'medecin', '2026-04-08 10:56:33'),
+(192, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-08 10:56:37'),
+(193, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 275, 'super_admin', '2026-04-08 11:01:12'),
+(194, 31, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'medecin', '2026-04-08 11:01:19'),
+(195, 31, 'Mise à jour du profil', 'Modification des informations personnelles', '127.0.0.1', NULL, 'medecin', '2026-04-08 11:01:40'),
+(196, 31, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 2044, 'medecin', '2026-04-08 11:35:22'),
+(197, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-08 11:35:27'),
+(198, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 16, 'super_admin', '2026-04-08 11:35:43'),
+(199, 31, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'medecin', '2026-04-08 11:35:47'),
+(200, 31, 'Changement de mot de passe', 'Modification depuis le profil (utilisateur connecté)', '127.0.0.1', NULL, 'medecin', '2026-04-08 11:57:05'),
+(201, 31, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'medecin', '2026-04-08 12:50:43'),
+(202, 31, 'Changement de mot de passe', 'Modification depuis le profil (utilisateur connecté)', '127.0.0.1', NULL, 'medecin', '2026-04-08 13:14:09'),
+(203, 31, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 1452, 'medecin', '2026-04-08 13:14:55'),
+(204, 30, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'admin', '2026-04-08 13:15:00'),
+(205, 30, 'Changement de mot de passe', 'Modification depuis le profil (utilisateur connecté)', '127.0.0.1', NULL, 'admin', '2026-04-08 13:15:19'),
+(206, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 44, 'admin', '2026-04-08 13:15:44'),
+(207, 30, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'admin', '2026-04-08 13:15:46'),
+(208, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 4, 'admin', '2026-04-08 13:15:50'),
+(209, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-08 13:15:54'),
+(210, 5, 'Changement de mot de passe', 'Modification depuis le profil (utilisateur connecté)', '127.0.0.1', NULL, 'super_admin', '2026-04-08 13:16:48'),
+(211, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 66, 'super_admin', '2026-04-08 13:17:00'),
+(212, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-08 13:17:02'),
+(213, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 5, 'super_admin', '2026-04-08 13:17:07'),
+(214, 30, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'admin', '2026-04-08 13:17:11'),
+(215, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 3, 'admin', '2026-04-08 13:17:14'),
+(216, 30, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'admin', '2026-04-08 13:17:16'),
+(217, 30, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 2, 'admin', '2026-04-08 13:17:18'),
+(218, 31, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'medecin', '2026-04-08 13:17:22'),
+(219, 31, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 140, 'medecin', '2026-04-08 13:19:42'),
+(220, 5, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'super_admin', '2026-04-08 13:19:46'),
+(221, 5, 'Création utilisateur', 'Création d’un agent : Agent 1', '127.0.0.1', NULL, 'super_admin', '2026-04-08 13:20:56'),
+(222, 5, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 89, 'super_admin', '2026-04-08 13:21:14'),
+(223, 35, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'agent', '2026-04-08 13:21:21'),
+(224, 35, 'Changement de mot de passe', 'Modification depuis le profil (utilisateur connecté)', '127.0.0.1', NULL, 'agent', '2026-04-08 13:21:44'),
+(225, 35, 'Changement de mot de passe', 'Modification depuis le profil (utilisateur connecté)', '127.0.0.1', NULL, 'agent', '2026-04-08 13:22:59'),
+(226, 35, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 116, 'agent', '2026-04-08 13:23:17'),
+(227, 35, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'agent', '2026-04-08 13:23:24'),
+(228, 35, 'Mise à jour du profil', 'Modification des informations personnelles', '127.0.0.1', NULL, 'agent', '2026-04-08 13:25:15'),
+(229, 35, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 961, 'agent', '2026-04-08 13:39:25'),
+(230, 31, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'medecin', '2026-04-08 13:39:29'),
+(231, 31, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 181, 'medecin', '2026-04-08 13:42:30'),
+(232, 35, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'agent', '2026-04-08 13:42:35'),
+(233, 35, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 210, 'agent', '2026-04-08 13:46:05'),
+(234, 35, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'agent', '2026-04-08 13:46:08'),
+(235, 35, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'agent', '2026-04-08 16:51:14'),
+(236, 35, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 18, 'agent', '2026-04-08 16:51:32'),
+(237, 35, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'agent', '2026-04-08 16:51:34'),
+(238, 35, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 577, 'agent', '2026-04-08 17:01:11'),
+(239, 31, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'medecin', '2026-04-08 17:01:16'),
+(240, 31, 'Déconnexion', 'Déconnexion du compte', '127.0.0.1', 434, 'medecin', '2026-04-08 17:08:29'),
+(241, 35, 'Connexion', 'Connexion au tableau de bord', '127.0.0.1', NULL, 'agent', '2026-04-08 17:08:33');
 
 -- --------------------------------------------------------
 
@@ -237,10 +315,11 @@ CREATE TABLE `agent` (
 
 INSERT INTO `agent` (`id`, `username`, `photo`, `email`, `prenom_agent`, `nom_agent`, `telephone_agent`, `password`, `status`, `role`, `created_at`, `updated_at`, `failed_attempts`, `locked_until`, `must_change_password`) VALUES
 (1, 'accueil.hdj', NULL, 'accueil@chndj.sn', 'HDJ 1', ' ', '221338398585', '', 1, 'agent', '2025-12-17 14:51:23', '2026-03-24 11:38:27', 1, NULL, 1),
-(30, 'admin1', NULL, 'khadia04@gmail.com', 'admin', 'HDJ', '+221774279096', '$2y$10$Xs18uonUmm8zEwFSOVAL0eZPYgLohF94XFEU3lTTRpLPSXCyPHNsS', 1, 'admin', '2026-03-23 15:43:26', '2026-03-24 11:39:14', 0, NULL, 1),
+(30, 'admin1', 'admin_30.jpg', 'khadia04@gmail.com', 'admin', 'HDJ', '+221774279096', '$2y$10$0MxaMuI58sD4Ku1rhw/lRulvMUeXvScEswSZHqoyZwN8qX1RDej9m', 1, 'admin', '2026-03-23 15:43:26', '2026-04-08 13:15:19', 0, NULL, 0),
+(35, 'Agent 1', 'admin_35.jpg', 'agent1@gmail.com', 'Agent', '1', '+221776529875', '$2y$10$afxUDv.SSipp.nbP8yJhcOYW1HC.YIU56XjM17bSlDYgCoXw4aYZm', 1, 'agent', '2026-04-08 13:20:56', '2026-04-08 13:25:15', 0, NULL, 0),
 (10, 'ISSA', NULL, 'issaseckkane@gmail.com', 'Issa Seck', 'Kane', '+221776812170', '$2y$10$xTishXJNIFtewkVeruvFG.6KSxRf1BrFD1IYu5moYbjUMzsHRJQqi', 1, 'super_admin', '2026-02-14 15:15:34', '2026-03-18 16:25:49', 2, NULL, 1),
-(5, 'khadia', 'admin_5.jpg', 'khardiata004@gmail.com', 'Khardiata', 'Thiam', '784279096', '$2y$10$EbhgjgqJQkF4SuUJQSyyj.nV2c5mgJ8UeENlpF.xE95aM9xmIUcgS', 1, 'super_admin', '2025-12-17 20:17:09', '2026-03-18 16:25:59', 0, NULL, 1),
-(31, 'medecin1', NULL, 'medecin1@gmail.com', 'Medecin', '1', '+221764279096', '$2y$10$aGSkZJYPzUdZdYrlpRq5I.iat/w4sIzg7h5SUKFkFU1qgO.HlbYt2', 1, 'medecin', '2026-03-24 12:12:17', '2026-03-24 12:12:17', 0, NULL, 1);
+(5, 'khadia', 'admin_5.jpg', 'khardiata004@gmail.com', 'Khardiata', 'Thiam', '784279096', '$2y$10$dVAReWn4k811tJMRhxfNueWBH8AA8/Oe7Q8wtTX9s5LQXr1JMPpMe', 1, 'super_admin', '2025-12-17 20:17:09', '2026-04-08 13:16:48', 0, NULL, 0),
+(31, 'medecin1', 'admin_31.jpg', 'medecin1@gmail.com', 'Medecin', '1', '+221764279096', '$2y$10$30osjUBRFsjQklVNiVg27OSB7thbqxLXjwJXjNLE07BpkWGTyKFy2', 1, 'medecin', '2026-03-24 12:12:17', '2026-04-08 13:14:09', 0, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -291,7 +370,8 @@ INSERT INTO `agent_logs` (`id`, `agent_username`, `user_id`, `action`, `details`
 (24, 'khadia04@gmail.com', NULL, 'CREATION_RDV', 'Service: kadia | Date: 2026-03-17', NULL, NULL, NULL, '2026-03-17 13:04:44'),
 (25, 'khadia04@gmail.com', NULL, 'MODIFICATION_RDV', 'Service: testt | Date: 2026-03-27', NULL, NULL, NULL, '2026-03-17 13:06:42'),
 (26, 'khadia04@gmail.com', NULL, 'CREATION_RDV', 'Service: ana | Date: 2026-03-18', NULL, NULL, NULL, '2026-03-17 17:11:44'),
-(27, 'khadia04@gmail.com', NULL, 'CREATION_RDV', 'Service: ana | Date: 2026-03-18', NULL, NULL, NULL, '2026-03-17 17:18:32');
+(27, 'khadia04@gmail.com', NULL, 'CREATION_RDV', 'Service: ana | Date: 2026-03-18', NULL, NULL, NULL, '2026-03-17 17:18:32'),
+(28, 'khardiata004@gmail.com', NULL, 'CREATION_RDV', 'Agent: khardiata004@gmail.com | Role: super_admin | Service: ana | Date: 2026-04-08', NULL, NULL, NULL, '2026-04-08 10:36:25');
 
 -- --------------------------------------------------------
 
@@ -302,8 +382,20 @@ INSERT INTO `agent_logs` (`id`, `agent_username`, `user_id`, `action`, `details`
 CREATE TABLE `agent_service` (
   `id` int(11) NOT NULL,
   `agent_username` varchar(30) NOT NULL,
-  `codeService` varchar(60) NOT NULL
+  `codeService` varchar(60) NOT NULL,
+  `agent_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `agent_service`
+--
+
+INSERT INTO `agent_service` (`id`, `agent_username`, `codeService`, `agent_id`) VALUES
+(22, 'medecin1', 'ana', NULL),
+(23, 'medecin1', 'kadia', NULL),
+(24, 'medecin1', 'testt', NULL),
+(25, 'Agent 1', 'kadia', NULL),
+(26, 'Agent 1', 'testt', NULL);
 
 -- --------------------------------------------------------
 
@@ -70989,7 +71081,8 @@ INSERT INTO `rendezvs` (`idRv`, `numeroDossierPatient`, `codeService`, `dateDema
 (45243, 12097, 'testt', '2026-03-16', '2026-03-27', NULL),
 (45244, 12097, 'kadia', '2026-03-17', '2026-03-18', NULL),
 (45245, 12097, 'kadia', '2026-03-17', '2026-03-17', NULL),
-(45246, 12097, 'ana', '2026-03-17', '2026-03-18', NULL);
+(45246, 12097, 'ana', '2026-03-17', '2026-03-18', NULL),
+(45247, 0, 'ana', '2026-04-08', '2026-04-08', NULL);
 
 -- --------------------------------------------------------
 
@@ -85743,7 +85836,8 @@ INSERT INTO `rendezvs_history` (`idHistory`, `idRv`, `numeroDossierPatient`, `pa
 (22188, 0, 12097, NULL, 'kadia', '2026-03-17', '2026-03-17', 'index', NULL, 'rendezvs', NULL),
 (22189, 0, 12097, NULL, 'testt', '2026-03-17', '2026-03-27', 'index', NULL, 'rendezvs', NULL),
 (22190, 0, 12097, NULL, 'ana', '2026-03-17', '2026-03-18', 'index', NULL, 'rendezvs', NULL),
-(22191, 0, 0, 16345, 'ana', '2026-03-17', '2026-03-18', 'noindex', '221776543280', 'patientnoindex', NULL);
+(22191, 0, 0, 16345, 'ana', '2026-03-17', '2026-03-18', 'noindex', '221776543280', 'patientnoindex', NULL),
+(22192, 0, 0, NULL, 'ana', '2026-04-08', '2026-04-08', 'index', NULL, 'rendezvs', NULL);
 
 -- --------------------------------------------------------
 
@@ -85994,25 +86088,25 @@ ALTER TABLE `task`
 -- AUTO_INCREMENT pour la table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=164;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=242;
 
 --
 -- AUTO_INCREMENT pour la table `agent`
 --
 ALTER TABLE `agent`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT pour la table `agent_logs`
 --
 ALTER TABLE `agent_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT pour la table `agent_service`
 --
 ALTER TABLE `agent_service`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT pour la table `feedback`
@@ -86042,13 +86136,13 @@ ALTER TABLE `patientnoindex`
 -- AUTO_INCREMENT pour la table `rendezvs`
 --
 ALTER TABLE `rendezvs`
-  MODIFY `idRv` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45247;
+  MODIFY `idRv` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45248;
 
 --
 -- AUTO_INCREMENT pour la table `rendezvs_history`
 --
 ALTER TABLE `rendezvs_history`
-  MODIFY `idHistory` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22192;
+  MODIFY `idHistory` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22193;
 
 --
 -- AUTO_INCREMENT pour la table `service_config`
