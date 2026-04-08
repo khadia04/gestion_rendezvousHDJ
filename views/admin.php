@@ -8,6 +8,30 @@ require_once '../helpers/activity.php';
 requireAuth();
 requireRole(['super_admin', 'admin', 'medecin', 'agent']);
 
+
+/* =========================
+   FORCE CHANGEMENT MDP
+========================= */
+if (
+    isset($_SESSION['user_id']) &&
+    isset($_SESSION['role'])
+) {
+    $db = getConnection();
+
+    $stmt = $db->prepare("SELECT must_change_password FROM agent WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
+
+    if (
+        $user &&
+        $user['must_change_password'] == 1 &&
+        ($_GET['page'] ?? '') !== 'profile'
+    ) {
+        header("Location: admin.php?page=profile&tab=security&force=1");
+        exit;
+    }
+}
+
 /* =========================
    TRAITEMENT SERVICES (POST)
 ========================= */

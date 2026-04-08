@@ -92,32 +92,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 }
 
 /* =========================================================
-   RÉCUPÉRATION DES DONNÉES pour reset obligatoire de mot de passe
+   AFFICHAGE PROFIL
 ========================================================= */
+if (isset($_GET['force'])) {
+    echo '
+    <div class="alert alert-warning d-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm rounded-3" 
+        style="border-left: 4px solid #ffc107; max-width: 600px; font-size: 13.5px;">
+        
+        <span style="font-size: 16px;"></span>
+        
+        <div>
+            <strong style="font-size: 16px;">Sécurisez votre compte</strong><br>
+            <small class="text-muted" style="font-size: 12px;">
+                Veuillez changer votre mot de passe pour continuer.
+            </small>
+        </div>
 
-if (isset($_POST['change_password'])) {
-
-    $new = $_POST['new_password'];
-    $confirm = $_POST['confirm_password'];
-
-    if ($new !== $confirm) {
-        $_SESSION['error'] = "Les mots de passe ne correspondent pas";
-    } else {
-
-        $hash = password_hash($new, PASSWORD_DEFAULT);
-
-        prepare_executeSQL(
-            "UPDATE agent 
-             SET password = ?, must_change_password = 0 
-             WHERE id = ?",
-            [$hash, $_SESSION['user_id']]
-        );
-
-        $_SESSION['success'] = "Mot de passe mis à jour";
-    }
-
-    header("Location: admin.php?page=profile");
-    exit;
+    </div>
+    ';
 }
 /* =========================================================
    PAGINATION ACTIVITÉS
@@ -443,12 +435,9 @@ foreach ($activities as $act) {
         ====================== -->
         <div class="tab-pane fade show" id="security" role="tabpanel">
 
-            /* ===============================
+            <!-- ===============================
                 FORCER CHANGEMENT MOT DE PASSE
-            ================================ */
-            <input type="password" name="new_password" required>
-            <input type="password" name="confirm_password" required>
-
+            ================================ -->
             <h4 class="mb-4">Sécurité du compte</h4>
 
             <?php if (!empty($_SESSION['success'])): ?>
@@ -921,6 +910,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Restaure l’onglet actif après refresh
+    const activeTab = localStorage.getItem('activeProfileTab');
+    if (activeTab) {
+        const trigger = document.querySelector(`[data-bs-target="${activeTab}"]`);
+        if (trigger) {
+            new bootstrap.Tab(trigger).show();
+        }
+    }
+});
+
+// ===============================
+// PRIORITÉ URL SUR localStorage
+// (permet de forcer l’affichage d’un onglet depuis un lien)
+document.addEventListener('DOMContentLoaded', () => {
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabFromUrl = urlParams.get('tab');
+
+    if (tabFromUrl) {
+        const trigger = document.querySelector(`[data-bs-target="#${tabFromUrl}"]`);
+        if (trigger) {
+            new bootstrap.Tab(trigger).show();
+            return; // ⚠️ IMPORTANT → empêche localStorage de prendre le dessus
+        }
+    }
+
+    // fallback localStorage
     const activeTab = localStorage.getItem('activeProfileTab');
     if (activeTab) {
         const trigger = document.querySelector(`[data-bs-target="${activeTab}"]`);

@@ -5,8 +5,8 @@ require_once '../modele/database.php';
 require_once '../helpers/activity.php';
 
 
+requireAuth();
 requireRole(['super_admin', 'admin']);
-requireAuth('super_admin','admin');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrfToken();
@@ -280,7 +280,7 @@ $stmtJours = $db->prepare("
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addServiceModal">
         <i class="bi bi-plus-circle" style="color: #f8f9fa;"></i> Ajouter un service
     </button>
-</div>
+</div> 
 
 <!-- =========================
     FILTRES

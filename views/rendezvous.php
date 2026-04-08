@@ -23,8 +23,9 @@ $offset  = ($pageNum - 1) * $limit;
 /* =========================
    SERVICES
 ========================= */
-if ($_SESSION['role'] === 'admin') {
+if (in_array($_SESSION['role'], ['super_admin', 'admin'])) {
 
+    // TOUS les services
     $services = $db->query("
         SELECT codeService, designService
         FROM service
@@ -32,7 +33,8 @@ if ($_SESSION['role'] === 'admin') {
     ")->fetchAll(PDO::FETCH_ASSOC);
 
 } else {
-    // AGENT → seulement ses services
+
+    // agent + medecin → seulement leurs services
     $stmt = $db->prepare("
         SELECT s.codeService, s.designService
         FROM service s
@@ -41,7 +43,19 @@ if ($_SESSION['role'] === 'admin') {
         WHERE ags.agent_username = ?
         ORDER BY s.designService
     ");
+    $stmt = $db->prepare("
+        SELECT s.codeService, s.designService
+        FROM service s
+        INNER JOIN agent_service ags
+            ON s.codeService = ags.codeService
+        INNER JOIN agent a
+            ON a.username = ags.agent_username
+        WHERE a.email = ?
+        ORDER BY s.designService
+    ");
+
     $stmt->execute([$_SESSION['username']]);
+
     $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -154,7 +168,7 @@ if ($periode === 'jour') {
 
 ?>
 
-<?php if ($_SESSION['role'] === 'agent' && empty($services)): ?>
+<?php if (in_array($_SESSION['role'], ['agent', 'medecin']) && empty($services)): ?>
   <div class="alert alert-warning">
     Aucun service ne vous est attribué.<br>
     Veuillez contacter un administrateur.
@@ -188,11 +202,11 @@ if ($periode === 'jour') {
     </h6>
 
 
-    <?php if ($_SESSION['role'] === 'admin'): ?>
-        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRdvModal">
-            <i class="bi bi-plus-circle"></i> Ajouter un RDV
-        </button>
-    <?php endif; ?>
+    <?php if (in_array($_SESSION['role'], ['super_admin', 'admin', 'medecin', 'agent'])): ?>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRdvModal">
+        <i class="bi bi-plus-circle"></i> Ajouter un RDV
+    </button>
+<?php endif; ?>
 </div>
 
 <div class="row g-3 mb-3 filters-animated">

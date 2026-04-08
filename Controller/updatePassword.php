@@ -42,6 +42,7 @@ $password = $_POST['password'];
 $confirm  = $_POST['confirm'];
 $userId   = (int) $_SESSION['user_id'];
 
+
 /* =========================================================
    CONFIRMATION MOT DE PASSE
 ========================================================= */
@@ -85,14 +86,17 @@ $newHash = password_hash($password, PASSWORD_DEFAULT);
 
 $stmt = $db->prepare("
     UPDATE agent 
-    SET password = :password 
+    SET password = :password,
+        must_change_password = 0
     WHERE id = :id
 ");
+
 $stmt->execute([
     'password' => $newHash,
     'id'       => $userId
 ]);
 
+$_SESSION['must_change_password'] = 0;
 /* =========================================================
    LOG ACTIVITÉ
 ========================================================= */
