@@ -30,31 +30,36 @@ function slugifyService(string $name): string {
 // TOP 3 SERVICES
 if (in_array($role, ['agent', 'medecin'])) {
 
-    // ✅ FIX 2 : Suppression de MAX(s.description) — on sélectionne description directement
     $services = prepare_executeSQL("
         SELECT s.codeService, s.designService, s.description, s.image, COUNT(r.codeService) as totalRdv 
         FROM agent_service a
         JOIN service s ON s.codeService = a.codeService
         LEFT JOIN rendezvs r ON r.codeService = s.codeService
-        WHERE a.agent_username = :username
+        WHERE a.agent_id = :id
         GROUP BY s.codeService, s.designService, s.description, s.image
         ORDER BY totalRdv DESC
         LIMIT 3
-", ['username' => $username])->fetchAll();
+    ", ['id' => $_SESSION['user_id']])->fetchAll();
 
-} else {
+    // 🔥 FALLBACK SI VIDE
+    if (empty($services)) {
+        $services = executeSQL("
+            SELECT s.codeService, s.designService, s.description, s.image, COUNT(r.codeService) as totalRdv 
+            FROM service s
+            LEFT JOIN rendezvs r ON r.codeService = s.codeService
+            GROUP BY s.codeService, s.designService, s.description, s.image
+            ORDER BY totalRdv DESC
+            LIMIT 3
+        ")->fetchAll();
+    }
 
-    // ✅ FIX 2 : Suppression de MAX(s.description) — on sélectionne description directement
-    $services = executeSQL("
-        SELECT s.codeService, s.designService, s.description, s.image, COUNT(r.codeService) as totalRdv 
-        FROM service s
-        LEFT JOIN rendezvs r ON r.codeService = s.codeService
-        GROUP BY s.codeService, s.designService, s.description, s.image
-        ORDER BY totalRdv DESC
-        LIMIT 3
-")->fetchAll();
 }
 ?>
+<?php if (empty($services)): ?>
+    <p class="text-center text-muted">
+        Aucun service assigné, affichage des services disponibles.
+    </p>
+<?php endif; ?>
 
 <div class="container-fluid accueil-premium">
 

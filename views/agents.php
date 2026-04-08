@@ -177,7 +177,7 @@ $agentServicesMap = [];
 $agentServiceCount = [];
 
 foreach ($agents as $a) {
-    if ($a['role'] === 'agent') {
+    if ($a['role'] === 'agent' || $a['role'] === 'medecin') {
         $agentServicesMap[$a['username']] = getAgentServices($a['username']);
         $agentServiceCount[$a['username']] =
             count($agentServicesMap[$a['username']] ?? []);
@@ -241,7 +241,7 @@ if (isset($_POST['add_agent'])) {
     }
 
     // service obligatoire
-    if ($role === 'agent' && empty($_POST['services'])) {
+    if (in_array($role, ['agent', 'medecin']) && empty($_POST['services'])) {
         $_SESSION['error'] = "Un agent doit avoir au moins un service.";
         header("Location: admin.php?page=agents");
         exit;
@@ -268,7 +268,7 @@ if (isset($_POST['add_agent'])) {
         );
 
         // services
-        if ($role === 'agent') {
+        if (in_array($role, ['agent', 'medecin'])) {
             foreach ($_POST['services'] as $codeService) {
                 prepare_executeSQL(
                     "INSERT INTO agent_service (agent_username, codeService)
@@ -314,11 +314,15 @@ if (isset($_POST['edit_agent'])) {
 
 
 
-    if ($role === 'agent' && empty($_POST['edit_services'])) {
-        $_SESSION['error'] = "Un agent doit avoir au moins un service.";
+    if (in_array($role, ['agent', 'medecin'])) {
+
+    if (empty($_POST['edit_services']) || count($_POST['edit_services']) === 0) {
+        $_SESSION['error'] = "Un agent doit avoir au moins un service." . 
+        "<small>Contactez un administrateur</small>";
         header("Location: admin.php?page=agents");
         exit;
     }
+}
 
     if (!preg_match('/^\+221(70|71|75|76|77|78|33)[0-9]{7}$/', $telephone)) {
     $_SESSION['error'] = "Numéro de téléphone sénégalais invalide.";
@@ -347,7 +351,7 @@ if (isset($_POST['edit_agent'])) {
         ['username' => $username]
     );
 
-    if ($role === 'agent') {
+    if (in_array($role, ['agent', 'medecin'])) {
         foreach ($_POST['edit_services'] as $codeService) {
             prepare_executeSQL(
                 "INSERT INTO agent_service (agent_username, codeService)
@@ -510,7 +514,7 @@ if (isset($_POST['edit_agent'])) {
           </td>
 
           <td class="text-center">
-            <?php if (in_array($agent['role'], ['admin', 'super_admin', 'medecin'])): ?>
+            <?php if (in_array($agent['role'], ['admin', 'super_admin'])): ?>
               <span class="badge bg-success" title="Accès à tous les services">
                 Tous
               </span>
@@ -1042,7 +1046,7 @@ if (editModal) {
     // reset
     checkboxes.forEach(cb => cb.checked = false);
 
-    if (role === 'agent') {
+    if (role === 'agent' || role === 'medecin') {
       servicesBox.style.display = 'block';
 
       if (agentServicesMap[username]) {
@@ -1093,10 +1097,10 @@ document.addEventListener('DOMContentLoaded', function () {
   //  Afficher / masquer les services selon le rôle
   function toggleServices() {
     const role = roleSelect.value.toLowerCase();
-    servicesBox.style.display = (role === 'agent') ? 'block' : 'none';
+    servicesBox.style.display = (role === 'agent' || role === 'medecin') ? 'block' : 'none';
 
     // si on passe admin → cacher l’erreur
-    if (role !== 'agent') {
+    if (role !== 'agent' && role !== 'medecin') {
       servicesError.style.display = 'none';
     }
   }
@@ -1109,9 +1113,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     servicesError.style.display = 'none';
 
-    if (role === 'agent' && checked.length === 0) {
-      e.preventDefault();
-      servicesError.style.display = 'block';
+    if (role === 'agent' || role === 'medecin') {
+      if (checked.length === 0) {
+        e.preventDefault();
+        servicesError.style.display = 'block';
+      }
     }
   });
 
@@ -1157,7 +1163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleServices() {
       container.style.display =
-        roleSelect.value === 'agent' ? 'block' : 'none';
+        roleSelect.value === 'agent' || roleSelect.value === 'medecin' ? 'block' : 'none';
     }
 
     roleSelect.addEventListener('change', toggleServices);
@@ -1215,36 +1221,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!container) return;
 
   const checkboxes = container.querySelectorAll('.service-checkbox');
-
-  let saveTimeout = null;
-
-  function autoSaveServices() {
-    const username = editModal.querySelector('input[name="username"]').value;
-    const services = [...checkboxes]
-      .filter(cb => cb.checked)
-      .map(cb => cb.value);
-
-    clearTimeout(saveTimeout);
-
-    saveTimeout = setTimeout(() => {
-      fetch('admin.php?page=agents', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          ajax: 'save_services',
-          username: username,
-          services: JSON.stringify(services),
-          csrf_token: '<?= $_SESSION['csrf_token'] ?>'
-        })
-      });
-    }, 600); // anti-spam
-  }
-
-  checkboxes.forEach(cb =>
-    cb.addEventListener('change', autoSaveServices)
-  );
 
 });
 </script>

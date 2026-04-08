@@ -22,7 +22,7 @@ $db = getConnection();
    RÉCUPÉRER UTILISATEUR
 ========================= */
 $stmt = $db->prepare("
-    SELECT id, email, password, role, status, failed_attempts
+    SELECT id, email, password, role, status, failed_attempts, must_change_password
     FROM agent
     WHERE email = ?
 ");
@@ -84,13 +84,12 @@ $_SESSION['toast_type'] = "success";
 ================================ */
 if (password_verify($password, $user['password'])) {
 
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['role'] = $user['role'];
+    $_SESSION['user_id']  = (int) $user['id'];
+    $_SESSION['email']    = $user['email'];
+    $_SESSION['role']     = $user['role'];
     $_SESSION['username'] = $user['email'];
+    $_SESSION['must_change_password'] = $user['must_change_password'];
 
-    /* =========================
-    LOG CONNEXION
-    ========================= */
     logActivity(
         $_SESSION['user_id'],
         'Connexion',
@@ -98,12 +97,10 @@ if (password_verify($password, $user['password'])) {
         $_SESSION['role']
     );
 
-    //  OBLIGER RESET
     if ($user['must_change_password'] == 1) {
         header("Location: ../views/admin.php?page=profile&tab=security&force=1");
         exit;
-    } 
-
+    }
 
     header("Location: ../views/admin.php?page=accueil");
     exit;
